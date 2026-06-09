@@ -2686,7 +2686,7 @@ function AnalyticsPanel() {
       </div>
 
       {/* ROW 9 — 5 module tiles */}
-      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3">
+      <div className="grid grid-cols-6 gap-2 sm:gap-3">
         {[
           { l: "VIRTUAL", s: "Manage virtual matches and rounds", t: "virtual", img: tileVirtualAsset.url },
           { l: "BATTLE", s: "Manage matches, fixtures and outcomes", t: "matches", img: tileBattleAsset.url },
