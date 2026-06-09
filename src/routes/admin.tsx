@@ -2480,7 +2480,8 @@ function AnalyticsPanel() {
   };
 
   return (
-    <div className="space-y-3">
+    <div className="overflow-x-auto -mx-3 sm:mx-0 pb-2">
+    <div className="min-w-[1180px] space-y-3">
       {/* ROW 1 — 5 metric squares */}
       <div className="grid grid-cols-5 gap-2 sm:gap-3">
         {row1.map((x) => <MetricSquare key={x.title} {...x} />)}
