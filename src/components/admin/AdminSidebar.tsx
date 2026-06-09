@@ -1,6 +1,7 @@
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -12,10 +13,10 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import {
-  BarChart3, Users, Sparkles, AlertTriangle, History, ClipboardList, Send,
-  MessageSquare, Megaphone, Trophy, Calendar, Wallet, ListOrdered, Tag,
-  Settings as SettingsIcon, Ticket, Coins, Dice5, Shield, Flame,
+  BarChart3, Users, History, Send, Calendar, Wallet, ClipboardList, Trophy,
+  Server, Home, Settings as SettingsIcon,
 } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import lslLogo from "@/assets/lsl-logo.png";
 
 export type AdminNavItem = {
@@ -27,43 +28,16 @@ export type AdminNavItem = {
   alertKey?: string;
 };
 
+// Primary admin navigation — mirrors the console sidebar design.
 const NAV: AdminNavItem[] = [
-  { key: "analytics",   label: "Analytics",            icon: BarChart3,       modOk: true },
-  { key: "activity",    label: "Activity",             icon: Users,           admin: true },
-  { key: "adminai",     label: "Admin AI",             icon: Sparkles,        admin: true },
-  { key: "appeals",     label: "Appeals",              icon: AlertTriangle,   modOk: true, alertKey: "appeals" },
-  { key: "audit",       label: "Audit",                icon: History,         admin: true },
-  { key: "bettracker",  label: "Bet Tracker",          icon: ClipboardList,   admin: true, alertKey: "bettracker" },
-  { key: "broadcast",   label: "Broadcast",            icon: Send,            admin: true },
-  { key: "challenges",  label: "Challenges",           icon: Sparkles,        admin: true },
-  { key: "chat",        label: "Chat",                 icon: MessageSquare,   modOk: true, alertKey: "chat" },
-  { key: "clans",       label: "Clans",                icon: Shield,          admin: true },
-  { key: "content",     label: "Content",              icon: Megaphone,       modOk: true },
-  { key: "emblems",     label: "Emblems",              icon: Trophy,          admin: true },
-  { key: "events",      label: "Events",               icon: Calendar,        admin: true },
-  { key: "housewallet", label: "House Wallet",         icon: Wallet,          admin: true },
-  { key: "leaderboard", label: "Leaderboard",          icon: ListOrdered,     admin: true },
-  { key: "matches",     label: "Matches",              icon: Trophy,          modOk: true },
-  { key: "notify",      label: "Notify",               icon: Send,            modOk: true },
-  { key: "pnl",         label: "P&L",                  icon: BarChart3,       admin: true },
-  { key: "promos",      label: "Promo Codes",          icon: Tag,             admin: true },
-  { key: "promoreqs",   label: "Promo Requests",       icon: Tag,             admin: true, alertKey: "promoreqs" },
-  { key: "referrals",   label: "Referrals",            icon: Users,           admin: true },
-  { key: "reports",     label: "Reports",              icon: BarChart3,       admin: true },
-  { key: "risk",        label: "Risk",                 icon: AlertTriangle,   admin: true },
-  { key: "seasons",     label: "Seasons",              icon: Trophy,          admin: true },
-  { key: "settings",    label: "Settings",             icon: SettingsIcon,    admin: true },
-  { key: "spotlights",  label: "Spotlights",           icon: Sparkles,        modOk: true },
-  { key: "streakpush",  label: "Streak & Push",        icon: Sparkles,        admin: true },
-  { key: "tasks",       label: "Tasks & Achievements", icon: ClipboardList,   admin: true },
-  { key: "tickets",     label: "Tickets",              icon: Ticket,          modOk: true, alertKey: "tickets" },
-  { key: "tokens",      label: "Tokens",               icon: Coins,           admin: true, alertKey: "tokens" },
-  { key: "tokenrules",  label: "Token Rules",          icon: Coins,           admin: true },
-  { key: "topbets",     label: "Top Bets",             icon: Flame,           modOk: true },
-  { key: "users",       label: "Users",                icon: Users,           modOk: true, alertKey: "users" },
-  { key: "virtual",     label: "Virtual",              icon: Dice5,           admin: true },
-  { key: "vip",         label: "VIP",                  icon: Trophy,          admin: true },
-  { key: "withdrawals", label: "Withdrawals",          icon: Wallet,          modOk: true, alertKey: "withdrawals" },
+  { key: "analytics",  label: "Analytics",   icon: BarChart3,     modOk: true },
+  { key: "users",      label: "Users",       icon: Users,         modOk: true, alertKey: "users" },
+  { key: "matches",    label: "Matches",     icon: Trophy,        modOk: true },
+  { key: "events",     label: "Events",      icon: Calendar,      admin: true },
+  { key: "bettracker", label: "Bet Tracker", icon: ClipboardList, admin: true, alertKey: "bettracker" },
+  { key: "pnl",        label: "P&L",         icon: Wallet,        admin: true },
+  { key: "audit",      label: "Audit Logs",  icon: History,       admin: true },
+  { key: "broadcast",  label: "Broadcast",   icon: Send,          admin: true },
 ];
 
 export function AdminSidebar({
@@ -81,8 +55,10 @@ export function AdminSidebar({
 }) {
   const { state, setOpenMobile, isMobile } = useSidebar();
   const collapsed = state === "collapsed";
+  const nav = useNavigate();
 
   const items = NAV.filter((n) => (n.admin ? isAdmin : true) || (n.modOk && (isAdmin || isMod)));
+  const goHome = () => { if (isMobile) setOpenMobile(false); nav({ to: "/" }); };
 
   return (
     <Sidebar collapsible="icon" className="border-r border-primary/20">
@@ -134,7 +110,45 @@ export function AdminSidebar({
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {!collapsed && isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-[10px] tracking-[0.25em]">SERVER STATUS</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <div className="px-2 py-1 space-y-2 text-[10px]">
+                <div className="flex items-center gap-1.5 text-emerald-400 font-bold"><span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />Online</div>
+                {[["CPU", 24], ["RAM", 41], ["DISK", 63]].map(([l, v]) => (
+                  <div key={l as string}>
+                    <div className="flex justify-between text-muted-foreground"><span>{l}</span><span>{v}%</span></div>
+                    <div className="h-1.5 rounded-full bg-muted/40 overflow-hidden"><div className="h-full bg-gradient-gold" style={{ width: `${v}%` }} /></div>
+                  </div>
+                ))}
+              </div>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
+
+      <SidebarFooter className="border-t border-primary/15 gap-2">
+        {isAdmin && (
+          <SidebarMenuButton
+            onClick={() => { onSelect("settings"); if (isMobile) setOpenMobile(false); }}
+            tooltip={collapsed ? "Manage Server" : undefined}
+            className="bg-card/70 border border-primary/30 text-[12px]"
+          >
+            <Server className="h-4 w-4" />
+            {!collapsed && <span>Manage Server</span>}
+          </SidebarMenuButton>
+        )}
+        <SidebarMenuButton
+          onClick={goHome}
+          tooltip={collapsed ? "Back to Home" : undefined}
+          className="text-[12px] text-muted-foreground hover:text-foreground"
+        >
+          <Home className="h-4 w-4" />
+          {!collapsed && <span>Back to Home</span>}
+        </SidebarMenuButton>
+      </SidebarFooter>
     </Sidebar>
   );
 }

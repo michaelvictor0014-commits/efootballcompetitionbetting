@@ -54,6 +54,12 @@ function GangsTab() {
     setGangs(Array.from(map.values()).sort((a, b) => b.members - a.members));
   }
   useEffect(() => { load(); }, []);
+  async function removeGang(name: string) {
+    if (!confirm(`Disband "${name}"? This clears the gang/faction tag from all its members.`)) return;
+    const { error } = await supabase.from("profiles").update({ gang_name: null, gang_type: null } as any).eq("gang_name", name);
+    if (error) return toast.error(error.message);
+    toast.success("Gang disbanded"); load();
+  }
   return (
     <div className="space-y-2">
       <p className="text-[11px] text-muted-foreground">Gangs are tracked from member profiles. Members join a gang by setting it on their profile.</p>
@@ -64,6 +70,7 @@ function GangsTab() {
               <Shield className="h-4 w-4 text-primary" />
               <div className="font-bold truncate">{g.gang_name}</div>
               <span className="ml-auto text-[9px] px-1.5 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30 font-bold">{g.gang_type === "G" ? "GANG" : g.gang_type === "F" ? "FACTION" : "CREW"}</span>
+              <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => removeGang(g.gang_name)} title="Disband gang"><Trash2 className="h-3 w-3 text-destructive" /></Button>
             </div>
             <div className="text-[10px] text-muted-foreground mt-1">{g.members} member{g.members === 1 ? "" : "s"}</div>
           </div>

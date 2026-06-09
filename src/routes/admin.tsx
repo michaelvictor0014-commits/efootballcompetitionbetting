@@ -19,12 +19,12 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import lslLogo from "@/assets/lsl-logo.png";
-import tileBattleAsset from "@/assets/tile-battle.jpg.asset.json";
-import tileVirtualAsset from "@/assets/tile-virtual.jpg.asset.json";
-import tileChallengesAsset from "@/assets/tile-challenges.jpg.asset.json";
+import tileBattle from "@/assets/tile-battle.jpg";
+import tileVirtual from "@/assets/tile-virtual.jpg";
+import tileChallenges from "@/assets/tile-challenges.jpg";
 import tileReferrals from "@/assets/tile-referrals.jpg";
-import tileUsersAsset from "@/assets/tile-users.jpg.asset.json";
-import tileClansAsset from "@/assets/tile-clans.jpg.asset.json";
+import tileUsers from "@/assets/tile-users.jpg";
+import tileClans from "@/assets/tile-clans.jpg";
 import consoleHeaderBgAsset from "@/assets/console-header-bg.jpg.asset.json";
 import leagueSkullFire from "@/assets/league-skull-fire.jpg";
 import { Countdown } from "@/components/Countdown";
@@ -102,14 +102,27 @@ function AdminPage() {
 
   return (
     <Layout>
-      <main className="w-full min-h-[calc(100vh-3.5rem)]">
-        <div className={`mx-auto w-full ${activeTab === "analytics" ? "max-w-[1600px]" : "max-w-[1080px]"} px-3 sm:px-4 py-4 sm:py-6 space-y-4`}>
+      <SidebarProvider>
+      <AdminSidebar activeTab={activeTab} onSelect={setActiveTab} isAdmin={isAdmin} isMod={isMod} alerts={alerts} />
+      <main
+        className="relative w-full min-h-[calc(100vh-3.5rem)]"
+        style={{ background: "radial-gradient(120% 90% at 50% 0%, oklch(0.22 0.07 158) 0%, oklch(0.16 0.05 158) 40%, oklch(0.10 0.03 158) 100%)" }}
+      >
+        {/* Centered, faintly-visible league crest watermark behind the console */}
+        <img
+          src={lslLogo}
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] max-w-[640px] object-contain opacity-[0.06] mix-blend-screen z-0"
+        />
+        <div className={`relative z-10 mx-auto w-full ${activeTab === "analytics" ? "max-w-[1600px]" : "max-w-[1080px]"} px-3 sm:px-4 py-4 sm:py-6 space-y-4`}>
           <div
             className="relative overflow-hidden rounded-2xl p-4 border border-primary/40 shadow-luxury bg-card"
             style={{ backgroundImage: `linear-gradient(90deg, rgba(8,14,10,0.95) 0%, rgba(8,14,10,0.78) 45%, rgba(8,14,10,0.25) 100%), url(${consoleHeaderBgAsset.url})`, backgroundSize: "cover", backgroundPosition: "center right" }}
           >
             <div className="absolute inset-x-0 top-0 h-1 bg-gradient-gold" />
             <div className="relative flex items-center gap-3 flex-wrap">
+              <SidebarTrigger className="text-primary shrink-0" />
               <button
                 type="button"
                 onClick={() => setActiveTab("analytics")}
@@ -189,6 +202,7 @@ function AdminPage() {
           </Tabs>
         </div>
       </main>
+      </SidebarProvider>
     </Layout>
   );
 }
@@ -1079,6 +1093,7 @@ function MatchesPanel() {
   const confirm = useConfirm();
   const [matches, setMatches] = useState<any[]>([]);
   const [wizard, setWizard] = useState(false);
+  const [shooterWizard, setShooterWizard] = useState(false);
 
   async function load() {
     const { data } = await supabase.from("matches").select("*, home_team:teams!home_team_id(name,logo_url), away_team:teams!away_team_id(name,logo_url)").eq("is_archived", false).order("start_time", { ascending: false });
@@ -1136,12 +1151,14 @@ function MatchesPanel() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <Button className="btn-luxury" onClick={() => setWizard(true)}><Plus className="h-4 w-4 mr-1" />New Match (Wizard)</Button>
+        <Button className="btn-luxury" onClick={() => setShooterWizard(true)}><Plus className="h-4 w-4 mr-1" />New Shooter Match</Button>
         <Button variant="destructive" onClick={clearEnded}>
           <Trash2 className="h-4 w-4 mr-1" />Clear Ended Matches
         </Button>
         <Badge variant="outline" className="ml-auto text-[10px]">Bet history is preserved — only the panel list is cleared.</Badge>
       </div>
       {wizard && <MatchWizard onClose={() => { setWizard(false); load(); }} />}
+      {shooterWizard && <ShooterMatchWizard onClose={() => { setShooterWizard(false); load(); }} />}
 
       <div className="space-y-2">
         {matches.map((m: any) => (
@@ -1422,6 +1439,121 @@ function TeamStep({ label, team, setTeam, teams }: { label: string; team: any; s
         </>
       )}
     </div>
+  );
+}
+
+/* ============================ SHOOTER MATCH WIZARD ============================ */
+// Create a 1-v-1 shooter match for marketing. Shooters come from the players
+// seeded on the Clans page (gang/team tag is optional). Each shooter is mapped
+// to a personal team so the SHOOTERS leaderboard credits them individually.
+function ShooterMatchWizard({ onClose }: { onClose: () => void }) {
+  const [shooters, setShooters] = useState<any[]>([]);
+  const [aId, setAId] = useState("");
+  const [bId, setBId] = useState("");
+  const [f, setF] = useState({ oddsA: 2.0, draw: 3.5, oddsB: 2.0, name: "", start_time: "", location: "", featured: true });
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    supabase
+      .from("players")
+      .select("id,name,avatar_url,team_id, team:teams!team_id(name,gang_type)")
+      .order("name")
+      .then(({ data }) => setShooters(data ?? []));
+  }, []);
+
+  const A = shooters.find((s) => s.id === aId);
+  const B = shooters.find((s) => s.id === bId);
+  const gangLabel = (s: any) => (s?.team?.name ? `${s.team.name} (${s.team.gang_type === "G" ? "Gang" : s.team.gang_type === "F" ? "Faction" : "Team"})` : "Free agent");
+
+  async function ensureShooterTeam(s: any): Promise<string | null> {
+    const { data: existing } = await supabase.from("teams").select("id").eq("name", s.name).maybeSingle();
+    let teamId = existing?.id as string | undefined;
+    if (!teamId) {
+      const { data, error } = await supabase.from("teams").insert({ name: s.name, logo_url: s.avatar_url ?? null }).select().single();
+      if (error) { toast.error(error.message); return null; }
+      teamId = data.id;
+    }
+    const { data: pl } = await supabase.from("players").select("id").eq("team_id", teamId).eq("name", s.name).maybeSingle();
+    if (!pl) await supabase.from("players").insert({ team_id: teamId, name: s.name });
+    return teamId!;
+  }
+
+  async function create() {
+    if (!A || !B) { toast.error("Pick two shooters"); return; }
+    if (A.name.trim().toLowerCase() === B.name.trim().toLowerCase()) { toast.error("Pick two different shooters"); return; }
+    setBusy(true);
+    try {
+      const aTeam = await ensureShooterTeam(A); if (!aTeam) return;
+      const bTeam = await ensureShooterTeam(B); if (!bTeam) return;
+      const { data: m, error } = await supabase.from("matches").insert({
+        name: f.name || `${A.name} vs ${B.name}`,
+        home_team_id: aTeam, away_team_id: bTeam,
+        start_time: f.start_time ? new Date(f.start_time).toISOString() : new Date().toISOString(),
+        location: f.location, status: "scheduled", is_featured: f.featured,
+      }).select().single();
+      if (error) { toast.error(error.message); return; }
+      const { data: market } = await supabase.from("markets").insert({ match_id: m.id, name: "Match Winner" }).select().single();
+      if (market) {
+        await supabase.from("odds").insert([
+          { market_id: market.id, label: A.name, value: f.oddsA },
+          { market_id: market.id, label: "Draw", value: f.draw },
+          { market_id: market.id, label: B.name, value: f.oddsB },
+        ]);
+      }
+      await supabase.from("notifications").insert({ user_id: null as any, title: "New shooter match", body: `${A.name} vs ${B.name} — back your shooter.`, link: `/matches/${m.id}` });
+      await logAudit("shooter_match_created", "match", m.id);
+      toast.success("Shooter match created!");
+      onClose();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2"><Trophy className="h-4 w-4 text-primary" />New Shooter Match</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <p className="text-[11px] text-muted-foreground">Shooters are pulled from the roster you seed on the Clans page. A gang/faction tag is optional — free agents can be matched too. Results post to the Shooters Leaderboard when the match is settled.</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs text-muted-foreground">Shooter A</label>
+              <Select value={aId} onValueChange={setAId}>
+                <SelectTrigger><SelectValue placeholder="Pick shooter" /></SelectTrigger>
+                <SelectContent>{shooters.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
+              </Select>
+              {A && <div className="mt-1 text-[10px] text-muted-foreground">{gangLabel(A)}</div>}
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">Shooter B</label>
+              <Select value={bId} onValueChange={setBId}>
+                <SelectTrigger><SelectValue placeholder="Pick shooter" /></SelectTrigger>
+                <SelectContent>{shooters.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
+              </Select>
+              {B && <div className="mt-1 text-[10px] text-muted-foreground">{gangLabel(B)}</div>}
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <div><label className="text-xs">A win odds</label><Input type="number" step="0.01" value={f.oddsA} onChange={(e) => setF({ ...f, oddsA: Number(e.target.value) })} /></div>
+            <div><label className="text-xs">Draw odds</label><Input type="number" step="0.01" value={f.draw} onChange={(e) => setF({ ...f, draw: Number(e.target.value) })} /></div>
+            <div><label className="text-xs">B win odds</label><Input type="number" step="0.01" value={f.oddsB} onChange={(e) => setF({ ...f, oddsB: Number(e.target.value) })} /></div>
+          </div>
+          <Input placeholder="Match name (optional)" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
+          <div>
+            <label className="text-xs text-muted-foreground">Countdown / Start time</label>
+            <Input type="datetime-local" value={f.start_time} onChange={(e) => setF({ ...f, start_time: e.target.value })} />
+          </div>
+          <Input placeholder="Location / Venue" value={f.location} onChange={(e) => setF({ ...f, location: e.target.value })} />
+          <label className="flex items-center gap-2 text-sm"><Switch checked={f.featured} onCheckedChange={(v) => setF({ ...f, featured: v })} /> Publish on homepage for marketing</label>
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={onClose}>Cancel</Button>
+          <Button className="btn-luxury" disabled={busy} onClick={create}>{busy ? "Creating…" : "Create Shooter Match"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -2480,7 +2612,8 @@ function AnalyticsPanel() {
   };
 
   return (
-    <div className="space-y-3">
+    <div className="overflow-x-auto -mx-3 sm:mx-0 pb-2">
+    <div className="min-w-[1180px] space-y-3">
       {/* ROW 1 — 5 metric squares */}
       <div className="grid grid-cols-5 gap-2 sm:gap-3">
         {row1.map((x) => <MetricSquare key={x.title} {...x} />)}
@@ -2548,9 +2681,9 @@ function AnalyticsPanel() {
 
       {/* ROW 7 — Recent Activity | Live Gang Wars | Highlights Hub */}
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
-        <PanelBlock title="RECENT ACTIVITY" accent="sky" onView={() => setActiveTabFromAnalytics(nav, "activity")}>
+        <PanelBlock title="RECENT ACTIVITY" accent="sky" tall onView={() => setActiveTabFromAnalytics(nav, "activity")}>
           {activity.length === 0 && <div className="text-[10px] text-muted-foreground">No activity yet</div>}
-          {activity.slice(0, 3).map((a, i) => (
+          {activity.slice(0, 8).map((a, i) => (
             <button key={i} onClick={() => setActiveTabFromAnalytics(nav, "audit")} className="w-full text-left flex items-start gap-1.5 text-[9px] sm:text-xs py-1 border-b border-border/40 last:border-0 hover:bg-sky-500/10 rounded transition">
               <Sparkles className="h-3 w-3 text-sky-400 shrink-0 mt-0.5" />
               <div className="min-w-0 flex-1">
@@ -2560,6 +2693,7 @@ function AnalyticsPanel() {
             </button>
           ))}
         </PanelBlock>
+        <div className="flex flex-col gap-2 sm:gap-3">
         <PanelBlock title="LIVE GANG WARS" accent="rose" onView={() => nav({ to: "/matches" })}>
           {liveMatches.length === 0 && <div className="text-[10px] text-muted-foreground">No live wars</div>}
           {liveMatches.slice(0, 3).map((m: any) => {
@@ -2574,19 +2708,6 @@ function AnalyticsPanel() {
             );
           })}
         </PanelBlock>
-        <PanelBlock title="HIGHLIGHTS HUB" accent="violet" onView={() => setActiveTabFromAnalytics(nav, "content")}>
-          {highlights.length === 0 && <div className="text-[10px] text-muted-foreground">No highlights yet</div>}
-          {highlights.slice(0, 3).map((h) => (
-            <button key={h.id} onClick={() => setActiveTabFromAnalytics(nav, "content")} className="w-full flex items-center gap-1.5 text-[9px] sm:text-xs py-1 border-b border-border/40 last:border-0 hover:bg-violet-500/10 rounded px-1 transition">
-              {h.media_type === "video" ? <Play className="h-3 w-3 text-violet-400 shrink-0" /> : <ImageIcon className="h-3 w-3 text-violet-400 shrink-0" />}
-              <div className="min-w-0 flex-1 truncate text-left">{h.title}</div>
-            </button>
-          ))}
-        </PanelBlock>
-      </div>
-
-      {/* ROW 8 — Event Countdown | Broadcast Center | Quick Actions */}
-      <div className="grid grid-cols-3 gap-2 sm:gap-3">
         <PanelBlock title="EVENT COUNTDOWN" compact onView={() => setActiveTabFromAnalytics(nav, "events")}>
           {event ? (
             <button onClick={() => setActiveTabFromAnalytics(nav, "events")} className="relative w-full text-left rounded p-1 transition space-y-1 overflow-hidden">
@@ -2604,6 +2725,20 @@ function AnalyticsPanel() {
             <div className="text-[10px] text-muted-foreground">No active event</div>
           )}
         </PanelBlock>
+        </div>
+        <PanelBlock title="HIGHLIGHTS HUB" accent="violet" tall onView={() => setActiveTabFromAnalytics(nav, "content")}>
+          {highlights.length === 0 && <div className="text-[10px] text-muted-foreground">No highlights yet</div>}
+          {highlights.slice(0, 8).map((h) => (
+            <button key={h.id} onClick={() => setActiveTabFromAnalytics(nav, "content")} className="w-full flex items-center gap-1.5 text-[9px] sm:text-xs py-1 border-b border-border/40 last:border-0 hover:bg-violet-500/10 rounded px-1 transition">
+              {h.media_type === "video" ? <Play className="h-3 w-3 text-violet-400 shrink-0" /> : <ImageIcon className="h-3 w-3 text-violet-400 shrink-0" />}
+              <div className="min-w-0 flex-1 truncate text-left">{h.title}</div>
+            </button>
+          ))}
+        </PanelBlock>
+      </div>
+
+      {/* ROW 8 — Broadcast Center | Quick Actions | Top Bets */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
         <PanelBlock title="BROADCAST CENTER" compact onView={() => setActiveTabFromAnalytics(nav, "broadcast")}>
           {broadcasts.length === 0 && <div className="text-[10px] text-muted-foreground">No broadcasts</div>}
           {broadcasts.map((b) => (
@@ -2682,17 +2817,18 @@ function AnalyticsPanel() {
             </div>
           </div>
         </PanelBlock>
+        <div className="min-w-0"><TopBetsPanel /></div>
       </div>
 
       {/* ROW 9 — 5 module tiles */}
-      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3">
+      <div className="grid grid-cols-6 gap-2 sm:gap-3">
         {[
-          { l: "VIRTUAL", s: "Manage virtual matches and rounds", t: "virtual", img: tileVirtualAsset.url },
-          { l: "BATTLE", s: "Manage matches, fixtures and outcomes", t: "matches", img: tileBattleAsset.url },
-          { l: "CHALLENGES", s: "Create and manage gang challenges", t: "challenges", img: tileChallengesAsset.url },
+          { l: "VIRTUAL", s: "Manage virtual matches and rounds", t: "virtual", img: tileVirtual },
+          { l: "BATTLE", s: "Manage matches, fixtures and outcomes", t: "matches", img: tileBattle },
+          { l: "CHALLENGES", s: "Create and manage gang challenges", t: "challenges", img: tileChallenges },
           { l: "REFERRALS", s: "Manage referrals and commissions", t: "referrals", img: tileReferrals },
-          { l: "USERS", s: "Manage users, profiles and access", t: "users", img: tileUsersAsset.url },
-          { l: "CLANS", s: "Manage gangs, teams and players", t: "clans", img: tileClansAsset.url },
+          { l: "USERS", s: "Manage users, profiles and access", t: "users", img: tileUsers },
+          { l: "CLANS", s: "Manage gangs, teams and players", t: "clans", img: tileClans },
         ].map((m) => (
           <Card key={m.l} className="border-primary/20 bg-card/60 p-2 sm:p-3 flex flex-col">
             <button type="button" onClick={() => setActiveTabFromAnalytics(nav, m.t)} className="relative aspect-square w-full mb-1 rounded overflow-hidden border border-primary/20 hover:border-primary/60 transition active:scale-95">
@@ -2708,8 +2844,6 @@ function AnalyticsPanel() {
       </div>
 
       {/* ROW 10 — System Status */}
-      <TopBetsPanel />
-
       <Card className="border-primary/20 bg-card/60 p-3">
         <div className="text-[10px] sm:text-xs font-bold tracking-widest text-primary mb-2">SYSTEM STATUS <span className="text-muted-foreground font-normal">(COMING SOON)</span></div>
         <div className="grid grid-cols-5 gap-1 sm:gap-2">
@@ -2721,6 +2855,7 @@ function AnalyticsPanel() {
           ))}
         </div>
       </Card>
+    </div>
     </div>
   );
 }
@@ -2773,7 +2908,7 @@ function MetricSquare({ icon: Icon, value, title, sub, tone, compact, onClick }:
   );
 }
 
-function PanelBlock({ title, onView, children, accent, compact }: { title: string; onView?: () => void; children: React.ReactNode; accent?: "sky" | "rose" | "violet" | "amber" | "emerald"; compact?: boolean }) {
+function PanelBlock({ title, onView, children, accent, compact, tall }: { title: string; onView?: () => void; children: React.ReactNode; accent?: "sky" | "rose" | "violet" | "amber" | "emerald"; compact?: boolean; tall?: boolean }) {
   const accents: Record<string, { ring: string; title: string; link: string; glow: string }> = {
     sky:     { ring: "border-sky-500/30",     title: "text-sky-300",     link: "text-sky-300/80 hover:text-sky-200",     glow: "shadow-[0_0_30px_-12px_rgba(56,189,248,0.5)]" },
     rose:    { ring: "border-rose-500/30",    title: "text-rose-300",    link: "text-rose-300/80 hover:text-rose-200",    glow: "shadow-[0_0_30px_-12px_rgba(244,63,94,0.5)]" },
@@ -2784,7 +2919,7 @@ function PanelBlock({ title, onView, children, accent, compact }: { title: strin
   };
   const a = accents[accent ?? "primary"];
   return (
-    <Card className={`bg-card/60 p-2 sm:p-3 flex flex-col ${compact ? "min-h-0 max-h-[170px]" : "min-h-[140px]"} ${a.ring} ${a.glow}`}>
+    <Card className={`bg-card/60 p-2 sm:p-3 flex flex-col ${tall ? "min-h-[300px]" : compact ? "min-h-0 max-h-[170px]" : "min-h-[140px]"} ${a.ring} ${a.glow}`}>
       <div className="relative flex items-center justify-between mb-1.5">
         <div className={`text-[8px] sm:text-[11px] font-bold tracking-widest ${a.title}`}>{title}</div>
         {onView && (

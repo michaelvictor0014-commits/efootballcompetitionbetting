@@ -35,7 +35,7 @@ function rankIcon(i: number) {
   return `#${i + 1}`;
 }
 
-type Stats = { name: string; top_player?: string; W: number; L: number; D: number; PTS: number; P: number; manual_rank?: number | null };
+type Stats = { name: string; top_player?: string; gang?: string; gang_type?: "G" | "F" | null; W: number; L: number; D: number; PTS: number; P: number; manual_rank?: number | null };
 
 function Page() {
   const [shooters, setShooters] = useState<Stats[]>([]);
@@ -60,13 +60,28 @@ function Page() {
         .select("home_team_id,away_team_id,home_score,away_score,winner_team_id,status,is_virtual,settled_at,created_at")
         .eq("status", "ended")
         .eq("is_virtual", false);
-      const { data: teams } = await supabase.from("teams").select("id,name");
+      const { data: teams } = await supabase.from("teams").select("id,name,gang_type");
       const { data: players } = await supabase.from("players").select("id,name,team_id");
       const { data: overrides } = await supabase.from("leaderboard_overrides").select("*");
 
       const teamMap = new Map<string, string>(); (teams ?? []).forEach((t) => teamMap.set(t.id, t.name));
+      const teamTypeMap = new Map<string, "G" | "F" | null>(); (teams ?? []).forEach((t: any) => teamTypeMap.set(t.id, t.gang_type ?? null));
       const teamPlayers = new Map<string, string[]>();
       (players ?? []).forEach((p) => { const a = teamPlayers.get(p.team_id) ?? []; a.push(p.name); teamPlayers.set(p.team_id, a); });
+      // Map each shooter to their current gang / faction / team tag (if any).
+      // Prefer a real gang/team tag over an auto-created 1-v-1 shooter team (which is named after the shooter).
+      const playerGang = new Map<string, { name: string; type: "G" | "F" | null }>();
+      (players ?? []).forEach((p: any) => {
+        if (!p.team_id) return;
+        const tname = teamMap.get(p.team_id);
+        if (!tname) return;
+        const isSelfTeam = tname.trim().toLowerCase() === String(p.name).trim().toLowerCase();
+        const existing = playerGang.get(p.name);
+        const existingIsSelf = existing ? existing.name.trim().toLowerCase() === String(p.name).trim().toLowerCase() : true;
+        if (!existing || (existingIsSelf && !isSelfTeam)) {
+          playerGang.set(p.name, { name: tname, type: teamTypeMap.get(p.team_id) ?? null });
+        }
+      });
 
       const gangAgg = new Map<string, Stats>();
       const playerAgg = new Map<string, Stats>();
@@ -91,7 +106,8 @@ function Page() {
           }
           if (countForShooters) {
             (teamPlayers.get(tid) ?? []).forEach((pname) => {
-              const pc = playerAgg.get(pname) ?? { name: pname, W: 0, L: 0, D: 0, PTS: 0, P: 0 };
+              const tag = playerGang.get(pname);
+              const pc = playerAgg.get(pname) ?? { name: pname, gang: tag?.name, gang_type: tag?.type ?? null, W: 0, L: 0, D: 0, PTS: 0, P: 0 };
               pc.P += 1;
               if (draw) { pc.D += 1; pc.PTS += 1; }
               else if (won) { pc.W += 1; pc.PTS += 3; }
@@ -111,6 +127,8 @@ function Page() {
         }
         target.set(o.name, {
           name: o.name, top_player: o.top_player ?? undefined,
+          gang: o.kind === "gang" ? undefined : (playerGang.get(o.name)?.name),
+          gang_type: o.kind === "gang" ? undefined : (playerGang.get(o.name)?.type ?? null),
           W: o.wins, L: o.losses, D: o.draws, P: o.played, PTS: o.points,
           manual_rank: o.manual_rank,
         });
@@ -173,18 +191,27 @@ function Page() {
               <table className="w-full text-sm">
                 <thead className="border-b border-border bg-card/40">
                   <tr className="text-left text-xs uppercase tracking-widest text-muted-foreground">
-                    <Th>Rank</Th><Th>Player</Th>
-                    <Th right>Won</Th><Th right>Lost</Th><Th right>Total</Th><Th right>PTS</Th>
+                    <Th>Rank</Th><Th>Gang & Faction</Th><Th>Player</Th>
+                    <Th right>W</Th><Th right>L</Th><Th right>D</Th><Th right>P</Th><Th right>PTS</Th>
                   </tr>
                 </thead>
                 <tbody>
-                  {shooters.length === 0 && <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">No shooters yet.</td></tr>}
+                  {shooters.length === 0 && <tr><td colSpan={8} className="p-6 text-center text-muted-foreground">No shooters yet.</td></tr>}
                   {shooters.map((p, i) => (
                     <tr key={p.name} className="border-b border-border/40 hover:bg-primary/5">
                       <Td><span className="text-lg font-bold">{rankIcon(i)}</span></Td>
+                      <Td>
+                        {p.gang ? (
+                          <span className="inline-flex items-center gap-1.5">
+                            <span className="font-bold">{p.gang}</span>
+                            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30 font-bold">{p.gang_type === "G" ? "GANG" : p.gang_type === "F" ? "FACTION" : "TEAM"}</span>
+                          </span>
+                        ) : <span className="text-muted-foreground">Free agent</span>}
+                      </Td>
                       <Td><span className="font-bold">{p.name}</span></Td>
                       <Td right><span className="text-emerald-400 font-bold">{p.W}</span></Td>
                       <Td right><span className="text-destructive font-bold">{p.L}</span></Td>
+                      <Td right><span className="text-amber-400 font-bold">{p.D}</span></Td>
                       <Td right>{p.P}</Td>
                       <Td right><span className="font-bold text-primary">{p.PTS}</span></Td>
                     </tr>
