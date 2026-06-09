@@ -2549,9 +2549,9 @@ function AnalyticsPanel() {
 
       {/* ROW 7 — Recent Activity | Live Gang Wars | Highlights Hub */}
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
-        <PanelBlock title="RECENT ACTIVITY" accent="sky" onView={() => setActiveTabFromAnalytics(nav, "activity")}>
+        <PanelBlock title="RECENT ACTIVITY" accent="sky" tall onView={() => setActiveTabFromAnalytics(nav, "activity")}>
           {activity.length === 0 && <div className="text-[10px] text-muted-foreground">No activity yet</div>}
-          {activity.slice(0, 3).map((a, i) => (
+          {activity.slice(0, 8).map((a, i) => (
             <button key={i} onClick={() => setActiveTabFromAnalytics(nav, "audit")} className="w-full text-left flex items-start gap-1.5 text-[9px] sm:text-xs py-1 border-b border-border/40 last:border-0 hover:bg-sky-500/10 rounded transition">
               <Sparkles className="h-3 w-3 text-sky-400 shrink-0 mt-0.5" />
               <div className="min-w-0 flex-1">
@@ -2561,6 +2561,7 @@ function AnalyticsPanel() {
             </button>
           ))}
         </PanelBlock>
+        <div className="flex flex-col gap-2 sm:gap-3">
         <PanelBlock title="LIVE GANG WARS" accent="rose" onView={() => nav({ to: "/matches" })}>
           {liveMatches.length === 0 && <div className="text-[10px] text-muted-foreground">No live wars</div>}
           {liveMatches.slice(0, 3).map((m: any) => {
@@ -2575,9 +2576,27 @@ function AnalyticsPanel() {
             );
           })}
         </PanelBlock>
-        <PanelBlock title="HIGHLIGHTS HUB" accent="violet" onView={() => setActiveTabFromAnalytics(nav, "content")}>
+        <PanelBlock title="EVENT COUNTDOWN" compact onView={() => setActiveTabFromAnalytics(nav, "events")}>
+          {event ? (
+            <button onClick={() => setActiveTabFromAnalytics(nav, "events")} className="relative w-full text-left rounded p-1 transition space-y-1 overflow-hidden">
+              {event.banner_url && (
+                <>
+                  <img src={event.banner_url} alt="" className="absolute inset-0 h-full w-full object-cover opacity-70 rounded" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/85 via-background/40 to-background/20 rounded" />
+                </>
+              )}
+              <div className="relative text-[9px] sm:text-xs font-bold text-primary truncate drop-shadow">{event.title}</div>
+              <div className="relative text-[10px] sm:text-sm font-mono text-amber-300 drop-shadow"><Countdown target={event.ends_at ?? event.starts_at} /></div>
+              <div className="relative text-[7px] sm:text-[9px] text-muted-foreground tabular-nums">{(() => { const d = new Date(event.starts_at ?? event.ends_at); const p = (n: number) => String(n).padStart(2, "0"); return `${d.getFullYear()}:${p(d.getMonth()+1)}:${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`; })()}</div>
+            </button>
+          ) : (
+            <div className="text-[10px] text-muted-foreground">No active event</div>
+          )}
+        </PanelBlock>
+        </div>
+        <PanelBlock title="HIGHLIGHTS HUB" accent="violet" tall onView={() => setActiveTabFromAnalytics(nav, "content")}>
           {highlights.length === 0 && <div className="text-[10px] text-muted-foreground">No highlights yet</div>}
-          {highlights.slice(0, 3).map((h) => (
+          {highlights.slice(0, 8).map((h) => (
             <button key={h.id} onClick={() => setActiveTabFromAnalytics(nav, "content")} className="w-full flex items-center gap-1.5 text-[9px] sm:text-xs py-1 border-b border-border/40 last:border-0 hover:bg-violet-500/10 rounded px-1 transition">
               {h.media_type === "video" ? <Play className="h-3 w-3 text-violet-400 shrink-0" /> : <ImageIcon className="h-3 w-3 text-violet-400 shrink-0" />}
               <div className="min-w-0 flex-1 truncate text-left">{h.title}</div>
