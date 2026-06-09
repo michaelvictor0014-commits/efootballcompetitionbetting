@@ -3193,7 +3193,7 @@ function BetTrackerPanel() {
   async function refund(b: any) {
     const ok = await confirm({ title: "Mark ticket as refunded?", description: `Refunds ${Number(b.stake).toLocaleString()} tokens and closes ${b.tracking_id}.`, confirmText: "Refund stake", inputLabel: "Refund reason", inputPlaceholder: "Reason for refund…" });
     if (!ok || typeof ok !== "object") return;
-    const { error } = await supabase.rpc("admin_refund_bet", { _bet_id: b.id, _reason: ok.value || undefined });
+    const { error } = await (supabase as any).rpc("admin_refund_bet", { _bet_id: b.id, _reason: ok.value || undefined });
     if (error) toast.error(error.message); else {
       await logAudit("bet_refund", "bet", b.id, { tracking_id: b.tracking_id, stake: b.stake, user_id: b.user_id, target_user_email: b.profiles?.email, reason: ok.value });
       toast.success("Ticket refunded"); load();
