@@ -69,9 +69,18 @@ function Page() {
       const teamPlayers = new Map<string, string[]>();
       (players ?? []).forEach((p) => { const a = teamPlayers.get(p.team_id) ?? []; a.push(p.name); teamPlayers.set(p.team_id, a); });
       // Map each shooter to their current gang / faction / team tag (if any).
+      // Prefer a real gang/team tag over an auto-created 1-v-1 shooter team (which is named after the shooter).
       const playerGang = new Map<string, { name: string; type: "G" | "F" | null }>();
       (players ?? []).forEach((p: any) => {
-        if (p.team_id && teamMap.get(p.team_id)) playerGang.set(p.name, { name: teamMap.get(p.team_id)!, type: teamTypeMap.get(p.team_id) ?? null });
+        if (!p.team_id) return;
+        const tname = teamMap.get(p.team_id);
+        if (!tname) return;
+        const isSelfTeam = tname.trim().toLowerCase() === String(p.name).trim().toLowerCase();
+        const existing = playerGang.get(p.name);
+        const existingIsSelf = existing ? existing.name.trim().toLowerCase() === String(p.name).trim().toLowerCase() : true;
+        if (!existing || (existingIsSelf && !isSelfTeam)) {
+          playerGang.set(p.name, { name: tname, type: teamTypeMap.get(p.team_id) ?? null });
+        }
       });
 
       const gangAgg = new Map<string, Stats>();
