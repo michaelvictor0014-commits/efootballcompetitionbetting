@@ -1403,11 +1403,36 @@ function FuturesAdminPanel() {
     await supabase.from("odds").update({ value } as any).eq("id", oddId);
     load();
   }
-  async function updateFutureStatus(odd: any, status: string, title?: string, at?: string) {
-    const progress = Array.isArray(odd.future_progress) ? odd.future_progress : [];
-    const entry = { status, title: title || odd.future_next_title || status, at: at ? new Date(at).toISOString() : new Date().toISOString() };
-    await supabase.from("odds").update({ future_status: status, future_next_title: title || null, future_next_at: at ? new Date(at).toISOString() : null, future_progress: [...progress, entry], is_winner: status === "winner" ? true : odd.is_winner } as any).eq("id", odd.id);
+  async function updateFutureStatus(odd: any, status: string, opts: { score?: string; opponent?: string; at?: string } = {}) {
+    const progress = Array.isArray(odd.future_progress) ? [...odd.future_progress] : [];
+    const completed = progress.filter((p: any) => p && p.round != null).length;
+    const round = completed + 1;
+    const entry = {
+      round,
+      status,
+      score: opts.score?.trim() || null,
+      opponent: opts.opponent?.trim() || null,
+      title: `Round ${round}`,
+      at: opts.at ? new Date(opts.at).toISOString() : new Date().toISOString(),
+    };
+    progress.push(entry);
+    const advanced = status === "qualified";
+    const { error } = await supabase.from("odds").update({
+      future_status: status,
+      // After qualifying a round, the contender automatically moves to the next round.
+      future_next_title: advanced ? `Round ${round + 1}` : null,
+      future_next_at: opts.at ? new Date(opts.at).toISOString() : null,
+      future_progress: progress,
+      is_winner: status === "winner" ? true : odd.is_winner,
+    } as any).eq("id", odd.id);
+    if (error) { toast.error(error.message); return; }
     if (["lost", "disqualified"].includes(status)) await loseFutureSelection(odd);
+    await logAudit("future_status_changed", "odd", odd.id, { label: odd.label, status, round, score: entry.score, opponent: entry.opponent });
+    toast.success(
+      status === "qualified" ? `${odd.label} qualified — advanced to Round ${round + 1}`
+        : status === "winner" ? `${odd.label} crowned WINNER`
+        : `${odd.label} ${status} and removed from the event`,
+    );
     load();
   }
   async function loseFutureSelection(odd: any) {
