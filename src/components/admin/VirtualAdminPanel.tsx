@@ -134,7 +134,7 @@ export function VirtualAdminPanel() {
                     </>
                   )}
                   <Button size="sm" variant="ghost" onClick={async () => {
-                    if (!confirm("Delete this round?")) return;
+                    if (!await confirm({ title: "Delete this virtual round?", description: "The round and its betting markets will be permanently removed. Existing user tickets keep their record.", tone: "danger", confirmText: "Delete round" })) return;
                     await supabase.from("markets").delete().eq("match_id", r.id);
                     await supabase.from("matches").delete().eq("id", r.id);
                     toast.success("Deleted");
