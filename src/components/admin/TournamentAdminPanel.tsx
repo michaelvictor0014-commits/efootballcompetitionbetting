@@ -5,11 +5,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Plus, Trash2, Crown, Swords, Wand2 } from "lucide-react";
+import { Trophy, Plus, Trash2, Crown, Swords, Wand2, ArrowUp, ArrowDown, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { TournamentBracket, type TMatch, type TParticipant, type Tournament } from "@/components/TournamentBracket";
+
+/** Upload a bracket image from device storage to a public bucket and return its URL. */
+async function uploadBracketImage(file: File): Promise<string | null> {
+  const ext = file.name.split(".").pop() || "jpg";
+  const path = `tournament-${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage.from("team-logos").upload(path, file, { upsert: true });
+  if (error) { toast.error(error.message); return null; }
+  return supabase.storage.from("team-logos").getPublicUrl(path).data.publicUrl;
+}
 
 function labelFor(matchesInRound: number, j: number) {
   if (matchesInRound === 1) return "FINAL";
