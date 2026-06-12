@@ -1575,7 +1575,7 @@ function FutureOddAdminCard({ odd, disabled, onOdd, onStatus }: { odd: any; disa
       <div className="grid grid-cols-2 gap-1">
         <Button size="sm" variant="outline" disabled={disabled || terminal} onClick={() => act("qualified")}>Qualified</Button>
         <Button size="sm" variant="outline" disabled={disabled || terminal} onClick={() => act("winner")}>Winner</Button>
-        <Button size="sm" variant="destructive" disabled={disabled || terminal} onClick={() => act("lost")}>Lost</Button>
+        <Button size="sm" variant="outline" className="border-amber-500/40 text-amber-300" disabled={disabled || terminal} onClick={() => act("lost")}>Lost (stays in)</Button>
         <Button size="sm" variant="destructive" disabled={disabled || terminal} onClick={() => act("disqualified")}>DQ</Button>
       </div>
       {progress.length > 0 && (
