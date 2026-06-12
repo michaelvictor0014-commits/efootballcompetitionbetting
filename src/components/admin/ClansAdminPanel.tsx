@@ -268,7 +268,7 @@ function PlayersTab() {
             <div className="space-y-2">
               <Input placeholder="Player name" value={edit.name ?? ""} onChange={(e) => setEdit({ ...edit, name: e.target.value })} />
               <Input placeholder="Position (e.g. AWP, IGL)" value={edit.position ?? ""} onChange={(e) => setEdit({ ...edit, position: e.target.value })} />
-              <Input placeholder="Avatar URL (optional)" value={edit.avatar_url ?? ""} onChange={(e) => setEdit({ ...edit, avatar_url: e.target.value })} />
+              <ImageUploadField label="Shooter avatar (upload from device — optional)" bucket="player-avatars" prefix="player" rounded="full" value={edit.avatar_url} onChange={(url) => setEdit({ ...edit, avatar_url: url })} />
               <Select value={edit.team_id ?? "none"} onValueChange={(v) => setEdit({ ...edit, team_id: v === "none" ? null : v })}>
                 <SelectTrigger><SelectValue placeholder="Team" /></SelectTrigger>
                 <SelectContent>
