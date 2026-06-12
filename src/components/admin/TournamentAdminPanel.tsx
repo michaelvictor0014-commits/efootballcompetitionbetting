@@ -5,11 +5,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Plus, Trash2, Crown, Swords, Wand2 } from "lucide-react";
+import { Trophy, Plus, Trash2, Crown, Swords, Wand2, ArrowUp, ArrowDown, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { TournamentBracket, type TMatch, type TParticipant, type Tournament } from "@/components/TournamentBracket";
+
+/** Upload a bracket image from device storage to a public bucket and return its URL. */
+async function uploadBracketImage(file: File): Promise<string | null> {
+  const ext = file.name.split(".").pop() || "jpg";
+  const path = `tournament-${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage.from("team-logos").upload(path, file, { upsert: true });
+  if (error) { toast.error(error.message); return null; }
+  return supabase.storage.from("team-logos").getPublicUrl(path).data.publicUrl;
+}
 
 function labelFor(matchesInRound: number, j: number) {
   if (matchesInRound === 1) return "FINAL";
@@ -40,6 +49,7 @@ export function TournamentAdminPanel() {
   const [eventDate, setEventDate] = useState("");
   const [pName, setPName] = useState("");
   const [pLogo, setPLogo] = useState("");
+  const [pLogoBusy, setPLogoBusy] = useState(false);
 
   // result dialog
   const [resultMatch, setResultMatch] = useState<TMatch | null>(null);
@@ -93,6 +103,16 @@ export function TournamentAdminPanel() {
     if (!sel) return;
     await (supabase as any).from("tournament_participants").delete().eq("id", id);
     loadDetail(sel.id);
+  }
+
+  // Reorder participants — the order IS the bracket seeding/placement used when generating.
+  async function moveParticipant(index: number, dir: -1 | 1) {
+    const other = index + dir;
+    if (!sel || other < 0 || other >= participants.length) return;
+    const arr = [...participants];
+    [arr[index], arr[other]] = [arr[other], arr[index]];
+    setParticipants(arr.map((p, i) => ({ ...p, seed: i + 1 })));
+    await Promise.all(arr.map((p, i) => (supabase as any).from("tournament_participants").update({ seed: i + 1 }).eq("id", p.id)));
   }
 
   async function generateBracket() {
@@ -207,17 +227,38 @@ export function TournamentAdminPanel() {
               <div className="font-bold flex items-center gap-2"><Swords className="h-4 w-4 text-primary" />Participants — {sel.name}</div>
               <Button size="sm" variant="destructive" onClick={deleteTournament}><Trash2 className="h-3 w-3 mr-1" />Delete</Button>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2 items-end">
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-2 items-end">
               <div className="space-y-1"><Label className="text-xs text-muted-foreground">Participant name (player / gang)</Label><Input value={pName} onChange={(e) => setPName(e.target.value)} placeholder="e.g. Marki LM" onKeyDown={(e) => e.key === "Enter" && addParticipant()} /></div>
-              <div className="space-y-1"><Label className="text-xs text-muted-foreground">Logo URL (optional)</Label><Input value={pLogo} onChange={(e) => setPLogo(e.target.value)} placeholder="https://…" /></div>
-              <Button onClick={addParticipant}><Plus className="h-4 w-4" /></Button>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Bracket image (upload — optional)</Label>
+                <div className="flex items-center gap-2">
+                  {pLogo
+                    ? <img src={pLogo} alt="" className="h-9 w-9 rounded object-cover border border-primary/30" />
+                    : <div className="h-9 w-9 rounded bg-primary/15 grid place-items-center text-primary"><ImageIcon className="h-4 w-4" /></div>}
+                  <Input type="file" accept="image/*" className="w-40" disabled={pLogoBusy} onChange={async (e) => {
+                    const f = e.target.files?.[0]; if (!f) return;
+                    setPLogoBusy(true);
+                    const url = await uploadBracketImage(f);
+                    setPLogoBusy(false);
+                    if (url) { setPLogo(url); toast.success("Image uploaded"); }
+                  }} />
+                </div>
+              </div>
+              <Button onClick={addParticipant} disabled={pLogoBusy}><Plus className="h-4 w-4" /></Button>
             </div>
-            <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto">
+            <p className="text-[11px] text-muted-foreground">The order below is the bracket placement — use the arrows to decide who faces who. Pairs are formed top-to-bottom (1 vs 2, 3 vs 4, …) when you generate the bracket.</p>
+            <div className="flex flex-col gap-1.5 max-h-44 overflow-y-auto pr-1">
               {participants.map((p, i) => (
-                <Badge key={p.id} variant="outline" className="gap-1 py-1">
-                  <span className="text-[10px] text-muted-foreground">{i + 1}.</span>{p.name}
-                  <button onClick={() => removeParticipant(p.id)} className="ml-1 text-destructive"><Trash2 className="h-3 w-3" /></button>
-                </Badge>
+                <div key={p.id} className="flex items-center gap-2 rounded-md border border-primary/20 bg-card/60 px-2 py-1">
+                  <span className="text-[10px] text-muted-foreground w-5 text-right">{i + 1}.</span>
+                  {p.logo_url
+                    ? <img src={p.logo_url} alt="" className="h-7 w-7 rounded object-cover border border-primary/30" />
+                    : <div className="h-7 w-7 rounded bg-primary/15 grid place-items-center text-[10px] font-bold text-primary">{p.name.charAt(0).toUpperCase()}</div>}
+                  <span className="min-w-0 flex-1 truncate text-sm font-semibold">{p.name}</span>
+                  <button onClick={() => moveParticipant(i, -1)} disabled={i === 0} className="text-muted-foreground disabled:opacity-30 hover:text-primary"><ArrowUp className="h-3.5 w-3.5" /></button>
+                  <button onClick={() => moveParticipant(i, 1)} disabled={i === participants.length - 1} className="text-muted-foreground disabled:opacity-30 hover:text-primary"><ArrowDown className="h-3.5 w-3.5" /></button>
+                  <button onClick={() => removeParticipant(p.id)} className="text-destructive"><Trash2 className="h-3.5 w-3.5" /></button>
+                </div>
               ))}
               {participants.length === 0 && <span className="text-xs text-muted-foreground">No participants yet.</span>}
             </div>

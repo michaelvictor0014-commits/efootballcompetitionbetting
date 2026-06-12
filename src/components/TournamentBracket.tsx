@@ -167,9 +167,9 @@ export function TournamentBracket({
                   }}
                 >
                   {m.label && <div className="absolute -top-[15px] left-2 text-[10px] font-black tracking-widest text-amber-300">{m.label}</div>}
-                  <Side name={a?.name} win={!!winA} score={m.score_a} dimmed={done && !winA} />
+                  <Side name={a?.name} logo={a?.logo_url} win={!!winA} score={m.score_a} dimmed={done && !winA} />
                   <div className="mx-2 h-px bg-amber-400/20" />
-                  <Side name={b?.name} win={!!winB} score={m.score_b} dimmed={done && !winB} />
+                  <Side name={b?.name} logo={b?.logo_url} win={!!winB} score={m.score_b} dimmed={done && !winB} />
                 </button>
               );
             }),
@@ -218,10 +218,15 @@ export function TournamentBracket({
   );
 }
 
-function Side({ name, win, score, dimmed }: { name?: string | null; win: boolean; score: number | null; dimmed: boolean }) {
+function Side({ name, logo, win, score, dimmed }: { name?: string | null; logo?: string | null; win: boolean; score: number | null; dimmed: boolean }) {
   return (
     <div className={`flex items-center justify-between px-2.5 h-[29px] ${dimmed ? "opacity-40" : ""}`}>
-      <span className={`text-[13px] font-bold truncate ${win ? "text-amber-300" : "text-amber-50/90"}`}>{name ?? "—"}</span>
+      <span className="flex items-center gap-1.5 min-w-0">
+        {logo
+          ? <img src={logo} alt="" className="h-4 w-4 rounded-sm object-cover border border-amber-400/30 shrink-0" />
+          : name ? <span className="h-4 w-4 rounded-sm bg-amber-400/15 border border-amber-400/30 grid place-items-center text-[8px] font-bold text-amber-300 shrink-0">{name.charAt(0).toUpperCase()}</span> : null}
+        <span className={`text-[13px] font-bold truncate ${win ? "text-amber-300" : "text-amber-50/90"}`}>{name ?? "—"}</span>
+      </span>
       {score != null && <span className={`text-[13px] font-black tabular-nums ${win ? "text-amber-300" : "text-amber-50/60"}`}>{score}</span>}
     </div>
   );

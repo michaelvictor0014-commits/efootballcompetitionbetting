@@ -1443,7 +1443,9 @@ function FuturesAdminPanel() {
       at: opts.at ? new Date(opts.at).toISOString() : new Date().toISOString(),
     };
     progress.push(entry);
-    const advanced = status === "qualified";
+    // A "lost" round no longer eliminates the contender — they advance to the next round
+    // and the loss is shown on the bet voucher progress. Only "disqualified" removes them.
+    const advanced = status === "qualified" || status === "lost";
     const { error } = await supabase.from("odds").update({
       future_status: status,
       // After qualifying a round, the contender automatically moves to the next round.
@@ -1453,12 +1455,14 @@ function FuturesAdminPanel() {
       is_winner: status === "winner" ? true : odd.is_winner,
     } as any).eq("id", odd.id);
     if (error) { toast.error(error.message); return; }
-    if (["lost", "disqualified"].includes(status)) await loseFutureSelection(odd);
+    // Only a disqualification settles open tickets as lost. A "lost" round keeps tickets open.
+    if (status === "disqualified") await loseFutureSelection(odd);
     await logAudit("future_status_changed", "odd", odd.id, { label: odd.label, status, round, score: entry.score, opponent: entry.opponent });
     toast.success(
       status === "qualified" ? `${odd.label} qualified — advanced to Round ${round + 1}`
         : status === "winner" ? `${odd.label} crowned WINNER`
-        : `${odd.label} ${status} and removed from the event`,
+        : status === "lost" ? `${odd.label} lost Round ${round} — still in, advanced to Round ${round + 1}`
+        : `${odd.label} disqualified and removed from the event`,
     );
     load();
   }
@@ -1529,7 +1533,8 @@ function FutureOddAdminCard({ odd, disabled, onOdd, onStatus }: { odd: any; disa
   const progress = Array.isArray(odd.future_progress) ? odd.future_progress : [];
   const completed = progress.filter((p: any) => p && p.round != null).length;
   const currentRound = completed + 1;
-  const terminal = ["lost", "disqualified", "settled", "winner"].includes(status);
+  // "lost" is NOT terminal — the contender stays in the event and advances a round.
+  const terminal = ["disqualified", "settled", "winner"].includes(status);
 
   async function act(next: string) {
     const title =
@@ -1541,6 +1546,8 @@ function FutureOddAdminCard({ odd, disabled, onOdd, onStatus }: { odd: any; disa
         ? `Records Round ${currentRound}${score.trim() ? ` · ${score.trim()}` : ""}${opponent.trim() ? ` (beat ${opponent.trim()})` : ""} and automatically advances them to Round ${currentRound + 1}.`
       : next === "winner"
         ? `Settles them as the tournament champion. Winning tickets update accordingly.`
+        : next === "lost"
+        ? `Records Round ${currentRound}${score.trim() ? ` · ${score.trim()}` : ""}${opponent.trim() ? ` (lost to ${opponent.trim()})` : ""}. They STAY in the event and advance to Round ${currentRound + 1}. The loss shows on bet vouchers but tickets stay open — they only lose if disqualified.`
         : `Records Round ${currentRound}${score.trim() ? ` · ${score.trim()}` : ""}${opponent.trim() ? ` (lost to ${opponent.trim()})` : ""}. They are disqualified and removed from the event, and all open tickets on this pick are settled as lost.`;
     const ok = await confirm({ title, description, confirmText: "Confirm" });
     if (!ok) return;
@@ -1568,7 +1575,7 @@ function FutureOddAdminCard({ odd, disabled, onOdd, onStatus }: { odd: any; disa
       <div className="grid grid-cols-2 gap-1">
         <Button size="sm" variant="outline" disabled={disabled || terminal} onClick={() => act("qualified")}>Qualified</Button>
         <Button size="sm" variant="outline" disabled={disabled || terminal} onClick={() => act("winner")}>Winner</Button>
-        <Button size="sm" variant="destructive" disabled={disabled || terminal} onClick={() => act("lost")}>Lost</Button>
+        <Button size="sm" variant="outline" className="border-amber-500/40 text-amber-300" disabled={disabled || terminal} onClick={() => act("lost")}>Lost (stays in)</Button>
         <Button size="sm" variant="destructive" disabled={disabled || terminal} onClick={() => act("disqualified")}>DQ</Button>
       </div>
       {progress.length > 0 && (
@@ -1815,9 +1822,9 @@ function EventsPanel() {
     let banner_url: string | null = null;
     if (draft.banner) {
       const path = `event-${crypto.randomUUID()}.${draft.banner.name.split(".").pop()}`;
-      const { error } = await supabase.storage.from("event-banners").upload(path, draft.banner);
+      const { error } = await supabase.storage.from("ads").upload(path, draft.banner);
       if (error) { toast.error(error.message); return; }
-      banner_url = supabase.storage.from("event-banners").getPublicUrl(path).data.publicUrl;
+      banner_url = supabase.storage.from("ads").getPublicUrl(path).data.publicUrl;
     }
     const { error } = await supabase.from("events").insert({ title: draft.title, description: draft.description, banner_url, ends_at: new Date(draft.ends_at).toISOString() });
     if (error) toast.error(error.message);
@@ -3013,6 +3020,7 @@ function AnalyticsPanel() {
                 { i: BarChart3, l: "Reports", t: "reports" },
                 { i: AlertTriangle, l: "Risk", t: "risk" },
                 { i: Trophy, l: "Seasons", t: "seasons" },
+                { i: Trophy, l: "Tournaments", t: "tournaments" },
                 { i: SettingsIcon, l: "Settings", t: "settings" },
                 { i: Sparkles, l: "Spotlights", t: "spotlights" },
                 { i: Sparkles, l: "Streak/Push", t: "streakpush" },

@@ -14,6 +14,45 @@ type Team = { id: string; name: string; logo_url: string | null; gang_type: "G" 
 type Player = { id: string; team_id: string | null; name: string; position: string | null; avatar_url: string | null; is_substitute: boolean | null };
 type Gang = { gang_name: string; gang_type: "G" | "F" | null; members: number };
 
+/** Uploads an image picked from device storage to a public bucket and returns its URL. */
+async function uploadImage(bucket: string, file: File, prefix: string): Promise<string | null> {
+  const ext = file.name.split(".").pop() || "jpg";
+  const path = `${prefix}-${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: true });
+  if (error) { toast.error(error.message); return null; }
+  return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
+}
+
+/** Image picker field: choose a photo from the phone/computer instead of pasting a URL. */
+function ImageUploadField({ label, bucket, prefix, value, onChange, rounded }: {
+  label: string; bucket: string; prefix: string; value: string | null | undefined;
+  onChange: (url: string | null) => void; rounded?: "full" | "md";
+}) {
+  const [busy, setBusy] = useState(false);
+  const r = rounded === "full" ? "rounded-full" : "rounded";
+  return (
+    <div className="space-y-1">
+      <label className="text-xs text-muted-foreground">{label}</label>
+      <div className="flex items-center gap-2">
+        {value
+          ? <img src={value} alt="" className={`h-12 w-12 object-cover border border-primary/30 ${r}`} />
+          : <div className={`h-12 w-12 grid place-items-center bg-primary/15 text-primary text-xs font-bold border border-primary/20 ${r}`}>IMG</div>}
+        <div className="flex-1 space-y-1">
+          <Input type="file" accept="image/*" disabled={busy} onChange={async (e) => {
+            const f = e.target.files?.[0]; if (!f) return;
+            setBusy(true);
+            const url = await uploadImage(bucket, f, prefix);
+            setBusy(false);
+            if (url) { onChange(url); toast.success("Image uploaded"); }
+          }} />
+          {value && <button type="button" className="text-[10px] text-destructive" onClick={() => onChange(null)}>Remove image</button>}
+          {busy && <div className="text-[10px] text-muted-foreground">Uploading…</div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function ClansAdminPanel() {
   return (
     <Card className="border-primary/30 bg-card/90 p-4">
@@ -137,7 +176,7 @@ function TeamsTab() {
             <DialogHeader><DialogTitle>{edit.id ? "Edit team" : "New team"}</DialogTitle></DialogHeader>
             <div className="space-y-2">
               <Input placeholder="Team name" value={edit.name ?? ""} onChange={(e) => setEdit({ ...edit, name: e.target.value })} />
-              <Input placeholder="Logo URL (optional)" value={edit.logo_url ?? ""} onChange={(e) => setEdit({ ...edit, logo_url: e.target.value })} />
+              <ImageUploadField label="Team logo (upload from device — optional)" bucket="team-logos" prefix="team" rounded="md" value={edit.logo_url} onChange={(url) => setEdit({ ...edit, logo_url: url })} />
               <Select value={(edit.gang_type as any) ?? "none"} onValueChange={(v) => setEdit({ ...edit, gang_type: v === "none" ? null : (v as any) })}>
                 <SelectTrigger><SelectValue placeholder="Type" /></SelectTrigger>
                 <SelectContent>
@@ -229,7 +268,7 @@ function PlayersTab() {
             <div className="space-y-2">
               <Input placeholder="Player name" value={edit.name ?? ""} onChange={(e) => setEdit({ ...edit, name: e.target.value })} />
               <Input placeholder="Position (e.g. AWP, IGL)" value={edit.position ?? ""} onChange={(e) => setEdit({ ...edit, position: e.target.value })} />
-              <Input placeholder="Avatar URL (optional)" value={edit.avatar_url ?? ""} onChange={(e) => setEdit({ ...edit, avatar_url: e.target.value })} />
+              <ImageUploadField label="Shooter avatar (upload from device — optional)" bucket="player-avatars" prefix="player" rounded="full" value={edit.avatar_url} onChange={(url) => setEdit({ ...edit, avatar_url: url })} />
               <Select value={edit.team_id ?? "none"} onValueChange={(v) => setEdit({ ...edit, team_id: v === "none" ? null : v })}>
                 <SelectTrigger><SelectValue placeholder="Team" /></SelectTrigger>
                 <SelectContent>
