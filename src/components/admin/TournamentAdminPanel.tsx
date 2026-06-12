@@ -227,17 +227,38 @@ export function TournamentAdminPanel() {
               <div className="font-bold flex items-center gap-2"><Swords className="h-4 w-4 text-primary" />Participants — {sel.name}</div>
               <Button size="sm" variant="destructive" onClick={deleteTournament}><Trash2 className="h-3 w-3 mr-1" />Delete</Button>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2 items-end">
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-2 items-end">
               <div className="space-y-1"><Label className="text-xs text-muted-foreground">Participant name (player / gang)</Label><Input value={pName} onChange={(e) => setPName(e.target.value)} placeholder="e.g. Marki LM" onKeyDown={(e) => e.key === "Enter" && addParticipant()} /></div>
-              <div className="space-y-1"><Label className="text-xs text-muted-foreground">Logo URL (optional)</Label><Input value={pLogo} onChange={(e) => setPLogo(e.target.value)} placeholder="https://…" /></div>
-              <Button onClick={addParticipant}><Plus className="h-4 w-4" /></Button>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Bracket image (upload — optional)</Label>
+                <div className="flex items-center gap-2">
+                  {pLogo
+                    ? <img src={pLogo} alt="" className="h-9 w-9 rounded object-cover border border-primary/30" />
+                    : <div className="h-9 w-9 rounded bg-primary/15 grid place-items-center text-primary"><ImageIcon className="h-4 w-4" /></div>}
+                  <Input type="file" accept="image/*" className="w-40" disabled={pLogoBusy} onChange={async (e) => {
+                    const f = e.target.files?.[0]; if (!f) return;
+                    setPLogoBusy(true);
+                    const url = await uploadBracketImage(f);
+                    setPLogoBusy(false);
+                    if (url) { setPLogo(url); toast.success("Image uploaded"); }
+                  }} />
+                </div>
+              </div>
+              <Button onClick={addParticipant} disabled={pLogoBusy}><Plus className="h-4 w-4" /></Button>
             </div>
-            <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto">
+            <p className="text-[11px] text-muted-foreground">The order below is the bracket placement — use the arrows to decide who faces who. Pairs are formed top-to-bottom (1 vs 2, 3 vs 4, …) when you generate the bracket.</p>
+            <div className="flex flex-col gap-1.5 max-h-44 overflow-y-auto pr-1">
               {participants.map((p, i) => (
-                <Badge key={p.id} variant="outline" className="gap-1 py-1">
-                  <span className="text-[10px] text-muted-foreground">{i + 1}.</span>{p.name}
-                  <button onClick={() => removeParticipant(p.id)} className="ml-1 text-destructive"><Trash2 className="h-3 w-3" /></button>
-                </Badge>
+                <div key={p.id} className="flex items-center gap-2 rounded-md border border-primary/20 bg-card/60 px-2 py-1">
+                  <span className="text-[10px] text-muted-foreground w-5 text-right">{i + 1}.</span>
+                  {p.logo_url
+                    ? <img src={p.logo_url} alt="" className="h-7 w-7 rounded object-cover border border-primary/30" />
+                    : <div className="h-7 w-7 rounded bg-primary/15 grid place-items-center text-[10px] font-bold text-primary">{p.name.charAt(0).toUpperCase()}</div>}
+                  <span className="min-w-0 flex-1 truncate text-sm font-semibold">{p.name}</span>
+                  <button onClick={() => moveParticipant(i, -1)} disabled={i === 0} className="text-muted-foreground disabled:opacity-30 hover:text-primary"><ArrowUp className="h-3.5 w-3.5" /></button>
+                  <button onClick={() => moveParticipant(i, 1)} disabled={i === participants.length - 1} className="text-muted-foreground disabled:opacity-30 hover:text-primary"><ArrowDown className="h-3.5 w-3.5" /></button>
+                  <button onClick={() => removeParticipant(p.id)} className="text-destructive"><Trash2 className="h-3.5 w-3.5" /></button>
+                </div>
               ))}
               {participants.length === 0 && <span className="text-xs text-muted-foreground">No participants yet.</span>}
             </div>
