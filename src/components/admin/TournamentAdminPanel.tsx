@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Plus, Trash2, Crown, Swords, Wand2, ArrowUp, ArrowDown, ImageIcon } from "lucide-react";
+import { Trophy, Plus, Trash2, Crown, Swords, Wand2, ArrowUp, ArrowDown, ImageIcon, Search, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useConfirm } from "@/components/ConfirmDialog";
@@ -50,6 +50,7 @@ export function TournamentAdminPanel() {
   const [pName, setPName] = useState("");
   const [pLogo, setPLogo] = useState("");
   const [pLogoBusy, setPLogoBusy] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(""); // NEW: search state
 
   // result dialog
   const [resultMatch, setResultMatch] = useState<TMatch | null>(null);
@@ -58,6 +59,12 @@ export function TournamentAdminPanel() {
 
   const sel = useMemo(() => tournaments.find((t) => t.id === selId) ?? null, [tournaments, selId]);
   const partMap = useMemo(() => Object.fromEntries(participants.map((p) => [p.id, p])), [participants]);
+
+  // Filter participants by search query
+  const filteredParticipants = useMemo(
+    () => participants.filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase())),
+    [participants, searchQuery]
+  );
 
   async function loadTournaments() {
     const { data } = await (supabase as any).from("tournaments").select("*").order("created_at", { ascending: false });
@@ -120,7 +127,7 @@ export function TournamentAdminPanel() {
     if (participants.length < 2) { toast.error("Add at least 2 participants"); return; }
     const ok = await confirm({
       title: "Generate the knockout bracket?",
-      description: `This builds a single-elimination bracket for ${participants.length} participant${participants.length === 1 ? "" : "s"}. Any existing bracket matches for this tournament will be replaced. Empty slots become byes you can resolve manually.`,
+      description: `This builds a single-elimination bracket for ${participants.length} participant${participants.length === 1 ? "" : "s"}. Any existing bracket matches for this tournament will be replaced.`,
       confirmText: "Generate bracket",
     });
     if (!ok) return;
@@ -166,7 +173,7 @@ export function TournamentAdminPanel() {
 
   async function deleteTournament() {
     if (!sel) return;
-    const ok = await confirm({ title: "Delete this tournament?", description: "The whole bracket, participants and results will be permanently removed.", tone: "danger", confirmText: "Delete tournament" });
+    const ok = await confirm({ title: "Delete this tournament?", description: "The whole bracket, participants and results will be permanently removed.", confirmText: "Delete tournament" });
     if (!ok) return;
     await (supabase as any).from("tournaments").delete().eq("id", sel.id);
     setSelId(null);
@@ -202,8 +209,8 @@ export function TournamentAdminPanel() {
       <div className="grid lg:grid-cols-[380px_1fr] gap-4">
         <Card className="glass-strong p-4 space-y-3">
           <div className="font-bold flex items-center gap-2"><Trophy className="h-4 w-4 text-primary" />Create Tournament</div>
-          <div className="space-y-1"><Label className="text-xs text-muted-foreground">Tournament name (words, e.g. "Lomita Shooters League")</Label><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Lomita Shooters League" /></div>
-          <div className="space-y-1"><Label className="text-xs text-muted-foreground">Tagline (short slogan)</Label><Input value={tagline} onChange={(e) => setTagline(e.target.value)} placeholder="ONE LEAGUE. NO MERCY." /></div>
+          <div className="space-y-1"><Label className="text-xs text-muted-foreground">Tournament name (words, e.g. "Lomita Shooters League")</Label><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Shotgun Showdown" /></div>
+          <div className="space-y-1"><Label className="text-xs text-muted-foreground">Tagline (short slogan)</Label><Input value={tagline} onChange={(e) => setTagline(e.target.value)} placeholder="e.g. ONE LEAGUE. NO MERCY. RESPECT THE GAME." /></div>
           <div className="space-y-1"><Label className="text-xs text-muted-foreground">Event date (calendar)</Label><Input type="date" value={eventDate} onChange={(e) => setEventDate(e.target.value)} /></div>
           <Button className="btn-luxury w-full" onClick={createTournament}><Plus className="h-4 w-4 mr-1" />Create Tournament</Button>
 
@@ -246,21 +253,52 @@ export function TournamentAdminPanel() {
               </div>
               <Button onClick={addParticipant} disabled={pLogoBusy}><Plus className="h-4 w-4" /></Button>
             </div>
-            <p className="text-[11px] text-muted-foreground">The order below is the bracket placement — use the arrows to decide who faces who. Pairs are formed top-to-bottom (1 vs 2, 3 vs 4, …) when you generate the bracket.</p>
+            
+            {/* Search bar for shooters */}
+            <div className="relative">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search shooters..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 pr-8"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+
+            <p className="text-[11px] text-muted-foreground">The order below is the bracket placement — use the arrows to decide who faces who. Pairs are formed top-to-bottom (1 vs 2, 3 vs 4, …) when you generate the bracket.
+              {searchQuery && ` (showing ${filteredParticipants.length} of ${participants.length})`}
+            </p>
             <div className="flex flex-col gap-1.5 max-h-44 overflow-y-auto pr-1">
-              {participants.map((p, i) => (
-                <div key={p.id} className="flex items-center gap-2 rounded-md border border-primary/20 bg-card/60 px-2 py-1">
-                  <span className="text-[10px] text-muted-foreground w-5 text-right">{i + 1}.</span>
-                  {p.logo_url
-                    ? <img src={p.logo_url} alt="" className="h-7 w-7 rounded object-cover border border-primary/30" />
-                    : <div className="h-7 w-7 rounded bg-primary/15 grid place-items-center text-[10px] font-bold text-primary">{p.name.charAt(0).toUpperCase()}</div>}
-                  <span className="min-w-0 flex-1 truncate text-sm font-semibold">{p.name}</span>
-                  <button onClick={() => moveParticipant(i, -1)} disabled={i === 0} className="text-muted-foreground disabled:opacity-30 hover:text-primary"><ArrowUp className="h-3.5 w-3.5" /></button>
-                  <button onClick={() => moveParticipant(i, 1)} disabled={i === participants.length - 1} className="text-muted-foreground disabled:opacity-30 hover:text-primary"><ArrowDown className="h-3.5 w-3.5" /></button>
-                  <button onClick={() => removeParticipant(p.id)} className="text-destructive"><Trash2 className="h-3.5 w-3.5" /></button>
-                </div>
-              ))}
-              {participants.length === 0 && <span className="text-xs text-muted-foreground">No participants yet.</span>}
+              {filteredParticipants.length > 0 ? (
+                filteredParticipants.map((p, idx) => {
+                  const originalIndex = participants.findIndex((orig) => orig.id === p.id);
+                  return (
+                    <div key={p.id} className="flex items-center gap-2 rounded-md border border-primary/20 bg-card/60 px-2 py-1">
+                      <span className="text-[10px] text-muted-foreground w-5 text-right">{originalIndex + 1}.</span>
+                      {p.logo_url
+                        ? <img src={p.logo_url} alt="" className="h-7 w-7 rounded object-cover border border-primary/30" />
+                        : <div className="h-7 w-7 rounded bg-primary/15 grid place-items-center text-[10px] font-bold text-primary">{p.name.charAt(0).toUpperCase()}</div>}
+                      <span className="min-w-0 flex-1 truncate text-sm font-semibold">{p.name}</span>
+                      <button onClick={() => moveParticipant(originalIndex, -1)} disabled={originalIndex === 0} className="text-muted-foreground disabled:opacity-30 hover:text-primary"><ArrowUp className="h-3.5 w-3.5" /></button>
+                      <button onClick={() => moveParticipant(originalIndex, 1)} disabled={originalIndex === participants.length - 1} className="text-muted-foreground disabled:opacity-30 hover:text-primary"><ArrowDown className="h-3.5 w-3.5" /></button>
+                      <button onClick={() => removeParticipant(p.id)} className="text-destructive"><Trash2 className="h-3.5 w-3.5" /></button>
+                    </div>
+                  );
+                })
+              ) : searchQuery ? (
+                <span className="text-xs text-muted-foreground text-center py-4">No shooters found matching "{searchQuery}"</span>
+              ) : (
+                <span className="text-xs text-muted-foreground">No participants yet.</span>
+              )}
             </div>
             <div className="flex flex-wrap gap-2 items-center pt-1">
               <Button className="btn-luxury" onClick={generateBracket}><Wand2 className="h-4 w-4 mr-1" />Generate / Rebuild Bracket</Button>
