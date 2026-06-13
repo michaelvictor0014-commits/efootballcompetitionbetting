@@ -388,7 +388,7 @@ function UsersPanel() {
   }
 
   const filtered = useMemo(() => {
-    let out = users.filter((u) => !q || u.full_name?.toLowerCase().includes(q.toLowerCase()) || u.email?.toLowerCase().includes(q.toLowerCase()) || u.gang_name?.toLowerCase().includes(q.toLowerCase()));
+    let out = users.filter((u) => !q || u.full_name?.toLowerCase().includes(q.toLowerCase()) || u.email?.toLowerCase().includes(q.toLowerCase()) || u.gang_name?.toLowerCase().includes(q.toLowerCase()) || u.discord_username?.toLowerCase().includes(q.toLowerCase()) || u.discord_full_name?.toLowerCase().includes(q.toLowerCase()));
     if (filterRole !== "all") out = out.filter((u) => (rolesByUser[u.id] ?? []).includes(filterRole));
     if (filterStatus === "banned") out = out.filter((u) => u.is_banned);
     if (filterStatus === "muted") out = out.filter((u) => u.is_muted);
@@ -453,7 +453,7 @@ function UsersPanel() {
         <div className="relative md:col-span-1">
           <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-primary/70" />
           <Input
-            placeholder="Search name, email, gang…"
+            placeholder="Search name, email, gang, Discord…"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             className="pl-9 bg-background/40 border-primary/25 focus-visible:ring-primary/60"
@@ -537,6 +537,11 @@ function UsersPanel() {
                   </div>
                   <div className="text-[11px] text-muted-foreground truncate">{u.email}</div>
                   {u.phone && <div className="text-[10px] text-muted-foreground truncate">📞 {u.phone}</div>}
+                  {(u.discord_username || u.discord_full_name) && (
+                    <div className="text-[10px] text-[#5865F2] truncate" title="Discord">
+                      🎮 {u.discord_username || "—"}{u.discord_full_name && u.discord_username ? ` · ${u.discord_full_name}` : (u.discord_full_name ?? "")}
+                    </div>
+                  )}
                   <div className="flex flex-wrap gap-1 mt-1">
                     {kycByUser[u.id]
                       ? <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold border border-emerald-400/60 text-emerald-300 bg-emerald-500/10">VERIFIED</span>
@@ -665,6 +670,7 @@ function UserEditDialog({ user, roles, onClose }: { user: any; roles: string[]; 
   async function saveProfile() {
     const { error } = await supabase.from("profiles").update({
       full_name: form.full_name, phone: form.phone, discord_username: form.discord_username,
+      discord_full_name: form.discord_full_name,
       country: form.country, gang_name: form.gang_name, gang_type: form.gang_type,
     }).eq("id", user.id);
     if (error) toast.error(error.message); else { toast.success("Saved"); logAudit("update_profile", "user", user.id); }
@@ -781,6 +787,9 @@ function UserEditDialog({ user, roles, onClose }: { user: any; roles: string[]; 
               </FieldLuxe>
               <FieldLuxe label="Discord">
                 <Input value={form.discord_username ?? ""} onChange={(e) => setForm({ ...form, discord_username: e.target.value })} />
+              </FieldLuxe>
+              <FieldLuxe label="Discord full name">
+                <Input value={form.discord_full_name ?? ""} onChange={(e) => setForm({ ...form, discord_full_name: e.target.value })} />
               </FieldLuxe>
               <FieldLuxe label="Country">
                 <Input value={form.country ?? ""} onChange={(e) => setForm({ ...form, country: e.target.value })} />

@@ -2811,6 +2811,8 @@ export type Database = {
         Returns: {
           avatar_url: string
           created_at: string
+          discord_full_name: string
+          discord_username: string
           email: string
           email_confirmed: boolean
           full_name: string
