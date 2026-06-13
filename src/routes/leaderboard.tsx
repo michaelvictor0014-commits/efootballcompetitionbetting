@@ -52,8 +52,6 @@ function Page() {
       const { gangs, shooters } = await loadStandings();
       setGangs(gangs);
       setShooters(shooters);
-      const { data: s } = await supabase.from("app_settings").select("leaderboard_header_url").eq("id", 1).maybeSingle();
-      setHeaderUrl((s as any)?.leaderboard_header_url ?? null);
     };
     run();
     const ch = supabase
