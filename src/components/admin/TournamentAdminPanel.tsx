@@ -76,6 +76,8 @@ export function TournamentAdminPanel() {
     if (!selId && data?.length) setSelId(data[0].id);
     const { data: fm } = await (supabase as any).from("matches").select("id,name").eq("match_kind", "future").eq("is_archived", false).order("created_at", { ascending: false });
     setFutureMatches(fm ?? []);
+    const { data: lm } = await (supabase as any).from("matches").select("id,name,home_score,away_score,status").eq("is_archived", false).eq("is_virtual", false).order("start_time", { ascending: false }).limit(300);
+    setLinkableMatches(lm ?? []);
     const [{ data: pls }, { data: tms }] = await Promise.all([
       supabase.from("players").select("id,name,avatar_url").order("name"),
       supabase.from("teams").select("id,name,logo_url").order("name"),
