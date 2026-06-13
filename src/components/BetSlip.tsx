@@ -202,7 +202,13 @@ function BetSlipDrawer({ open, onClose }: { open: boolean; onClose: () => void }
         </SheetHeader>
 
         {placed ? (
-          <PlacedPreview bet={placed} onView={() => { closeAll(); nav({ to: "/ticket/$id", params: { id: placed.id } }); }} onClose={closeAll} />
+          <PlacedPreview
+            bet={placed}
+            allowAgain={allowRebet}
+            onAgain={() => { setPlaced(null); onClose(); }}
+            onView={() => { closeAll(); nav({ to: "/ticket/$id", params: { id: placed.id } }); }}
+            onClose={closeAll}
+          />
         ) : (
         <div className="flex min-h-0 flex-col pb-[calc(env(safe-area-inset-bottom)+1rem)]">
         <div className="px-6 mt-4 space-y-3 max-h-none overflow-visible pr-4">
