@@ -182,7 +182,7 @@ export function TournamentBracket({
                   className={`absolute rounded-lg border text-left transition-all ${onMatchClick ? "cursor-pointer hover:border-amber-300 hover:shadow-[0_0_18px_rgba(212,175,55,0.35)]" : "cursor-default"} ${done ? "border-amber-400/60" : "border-amber-400/25"}`}
                   style={{
                     left: cardLeft(ri), top: y - CARD_H / 2, width: cardW, height: CARD_H,
-                    background: "linear-gradient(160deg, rgba(25,22,10,0.95), rgba(8,8,8,0.95))",
+                    background: "linear-gradient(160deg, rgba(10,30,18,0.95), rgba(4,10,6,0.96))",
                   }}
                 >
                   {m.label && <div className="absolute -top-[15px] left-2 text-[10px] font-black tracking-widest text-amber-300">{m.label}</div>}
@@ -193,6 +193,17 @@ export function TournamentBracket({
               );
             }),
           )}
+
+          {/* seed numbers for the opening round */}
+          {rounds[0]?.map((_, j) => {
+            const y = centers[0][j];
+            return (
+              <div key={`seed-${j}`}>
+                <SeedBadge n={2 * j + 1} cy={y - CARD_H / 4} />
+                <SeedBadge n={2 * j + 2} cy={y + CARD_H / 4} />
+              </div>
+            );
+          })}
 
           {/* champion box */}
           <div
