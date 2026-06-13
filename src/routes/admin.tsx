@@ -3262,6 +3262,10 @@ function SettingsPanel() {
         <p className="text-[10px] text-muted-foreground">Bets whose potential payout exceeds the cap are automatically clamped.</p>
       </SettingsSection>
 
+      <SettingsSection icon={Ticket} title="Re-bet" subtitle="Let members place another bet right after a successful placement." right={<Switch checked={s.allow_rebet !== false} onCheckedChange={(v) => setS({ ...s, allow_rebet: v })} />}>
+        <p className="text-[10px] text-muted-foreground">When on, a “Place another bet” action appears after a ticket is placed (real, virtual and seasonal/futures markets), so users can quickly pick another selection. When off, the slip closes to the placed-ticket screen.</p>
+      </SettingsSection>
+
       <SettingsSection icon={Sparkles} title="Brand" subtitle="Tagline shown across landing surfaces.">
         <FieldLuxe label="Hero tagline"><Input value={s.hero_tagline ?? ""} onChange={(e) => setS({ ...s, hero_tagline: e.target.value })} placeholder="Season 4 · Live" /></FieldLuxe>
       </SettingsSection>
