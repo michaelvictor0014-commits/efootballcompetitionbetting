@@ -78,7 +78,7 @@ export function TournamentBracket({
   }, [matches]);
 
   const { rounds, centers, bracketH, canvasW } = layout;
-  const totalH = HEADER_H + bracketH + FOOTER_H;
+  const totalH = HEADER_H + 26 + bracketH + FOOTER_H;
   const champion = tournament.champion_id ? participants[tournament.champion_id] : null;
 
   const cardLeft = (ri: number) => SIDE_PAD + ri * COL_W + CARD_PAD;
