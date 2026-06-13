@@ -163,7 +163,11 @@ function FuturesAdminPanel() {
         </div>
 
         <Textarea rows={8} value={draft.options} onChange={(e) => setDraft({ ...draft, options: e.target.value })} placeholder={"One option per line:\nGang A | 5.50 | Gang | image-url\nTop Shooter | 8.00 | Shooter | image-url\nBest Clan | 10.00 | Faction / Clan | image-url"} />
-        <div className="grid grid-cols-3 gap-2"><Input type="number" min={1} value={draft.min_stake} onChange={(e) => setDraft({ ...draft, min_stake: Number(e.target.value) })} /><Input type="number" min={1} value={draft.max_payout} onChange={(e) => setDraft({ ...draft, max_payout: Number(e.target.value) })} /><Input type="number" min={1} max={3} value={draft.max_selections} onChange={(e) => setDraft({ ...draft, max_selections: Math.min(3, Math.max(1, Number(e.target.value))) })} /></div>
+        <div className="grid grid-cols-3 gap-2">
+          <div><label className="text-[10px] text-muted-foreground">Min stake</label><Input type="number" min={1} value={draft.min_stake} onChange={(e) => setDraft({ ...draft, min_stake: Number(e.target.value) })} /></div>
+          <div><label className="text-[10px] text-muted-foreground">Max payout</label><Input type="number" min={1} value={draft.max_payout} onChange={(e) => setDraft({ ...draft, max_payout: Number(e.target.value) })} /></div>
+          <div><label className="text-[10px] text-muted-foreground">Max picks</label><Input type="number" min={1} max={50} value={draft.max_selections} onChange={(e) => setDraft({ ...draft, max_selections: Math.min(50, Math.max(1, Number(e.target.value))) })} /></div>
+        </div>
         <Button className="btn-luxury w-full" onClick={createFuture}><Plus className="h-4 w-4 mr-1" />Create Futures Market</Button>
         <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
           <input type="checkbox" checked={restrictRepeat} onChange={(e) => setRestrictRepeat(e.target.checked)} className="h-4 w-4 accent-primary" />

@@ -237,10 +237,11 @@ function FuturesSection({ title, markets, maxSelections }: { title: string; mark
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-px bg-border/50 p-px">
-                {(market?.odds ?? []).slice(0, 16).map((odd) => {
+                {(market?.odds ?? []).map((odd) => {
                   const selected = selections.some((s) => s.odd_id === odd.id);
                   const status = odd.future_status ?? "active";
-                  const blocked = !market?.is_open || future.status !== "scheduled" || ["disqualified", "lost", "settled"].includes(status);
+                  // Lost contenders stay bookable — only a disqualified (or fully settled) outcome blocks a pick.
+                  const blocked = !market?.is_open || future.status !== "scheduled" || ["disqualified", "settled"].includes(status);
                   return (
                     <button
                       key={odd.id}
