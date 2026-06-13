@@ -3311,6 +3311,14 @@ function SettingsPanel() {
         <Textarea placeholder="Message shown to users" value={s.maintenance_message ?? ""} onChange={(e) => setS({ ...s, maintenance_message: e.target.value })} />
       </SettingsSection>
 
+      <SettingsSection icon={Lock} title="Website Closed" subtitle="Fully close the site to non-admin visitors and post a notice.">
+        <div className="flex items-center justify-between">
+          <div className="text-sm">Close website</div>
+          <Switch checked={!!s.closed_mode} onCheckedChange={(v) => setS({ ...s, closed_mode: v })} />
+        </div>
+        <Textarea placeholder="Message shown to users" value={s.closed_message ?? ""} onChange={(e) => setS({ ...s, closed_message: e.target.value })} />
+      </SettingsSection>
+
       <SettingsSection icon={Coins} title="Betting Limits" subtitle="Stake and payout guardrails.">
         <FieldLuxe label="Minimum stake">
           <Input type="number" value={s.min_stake ?? 2000000} onChange={(e) => setS({ ...s, min_stake: Number(e.target.value) })} />

@@ -1,21 +1,43 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Crosshair } from "lucide-react";
+import { Crosshair, Lock } from "lucide-react";
 
 export function MaintenanceGate({ children }: { children: React.ReactNode }) {
   const { isAdmin } = useAuth();
-  const [s, setS] = useState<{ on: boolean; msg: string } | null>(null);
+  const [s, setS] = useState<{ on: boolean; msg: string; closed: boolean; closedMsg: string } | null>(null);
 
   useEffect(() => {
-    supabase.from("app_settings").select("maintenance_mode,maintenance_message").eq("id", 1).maybeSingle()
-      .then(({ data }) => setS({ on: !!data?.maintenance_mode, msg: data?.maintenance_message ?? "We are performing maintenance." }));
+    (supabase as any).from("app_settings").select("maintenance_mode,maintenance_message,closed_mode,closed_message").eq("id", 1).maybeSingle()
+      .then(({ data }: any) => setS({
+        on: !!data?.maintenance_mode,
+        msg: data?.maintenance_message ?? "We are performing maintenance.",
+        closed: !!data?.closed_mode,
+        closedMsg: data?.closed_message ?? "The website is currently closed. Please check back later.",
+      }));
     const ch = supabase.channel("settings")
       .on("postgres_changes", { event: "*", schema: "public", table: "app_settings" }, (p: any) =>
-        setS({ on: !!p.new?.maintenance_mode, msg: p.new?.maintenance_message ?? "" }))
+        setS({
+          on: !!p.new?.maintenance_mode,
+          msg: p.new?.maintenance_message ?? "",
+          closed: !!p.new?.closed_mode,
+          closedMsg: p.new?.closed_message ?? "",
+        }))
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, []);
+
+  if (s?.closed && !isAdmin) {
+    return (
+      <div className="min-h-screen grid place-items-center px-4">
+        <div className="max-w-md text-center space-y-4">
+          <Lock className="h-14 w-14 text-primary mx-auto animate-pulse-glow" />
+          <h1 className="text-3xl font-bold gradient-gold-text">Website closed</h1>
+          <p className="text-muted-foreground">{s.closedMsg}</p>
+        </div>
+      </div>
+    );
+  }
 
   if (s?.on && !isAdmin) {
     return (
