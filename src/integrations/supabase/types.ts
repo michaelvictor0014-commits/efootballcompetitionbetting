@@ -71,8 +71,6 @@ export type Database = {
       app_settings: {
         Row: {
           about_us: string | null
-          admin_ai_enabled: boolean
-          admin_ai_model: string
           allow_rebet: boolean
           challenge_reward_multiplier: number
           closed_image: string | null
@@ -86,7 +84,6 @@ export type Database = {
           daily_login_enabled: boolean
           daily_login_max_streak: number
           emblem_auto_approve: boolean
-          exposure_warn_pct: number
           force_reload_at: string | null
           friends_enabled: boolean
           futures_max_payout: number
@@ -101,7 +98,6 @@ export type Database = {
           hall_of_fame_reset_at: string | null
           hero_tagline: string | null
           hot_bets_reset_at: string | null
-          house_low_balance: number
           id: number
           leaderboard_gangs_reset_at: string | null
           leaderboard_header_url: string | null
@@ -119,7 +115,6 @@ export type Database = {
           popup_ad_link: string | null
           popup_ad_size: string
           popup_ad_text: string | null
-          push_endpoint_url: string | null
           referral_bonus_referee: number
           referral_bonus_referrer: number
           spin_cooldown_hours: number
@@ -129,7 +124,6 @@ export type Database = {
           terms_content: string | null
           updated_at: string
           vapid_public_key: string | null
-          vapid_subject: string | null
           vip_enabled: boolean
           vip_token_multipliers: Json
           virtual_animation_seconds: number
@@ -156,8 +150,6 @@ export type Database = {
         }
         Insert: {
           about_us?: string | null
-          admin_ai_enabled?: boolean
-          admin_ai_model?: string
           allow_rebet?: boolean
           challenge_reward_multiplier?: number
           closed_image?: string | null
@@ -171,7 +163,6 @@ export type Database = {
           daily_login_enabled?: boolean
           daily_login_max_streak?: number
           emblem_auto_approve?: boolean
-          exposure_warn_pct?: number
           force_reload_at?: string | null
           friends_enabled?: boolean
           futures_max_payout?: number
@@ -186,7 +177,6 @@ export type Database = {
           hall_of_fame_reset_at?: string | null
           hero_tagline?: string | null
           hot_bets_reset_at?: string | null
-          house_low_balance?: number
           id?: number
           leaderboard_gangs_reset_at?: string | null
           leaderboard_header_url?: string | null
@@ -204,7 +194,6 @@ export type Database = {
           popup_ad_link?: string | null
           popup_ad_size?: string
           popup_ad_text?: string | null
-          push_endpoint_url?: string | null
           referral_bonus_referee?: number
           referral_bonus_referrer?: number
           spin_cooldown_hours?: number
@@ -214,7 +203,6 @@ export type Database = {
           terms_content?: string | null
           updated_at?: string
           vapid_public_key?: string | null
-          vapid_subject?: string | null
           vip_enabled?: boolean
           vip_token_multipliers?: Json
           virtual_animation_seconds?: number
@@ -241,8 +229,6 @@ export type Database = {
         }
         Update: {
           about_us?: string | null
-          admin_ai_enabled?: boolean
-          admin_ai_model?: string
           allow_rebet?: boolean
           challenge_reward_multiplier?: number
           closed_image?: string | null
@@ -256,7 +242,6 @@ export type Database = {
           daily_login_enabled?: boolean
           daily_login_max_streak?: number
           emblem_auto_approve?: boolean
-          exposure_warn_pct?: number
           force_reload_at?: string | null
           friends_enabled?: boolean
           futures_max_payout?: number
@@ -271,7 +256,6 @@ export type Database = {
           hall_of_fame_reset_at?: string | null
           hero_tagline?: string | null
           hot_bets_reset_at?: string | null
-          house_low_balance?: number
           id?: number
           leaderboard_gangs_reset_at?: string | null
           leaderboard_header_url?: string | null
@@ -289,7 +273,6 @@ export type Database = {
           popup_ad_link?: string | null
           popup_ad_size?: string
           popup_ad_text?: string | null
-          push_endpoint_url?: string | null
           referral_bonus_referee?: number
           referral_bonus_referrer?: number
           spin_cooldown_hours?: number
@@ -299,7 +282,6 @@ export type Database = {
           terms_content?: string | null
           updated_at?: string
           vapid_public_key?: string | null
-          vapid_subject?: string | null
           vip_enabled?: boolean
           vip_token_multipliers?: Json
           virtual_animation_seconds?: number
@@ -323,6 +305,39 @@ export type Database = {
           xp_per_login?: number
           xp_per_referral?: number
           xp_per_win?: number
+        }
+        Relationships: []
+      }
+      app_settings_private: {
+        Row: {
+          admin_ai_enabled: boolean
+          admin_ai_model: string
+          exposure_warn_pct: number
+          house_low_balance: number
+          id: number
+          push_endpoint_url: string | null
+          updated_at: string
+          vapid_subject: string | null
+        }
+        Insert: {
+          admin_ai_enabled?: boolean
+          admin_ai_model?: string
+          exposure_warn_pct?: number
+          house_low_balance?: number
+          id?: number
+          push_endpoint_url?: string | null
+          updated_at?: string
+          vapid_subject?: string | null
+        }
+        Update: {
+          admin_ai_enabled?: boolean
+          admin_ai_model?: string
+          exposure_warn_pct?: number
+          house_low_balance?: number
+          id?: number
+          push_endpoint_url?: string | null
+          updated_at?: string
+          vapid_subject?: string | null
         }
         Relationships: []
       }
@@ -2919,6 +2934,17 @@ export type Database = {
       }
       fix_pending_virtual_bets: { Args: never; Returns: Json }
       fix_stuck_bets: { Args: never; Returns: number }
+      gang_directory: {
+        Args: never
+        Returns: {
+          members: number
+          name: string
+          sample: string[]
+          tokens: number
+          type: string
+        }[]
+      }
+      get_display_roles: { Args: { _user_id: string }; Returns: string[] }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -2943,6 +2969,23 @@ export type Database = {
       place_virtual_ticket: {
         Args: { _selections: Json; _stake: number }
         Returns: Json
+      }
+      public_profiles: {
+        Args: { _ids?: string[] }
+        Returns: {
+          avatar_url: string
+          country: string
+          full_name: string
+          gang_name: string
+          gang_type: string
+          id: string
+          ingame_name: string
+          longest_streak: number
+          profile_title: string
+          streak_days: number
+          vip_tier: string
+          xp: number
+        }[]
       }
       recalc_vip_tier: { Args: { _user_id: string }; Returns: string }
       redeem_promo_code: { Args: { _code: string }; Returns: Json }

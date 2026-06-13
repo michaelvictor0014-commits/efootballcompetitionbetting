@@ -517,7 +517,7 @@ function SupportTicketView({ ticket, userId, isMod }: { ticket: any; userId: str
   async function loadProfiles(ids: string[]) {
     const need = Array.from(new Set(ids)).filter((id) => id && !profiles[id]);
     if (need.length === 0) return;
-    const { data } = await supabase.from("profiles").select("id,full_name").in("id", need);
+    const { data } = await supabase.rpc("public_profiles", { _ids: need });
     const next = { ...profiles };
     (data ?? []).forEach((p: any) => { next[p.id] = { name: p.full_name }; });
     setProfiles(next);
