@@ -16,7 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import {
   Shield, Users, Trophy, Coins, Megaphone, Settings as SettingsIcon, Ticket, AlertTriangle,
   Calendar, Tag, Image as ImageIcon, BarChart3, History, Send, Plus, Trash2, Pencil, ChevronRight, ChevronLeft, Wallet, ListOrdered, Sparkles, ClipboardList, Lock, Pause, Play, Check, X, MessageSquare, Eye, RotateCw, Copy, Globe, MapPin, Smartphone, Clock, Filter,
-  Dice5, LogOut, Crosshair, Target,
+  Dice5, LogOut, Crosshair, Target, Flame,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import lslLogo from "@/assets/lsl-logo.png";
@@ -3301,6 +3301,13 @@ function SettingsPanel() {
     const url = supabase.storage.from("ads").getPublicUrl(path).data.publicUrl;
     setS({ ...s, popup_ad_image: url });
   }
+  async function uploadInto(field: string, f: File) {
+    const path = `${field}-${Date.now()}-${f.name}`;
+    const { error } = await supabase.storage.from("ads").upload(path, f, { upsert: true });
+    if (error) { toast.error(error.message); return; }
+    const url = supabase.storage.from("ads").getPublicUrl(path).data.publicUrl;
+    setS({ ...s, [field]: url });
+  }
   return (
     <div className="grid lg:grid-cols-2 gap-4 max-w-5xl">
       <SettingsSection icon={Pause} title="Maintenance" subtitle="Block non-admin access and post a notice.">
@@ -3309,6 +3316,13 @@ function SettingsPanel() {
           <Switch checked={!!s.maintenance_mode} onCheckedChange={(v) => setS({ ...s, maintenance_mode: v })} />
         </div>
         <Textarea placeholder="Message shown to users" value={s.maintenance_message ?? ""} onChange={(e) => setS({ ...s, maintenance_message: e.target.value })} />
+        <FieldLuxe label="Banner image (optional)"><Input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && uploadInto("maintenance_image", e.target.files[0])} /></FieldLuxe>
+        {s.maintenance_image && (
+          <div className="space-y-1">
+            <img src={s.maintenance_image} alt="" className="w-full max-h-40 object-contain rounded border border-border" />
+            <Button variant="ghost" size="sm" className="text-destructive h-7" onClick={() => setS({ ...s, maintenance_image: null })}>Remove image</Button>
+          </div>
+        )}
       </SettingsSection>
 
       <SettingsSection icon={Lock} title="Website Closed" subtitle="Fully close the site to non-admin visitors and post a notice.">
@@ -3317,6 +3331,13 @@ function SettingsPanel() {
           <Switch checked={!!s.closed_mode} onCheckedChange={(v) => setS({ ...s, closed_mode: v })} />
         </div>
         <Textarea placeholder="Message shown to users" value={s.closed_message ?? ""} onChange={(e) => setS({ ...s, closed_message: e.target.value })} />
+        <FieldLuxe label="Banner image (optional)"><Input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && uploadInto("closed_image", e.target.files[0])} /></FieldLuxe>
+        {s.closed_image && (
+          <div className="space-y-1">
+            <img src={s.closed_image} alt="" className="w-full max-h-40 object-contain rounded border border-border" />
+            <Button variant="ghost" size="sm" className="text-destructive h-7" onClick={() => setS({ ...s, closed_image: null })}>Remove image</Button>
+          </div>
+        )}
       </SettingsSection>
 
       <SettingsSection icon={Coins} title="Betting Limits" subtitle="Stake and payout guardrails.">
@@ -3608,6 +3629,22 @@ function LeaderboardAdminPanel() {
     toast.success(`${label} wiped`);
     load();
   }
+  async function clearHotBets() {
+    if (!await confirm({ title: "Clear all Hot Bets?", description: "Hides every current Hot Bet from the homepage. New bets placed after this moment will start a fresh Hot Bets list.", tone: "danger", confirmText: "Clear hot bets" })) return;
+    const now = new Date().toISOString();
+    const { error } = await supabase.from("app_settings").update({ hot_bets_reset_at: now } as any).eq("id", 1);
+    if (error) { toast.error(error.message); return; }
+    await logAudit("hot_bets_clear", "app_settings", undefined, { reset_at: now });
+    toast.success("Hot bets cleared");
+  }
+  async function wipeHallOfFame() {
+    if (!await confirm({ title: "Wipe Hall of Fame?", description: "Hides every current Grand Prize Winner from the Hall of Fame. New winning tickets after this moment start a fresh list.", tone: "danger", confirmText: "Wipe Hall of Fame" })) return;
+    const now = new Date().toISOString();
+    const { error } = await supabase.from("app_settings").update({ hall_of_fame_reset_at: now } as any).eq("id", 1);
+    if (error) { toast.error(error.message); return; }
+    await logAudit("hall_of_fame_wipe", "app_settings", undefined, { reset_at: now });
+    toast.success("Hall of Fame wiped");
+  }
 
   const numCls = "h-8 w-14 text-center px-1 tabular-nums";
 
@@ -3633,6 +3670,8 @@ function LeaderboardAdminPanel() {
         <Button variant="destructive" size="sm" onClick={clearAll}><Trash2 className="h-3 w-3 mr-1" />Wipe Leaderboard</Button>
         <Button variant="destructive" size="sm" onClick={() => wipeKind("shooter", "Shooters")}><Trash2 className="h-3 w-3 mr-1" />Wipe Shooters</Button>
         <Button variant="destructive" size="sm" onClick={() => wipeKind("gang", "Gangs / Factions")}><Trash2 className="h-3 w-3 mr-1" />Wipe Gangs</Button>
+        <Button variant="destructive" size="sm" onClick={wipeHallOfFame}><Trash2 className="h-3 w-3 mr-1" />Wipe Hall of Fame</Button>
+        <Button variant="destructive" size="sm" onClick={clearHotBets}><Flame className="h-3 w-3 mr-1" />Clear Hot Bets</Button>
         <span className="text-[10px] text-muted-foreground ml-auto">This editor mirrors the public Leaderboard exactly. Edits are saved as overrides.</span>
       </Card>
 
