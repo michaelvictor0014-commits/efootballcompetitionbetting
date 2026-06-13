@@ -3176,108 +3176,6 @@ function MiniLeaderboardPanel({ onOpen }: { onOpen: () => void }) {
   const [shooters, setShooters] = useState<LbRow[]>([]);
   const [tab, setTab] = useState<"gangs" | "shooters">("gangs");
 
-/**
- * Attendance log — every side marked Present or Absent, with who they were
- * scheduled against and the match timestamp. Filterable by status and name.
- */
-function AttendancePanel() {
-  const [rows, setRows] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<"all" | "present" | "absent">("all");
-  const [q, setQ] = useState("");
-
-  async function load() {
-    setLoading(true);
-    const { data } = await supabase
-      .from("matches")
-      .select("id,name,match_kind,status,start_time,settled_at,created_at,home_present,away_present,home_team:teams!home_team_id(name),away_team:teams!away_team_id(name),home_player:players!home_player_id(name),away_player:players!away_player_id(name)")
-      .neq("match_kind", "future")
-      .order("start_time", { ascending: false, nullsFirst: false })
-      .limit(1000);
-    const out: any[] = [];
-    (data ?? []).forEach((m: any) => {
-      const homeName = (m.match_kind === "shooter" ? m.home_player?.name : m.home_team?.name) ?? "Home";
-      const awayName = (m.match_kind === "shooter" ? m.away_player?.name : m.away_team?.name) ?? "Away";
-      const when = m.settled_at ?? m.start_time ?? m.created_at;
-      if (m.home_present !== null && m.home_present !== undefined)
-        out.push({ key: m.id + "-h", name: homeName, present: m.home_present === true, opponent: awayName, match: m.name, kind: m.match_kind, status: m.status, when });
-      if (m.away_present !== null && m.away_present !== undefined)
-        out.push({ key: m.id + "-a", name: awayName, present: m.away_present === true, opponent: homeName, match: m.name, kind: m.match_kind, status: m.status, when });
-    });
-    setRows(out);
-    setLoading(false);
-  }
-  useEffect(() => {
-    load();
-    const ch = supabase.channel("admin-attendance")
-      .on("postgres_changes", { event: "*", schema: "public", table: "matches" }, load)
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
-  }, []);
-
-  const filtered = rows.filter((r) => {
-    if (filter === "present" && !r.present) return false;
-    if (filter === "absent" && r.present) return false;
-    if (q.trim()) {
-      const needle = q.trim().toLowerCase();
-      if (!r.name.toLowerCase().includes(needle) && !r.opponent.toLowerCase().includes(needle) && !(r.match ?? "").toLowerCase().includes(needle)) return false;
-    }
-    return true;
-  });
-  const presentCount = rows.filter((r) => r.present).length;
-  const absentCount = rows.length - presentCount;
-
-  return (
-    <div className="space-y-4">
-      <Card className="glass-strong p-4 space-y-3">
-        <div className="flex items-center gap-2">
-          <Eye className="h-4 w-4 text-primary" />
-          <div className="font-bold tracking-wide">Player Attendance Log</div>
-          <Badge variant="outline" className="ml-auto border-emerald-500/40 text-emerald-400">{presentCount} present</Badge>
-          <Badge variant="outline" className="border-destructive/40 text-destructive">{absentCount} absent</Badge>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="relative flex-1 min-w-[180px]">
-            <Filter className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input className="pl-9" placeholder="Search player, opponent or match…" value={q} onChange={(e) => setQ(e.target.value)} />
-          </div>
-          <div className="flex gap-1">
-            {(["all", "present", "absent"] as const).map((f) => (
-              <Button key={f} size="sm" variant={filter === f ? "default" : "outline"} className="capitalize" onClick={() => setFilter(f)}>{f}</Button>
-            ))}
-          </div>
-        </div>
-      </Card>
-
-      <Card className="border-primary/20 bg-card/60 overflow-hidden">
-        <div className="grid grid-cols-[1.4fr_0.8fr_1.4fr_1.2fr] gap-2 px-3 py-2 border-b border-primary/20 text-[10px] uppercase tracking-widest text-muted-foreground bg-gradient-to-r from-primary/10 to-transparent">
-          <div>Player / Side</div><div>Status</div><div>Scheduled vs</div><div>When</div>
-        </div>
-        <div className="max-h-[60vh] overflow-y-auto divide-y divide-border/40">
-          {loading && <div className="p-3 text-xs text-muted-foreground">Loading…</div>}
-          {!loading && filtered.length === 0 && <div className="p-3 text-xs text-muted-foreground">No attendance records match this filter.</div>}
-          {filtered.map((r) => (
-            <div key={r.key} className="grid grid-cols-[1.4fr_0.8fr_1.4fr_1.2fr] gap-2 px-3 py-2 text-xs items-center hover:bg-primary/5">
-              <div className="min-w-0">
-                <div className="font-bold truncate">{r.name}</div>
-                <div className="text-[9px] text-muted-foreground truncate">{r.match}</div>
-              </div>
-              <div>
-                {r.present ? (
-                  <span className="inline-flex items-center gap-1 text-emerald-400 font-bold"><Check className="h-3 w-3" />Present</span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 text-destructive font-bold"><X className="h-3 w-3" />Absent</span>
-                )}
-              </div>
-              <div className="truncate text-muted-foreground">vs <span className="text-foreground font-semibold">{r.opponent}</span></div>
-              <div className="text-[10px] text-muted-foreground tabular-nums">{r.when ? new Date(r.when).toLocaleString() : "—"}</div>
-            </div>
-          ))}
-        </div>
-      </Card>
-    </div>
-  );
-}
   useEffect(() => {
     loadStandings().then(({ gangs, shooters }) => { setGangs(gangs); setShooters(shooters); }).catch(() => {});
   }, []);
@@ -4771,6 +4669,109 @@ function TokenMovementPanel() {
           </Card>
         ))}
       </div>
+    </div>
+  );
+}
+
+/**
+ * Attendance log — every side marked Present or Absent, with who they were
+ * scheduled against and the match timestamp. Filterable by status and name.
+ */
+function AttendancePanel() {
+  const [rows, setRows] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<"all" | "present" | "absent">("all");
+  const [q, setQ] = useState("");
+
+  async function load() {
+    setLoading(true);
+    const { data } = await supabase
+      .from("matches")
+      .select("id,name,match_kind,status,start_time,settled_at,created_at,home_present,away_present,home_team:teams!home_team_id(name),away_team:teams!away_team_id(name),home_player:players!home_player_id(name),away_player:players!away_player_id(name)")
+      .neq("match_kind", "future")
+      .order("start_time", { ascending: false, nullsFirst: false })
+      .limit(1000);
+    const out: any[] = [];
+    (data ?? []).forEach((m: any) => {
+      const homeName = (m.match_kind === "shooter" ? m.home_player?.name : m.home_team?.name) ?? "Home";
+      const awayName = (m.match_kind === "shooter" ? m.away_player?.name : m.away_team?.name) ?? "Away";
+      const when = m.settled_at ?? m.start_time ?? m.created_at;
+      if (m.home_present !== null && m.home_present !== undefined)
+        out.push({ key: m.id + "-h", name: homeName, present: m.home_present === true, opponent: awayName, match: m.name, kind: m.match_kind, status: m.status, when });
+      if (m.away_present !== null && m.away_present !== undefined)
+        out.push({ key: m.id + "-a", name: awayName, present: m.away_present === true, opponent: homeName, match: m.name, kind: m.match_kind, status: m.status, when });
+    });
+    setRows(out);
+    setLoading(false);
+  }
+  useEffect(() => {
+    load();
+    const ch = supabase.channel("admin-attendance")
+      .on("postgres_changes", { event: "*", schema: "public", table: "matches" }, load)
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, []);
+
+  const filtered = rows.filter((r) => {
+    if (filter === "present" && !r.present) return false;
+    if (filter === "absent" && r.present) return false;
+    if (q.trim()) {
+      const needle = q.trim().toLowerCase();
+      if (!r.name.toLowerCase().includes(needle) && !r.opponent.toLowerCase().includes(needle) && !(r.match ?? "").toLowerCase().includes(needle)) return false;
+    }
+    return true;
+  });
+  const presentCount = rows.filter((r) => r.present).length;
+  const absentCount = rows.length - presentCount;
+
+  return (
+    <div className="space-y-4">
+      <Card className="glass-strong p-4 space-y-3">
+        <div className="flex items-center gap-2">
+          <Eye className="h-4 w-4 text-primary" />
+          <div className="font-bold tracking-wide">Player Attendance Log</div>
+          <Badge variant="outline" className="ml-auto border-emerald-500/40 text-emerald-400">{presentCount} present</Badge>
+          <Badge variant="outline" className="border-destructive/40 text-destructive">{absentCount} absent</Badge>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative flex-1 min-w-[180px]">
+            <Filter className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input className="pl-9" placeholder="Search player, opponent or match…" value={q} onChange={(e) => setQ(e.target.value)} />
+          </div>
+          <div className="flex gap-1">
+            {(["all", "present", "absent"] as const).map((f) => (
+              <Button key={f} size="sm" variant={filter === f ? "default" : "outline"} className="capitalize" onClick={() => setFilter(f)}>{f}</Button>
+            ))}
+          </div>
+        </div>
+      </Card>
+
+      <Card className="border-primary/20 bg-card/60 overflow-hidden">
+        <div className="grid grid-cols-[1.4fr_0.8fr_1.4fr_1.2fr] gap-2 px-3 py-2 border-b border-primary/20 text-[10px] uppercase tracking-widest text-muted-foreground bg-gradient-to-r from-primary/10 to-transparent">
+          <div>Player / Side</div><div>Status</div><div>Scheduled vs</div><div>When</div>
+        </div>
+        <div className="max-h-[60vh] overflow-y-auto divide-y divide-border/40">
+          {loading && <div className="p-3 text-xs text-muted-foreground">Loading…</div>}
+          {!loading && filtered.length === 0 && <div className="p-3 text-xs text-muted-foreground">No attendance records match this filter.</div>}
+          {filtered.map((r) => (
+            <div key={r.key} className="grid grid-cols-[1.4fr_0.8fr_1.4fr_1.2fr] gap-2 px-3 py-2 text-xs items-center hover:bg-primary/5">
+              <div className="min-w-0">
+                <div className="font-bold truncate">{r.name}</div>
+                <div className="text-[9px] text-muted-foreground truncate">{r.match}</div>
+              </div>
+              <div>
+                {r.present ? (
+                  <span className="inline-flex items-center gap-1 text-emerald-400 font-bold"><Check className="h-3 w-3" />Present</span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-destructive font-bold"><X className="h-3 w-3" />Absent</span>
+                )}
+              </div>
+              <div className="truncate text-muted-foreground">vs <span className="text-foreground font-semibold">{r.opponent}</span></div>
+              <div className="text-[10px] text-muted-foreground tabular-nums">{r.when ? new Date(r.when).toLocaleString() : "—"}</div>
+            </div>
+          ))}
+        </div>
+      </Card>
     </div>
   );
 }
