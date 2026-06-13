@@ -3069,27 +3069,17 @@ export type Database = {
         Returns: undefined
       }
       server_now: { Args: never; Returns: string }
-      set_tournament_result:
-        | {
-            Args: {
-              _match_id: string
-              _score_a: number
-              _score_b: number
-              _winner_id: string
-            }
-            Returns: Json
-          }
-        | {
-            Args: {
-              _dq_id?: string
-              _match_id: string
-              _outcome?: string
-              _score_a: number
-              _score_b: number
-              _winner_id: string
-            }
-            Returns: Json
-          }
+      set_tournament_result: {
+        Args: {
+          _dq_id?: string
+          _match_id: string
+          _outcome?: string
+          _score_a: number
+          _score_b: number
+          _winner_id: string
+        }
+        Returns: Json
+      }
       settle_pay_winning_bet: { Args: { _bet_id: string }; Returns: Json }
       user_cashout_bet: { Args: { _bet_id: string }; Returns: Json }
       verify_xp_consistency: { Args: { _user_id?: string }; Returns: Json }
