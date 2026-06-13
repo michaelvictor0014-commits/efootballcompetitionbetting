@@ -16,18 +16,16 @@ function GangsPage() {
   const [gangs, setGangs] = useState<{ name: string; type: string | null; members: number; tokens: number; sample: string[] }[]>([]);
 
   useEffect(() => {
-    supabase.from("profiles").select("full_name,gang_name,gang_type,token_balance").not("gang_name", "is", null)
-      .then(({ data }) => {
-        const m = new Map<string, any>();
-        (data ?? []).forEach((p: any) => {
-          if (!p.gang_name) return;
-          const cur = m.get(p.gang_name) ?? { name: p.gang_name, type: p.gang_type, members: 0, tokens: 0, sample: [] as string[] };
-          cur.members++; cur.tokens += p.token_balance ?? 0;
-          if (cur.sample.length < 4) cur.sample.push(p.full_name);
-          m.set(p.gang_name, cur);
-        });
-        setGangs(Array.from(m.values()).sort((a, b) => b.tokens - a.tokens));
-      });
+    supabase.rpc("gang_directory").then(({ data }) => {
+      const rows = (data ?? []).map((g: any) => ({
+        name: g.name,
+        type: g.type,
+        members: Number(g.members ?? 0),
+        tokens: Number(g.tokens ?? 0),
+        sample: (g.sample ?? []) as string[],
+      }));
+      setGangs(rows.sort((a, b) => b.tokens - a.tokens));
+    });
   }, []);
 
   return (
