@@ -1135,7 +1135,7 @@ function MatchesPanel() {
   }
   async function togglePresence(m: any, side: "home" | "away") {
     const field = side === "home" ? "home_present" : "away_present";
-    const current = m[field] !== false;
+    const current = m[field] === true;
     const { error } = await supabase.from("matches").update({ [field]: !current } as any).eq("id", m.id);
     if (error) { toast.error(error.message); return; }
     await logAudit("match_presence", "match", m.id, { side, present: !current });
