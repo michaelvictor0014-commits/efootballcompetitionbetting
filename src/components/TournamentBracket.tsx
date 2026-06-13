@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Crown, Target, Trophy } from "lucide-react";
+import { Crown, Target, Trophy, Users, Crosshair, Swords } from "lucide-react";
 import { ScaleToFit } from "./ScaleToFit";
 import lslLogo from "@/assets/lsl-logo.png";
 
@@ -27,6 +27,14 @@ function roundLabel(playersInRound: number) {
   if (playersInRound <= 8) return { title: "QUARTERFINALS", sub: "8 PLAYERS" };
   if (playersInRound <= 16) return { title: "ROUND OF 16", sub: "16 PLAYERS" };
   return { title: `ROUND OF ${playersInRound}`, sub: `${playersInRound} PLAYERS` };
+}
+
+function roundIcon(playersInRound: number) {
+  if (playersInRound <= 2) return Trophy;
+  if (playersInRound <= 4) return Users;
+  if (playersInRound <= 8) return Crosshair;
+  if (playersInRound <= 16) return Swords;
+  return Users;
 }
 
 export function TournamentBracket({
@@ -70,7 +78,7 @@ export function TournamentBracket({
   }, [matches]);
 
   const { rounds, centers, bracketH, canvasW } = layout;
-  const totalH = HEADER_H + bracketH + FOOTER_H;
+  const totalH = HEADER_H + 26 + bracketH + FOOTER_H;
   const champion = tournament.champion_id ? participants[tournament.champion_id] : null;
 
   const cardLeft = (ri: number) => SIDE_PAD + ri * COL_W + CARD_PAD;
@@ -81,10 +89,14 @@ export function TournamentBracket({
     <ScaleToFit width={canvasW} height={totalH}>
       <div
         className="relative font-sans"
-        style={{ width: canvasW, height: totalH, background: "radial-gradient(ellipse at top, #11140d, #000 75%)" }}
+        style={{ width: canvasW, height: totalH, background: "radial-gradient(ellipse at 50% 0%, #0a1b12, #050a07 55%, #000 90%)" }}
       >
-        {/* faded watermark logo */}
-        <img src={lslLogo} alt="" className="pointer-events-none absolute inset-0 m-auto opacity-[0.04]" style={{ width: 620 }} />
+        {/* angular tech frame */}
+        <div className="pointer-events-none absolute inset-3 rounded-2xl border border-amber-400/25" style={{ clipPath: "polygon(0 22px, 22px 0, calc(100% - 22px) 0, 100% 22px, 100% calc(100% - 22px), calc(100% - 22px) 100%, 22px 100%, 0 calc(100% - 22px))" }} />
+        <div className="pointer-events-none absolute inset-[14px] rounded-2xl border border-emerald-400/10" />
+        {/* faded watermark logo + tactical glow */}
+        <div className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(60% 50% at 50% 55%, rgba(16,80,48,0.18), transparent 70%)" }} />
+        <img src={lslLogo} alt="" className="pointer-events-none absolute inset-0 m-auto opacity-[0.05]" style={{ width: 640 }} />
 
         {/* ---------- HEADER ---------- */}
         <div className="absolute left-0 right-0 flex items-center justify-between px-9" style={{ top: 22, height: HEADER_H - 40 }}>
@@ -105,24 +117,31 @@ export function TournamentBracket({
         </div>
 
         {/* ---------- ROUND HEADERS ---------- */}
-        <div className="absolute" style={{ top: HEADER_H - 8, left: 0, right: 0, height: 44 }}>
+        <div className="absolute" style={{ top: HEADER_H - 50, left: 0, right: 0, height: 44 }}>
           {rounds.map((rms, ri) => {
             const lbl = roundLabel(rms.length * 2);
+            const RIcon = roundIcon(rms.length * 2);
             return (
               <div key={ri} className="absolute text-center" style={{ left: SIDE_PAD + ri * COL_W, width: COL_W }}>
-                <div className="text-[15px] font-black tracking-[0.12em] text-amber-300">{lbl.title}</div>
+                <div className="flex items-center justify-center gap-1.5">
+                  <RIcon className="h-4 w-4 text-emerald-400" />
+                  <span className="text-[15px] font-black tracking-[0.12em] text-amber-300">{lbl.title}</span>
+                </div>
                 <div className="text-[11px] font-bold tracking-[0.2em] text-amber-100/50">{lbl.sub}</div>
               </div>
             );
           })}
           <div className="absolute text-center" style={{ left: SIDE_PAD + rounds.length * COL_W, width: CHAMP_W }}>
-            <div className="text-[15px] font-black tracking-[0.12em] text-amber-300">CHAMPION</div>
+            <div className="flex items-center justify-center gap-1.5">
+              <Crown className="h-4 w-4 text-emerald-400" />
+              <span className="text-[15px] font-black tracking-[0.12em] text-amber-300">CHAMPION</span>
+            </div>
             <div className="text-[11px] font-bold tracking-[0.2em] text-amber-100/50">ONLY ONE KING</div>
           </div>
         </div>
 
         {/* ---------- BRACKET ---------- */}
-        <div className="absolute" style={{ top: HEADER_H, left: 0, width: canvasW, height: bracketH }}>
+        <div className="absolute" style={{ top: HEADER_H + 26, left: 0, width: canvasW, height: bracketH }}>
           {/* connectors */}
           <svg className="absolute inset-0" width={canvasW} height={bracketH} style={{ pointerEvents: "none" }}>
             {rounds.map((rms, ri) =>
@@ -163,7 +182,7 @@ export function TournamentBracket({
                   className={`absolute rounded-lg border text-left transition-all ${onMatchClick ? "cursor-pointer hover:border-amber-300 hover:shadow-[0_0_18px_rgba(212,175,55,0.35)]" : "cursor-default"} ${done ? "border-amber-400/60" : "border-amber-400/25"}`}
                   style={{
                     left: cardLeft(ri), top: y - CARD_H / 2, width: cardW, height: CARD_H,
-                    background: "linear-gradient(160deg, rgba(25,22,10,0.95), rgba(8,8,8,0.95))",
+                    background: "linear-gradient(160deg, rgba(10,30,18,0.95), rgba(4,10,6,0.96))",
                   }}
                 >
                   {m.label && <div className="absolute -top-[15px] left-2 text-[10px] font-black tracking-widest text-amber-300">{m.label}</div>}
@@ -174,6 +193,17 @@ export function TournamentBracket({
               );
             }),
           )}
+
+          {/* seed numbers for the opening round */}
+          {rounds[0]?.map((_, j) => {
+            const y = centers[0][j];
+            return (
+              <div key={`seed-${j}`}>
+                <SeedBadge n={2 * j + 1} cy={y - CARD_H / 4} />
+                <SeedBadge n={2 * j + 2} cy={y + CARD_H / 4} />
+              </div>
+            );
+          })}
 
           {/* champion box */}
           <div
@@ -219,6 +249,21 @@ export function TournamentBracket({
 }
 
 function Side({ name, logo, win, score, dimmed }: { name?: string | null; logo?: string | null; win: boolean; score: number | null; dimmed: boolean }) {
+  return SideRow({ name, logo, win, score, dimmed });
+}
+
+function SeedBadge({ n, cy }: { n: number; cy: number }) {
+  return (
+    <div
+      className="absolute grid place-items-center rounded-[5px] border border-amber-400/45 bg-black/70 text-[11px] font-black tabular-nums text-amber-300"
+      style={{ left: 8, top: cy - 11, width: 24, height: 22 }}
+    >
+      {String(n).padStart(2, "0")}
+    </div>
+  );
+}
+
+function SideRow({ name, logo, win, score, dimmed }: { name?: string | null; logo?: string | null; win: boolean; score: number | null; dimmed: boolean }) {
   return (
     <div className={`flex items-center justify-between px-2.5 h-[29px] ${dimmed ? "opacity-40" : ""}`}>
       <span className="flex items-center gap-1.5 min-w-0">

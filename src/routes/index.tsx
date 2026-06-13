@@ -293,11 +293,14 @@ function FutureProgress({ odd }: { odd: any }) {
   const latest = progress[progress.length - 1];
   const completed = progress.filter((p: any) => p && p.round != null).length;
   const tone = status === "winner" ? "text-emerald-300" : ["lost", "disqualified", "settled"].includes(status) ? "text-destructive" : "text-primary";
+  const lostRound = latest?.round ?? (completed > 0 ? completed : 1);
   const headline = status === "winner"
     ? "CHAMPION"
-    : ["lost", "disqualified"].includes(status)
-      ? status.replace(/_/g, " ")
-      : odd.future_next_title || `Round ${completed + 1}`;
+    : status === "lost"
+      ? `LOST ROUND ${lostRound}`
+      : status === "disqualified"
+        ? "DISQUALIFIED"
+        : odd.future_next_title || `Round ${completed + 1}`;
   return (
     <div className="mt-2 border-t border-border/40 pt-2">
       <div className={`text-[10px] uppercase tracking-widest font-bold ${tone}`}>{headline}</div>
