@@ -107,6 +107,25 @@ function BetSlipDrawer({ open, onClose }: { open: boolean; onClose: () => void }
       toast.error(`Maximum ${maxSel} selections per ticket (you have ${selections.length}).`);
       return;
     }
+    // Future tournaments: allow many tickets, but block betting the same contender twice when enabled by admin.
+    if (isFutureTicket) {
+      const matchIds = Array.from(new Set(selections.map((s) => s.match_id)));
+      const { data: ms } = await supabase.from("matches").select("id,restrict_repeat_contender").in("id", matchIds);
+      const restricted = new Set((ms ?? []).filter((m: any) => m.restrict_repeat_contender).map((m: any) => m.id));
+      const restrictedSels = selections.filter((s) => restricted.has(s.match_id));
+      if (restrictedSels.length) {
+        const { data: prior } = await supabase
+          .from("bet_selections")
+          .select("odd_id, selection_label, bets!inner(user_id,status)")
+          .in("odd_id", restrictedSels.map((s) => s.odd_id))
+          .eq("bets.user_id", user.id);
+        const blocked = (prior ?? []).filter((p: any) => !["void", "refunded"].includes(p.bets?.status));
+        if (blocked.length) {
+          toast.error(`You already have a ticket on ${blocked[0].selection_label}. You can't bet the same contender twice in this tournament.`);
+          return;
+        }
+      }
+    }
     if (profile.is_restricted) { toast.error("Your account is restricted from betting."); return; }
     if (stake < minStake) { toast.error(`Minimum stake is ${minStake.toLocaleString()} tokens`); return; }
     if (stake > (profile.token_balance ?? 0)) { toast.error("Insufficient balance"); return; }

@@ -49,6 +49,7 @@ import { TopBetsPanel } from "@/components/admin/TopBetsPanel";
 import { TournamentAdminPanel } from "@/components/admin/TournamentAdminPanel";
 import { seedLegacyUsers } from "@/lib/seed-users.functions";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { loadStandings, type LbRow } from "@/lib/leaderboard";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — LSL" }, { name: "description", content: "League administration dashboard." }] }),
@@ -1113,7 +1114,7 @@ function MatchesPanel() {
   const [shooterWizard, setShooterWizard] = useState(false);
 
   async function load() {
-    const { data } = await (supabase as any).from("matches").select("*, home_team:teams!home_team_id(name,logo_url), away_team:teams!away_team_id(name,logo_url), home_player:players!home_player_id(name,avatar_url), away_player:players!away_player_id(name,avatar_url)").eq("is_archived", false).neq("match_kind", "future").order("start_time", { ascending: false });
+    const { data } = await (supabase as any).from("matches").select("*, markets(id,is_open), home_team:teams!home_team_id(name,logo_url), away_team:teams!away_team_id(name,logo_url), home_player:players!home_player_id(name,avatar_url), away_player:players!away_player_id(name,avatar_url)").eq("is_archived", false).neq("match_kind", "future").order("start_time", { ascending: false });
     setMatches(data ?? []);
   }
   useEffect(() => { load(); }, []);
@@ -1121,6 +1122,23 @@ function MatchesPanel() {
   async function setStatus(id: string, status: string) {
     await supabase.from("matches").update({ status: status as any }).eq("id", id);
     await logAudit(`match_${status}`, "match", id);
+    load();
+  }
+  async function toggleOdds(m: any) {
+    const anyOpen = (m.markets ?? []).some((mk: any) => mk.is_open);
+    const next = !anyOpen;
+    const { error } = await supabase.from("markets").update({ is_open: next }).eq("match_id", m.id);
+    if (error) { toast.error(error.message); return; }
+    await logAudit(next ? "match_odds_unlock" : "match_odds_lock", "match", m.id);
+    toast.success(next ? "Odds unlocked — betting open" : "Odds locked — betting closed");
+    load();
+  }
+  async function togglePresence(m: any, side: "home" | "away") {
+    const field = side === "home" ? "home_present" : "away_present";
+    const current = m[field] !== false;
+    const { error } = await supabase.from("matches").update({ [field]: !current } as any).eq("id", m.id);
+    if (error) { toast.error(error.message); return; }
+    await logAudit("match_presence", "match", m.id, { side, present: !current });
     load();
   }
   async function settle(m: any) {
@@ -1192,6 +1210,11 @@ function MatchesPanel() {
             </div>
             <div className="flex gap-1 items-center flex-wrap">
               <Badge variant="outline" className="capitalize">{m.status}</Badge>
+              {(() => { const anyOpen = (m.markets ?? []).some((mk: any) => mk.is_open); return (
+                <Button size="sm" variant={anyOpen ? "outline" : "default"} onClick={() => toggleOdds(m)} title={anyOpen ? "Lock odds / close betting" : "Unlock odds / open betting"}>
+                  <Lock className="h-3 w-3 mr-1" />{anyOpen ? "Lock Odds" : "Odds Locked"}
+                </Button>
+              ); })()}
               {m.status === "live" && (
                 <LiveScoreEditor m={m} onSave={(hs, as) => updateLiveScore(m, hs, as)} />
               )}
@@ -1200,6 +1223,18 @@ function MatchesPanel() {
               <CorrectScoreManagerButton match={m} onSaved={load} />
               {m.status !== "cancelled" && m.status !== "ended" && <Button size="sm" variant="outline" onClick={() => setStatus(m.id, "cancelled")}>Cancel</Button>}
               <Button size="sm" variant="destructive" onClick={() => deleteMatch(m.id)} title="Delete match"><Trash2 className="h-3 w-3" /></Button>
+            </div>
+            <div className="w-full flex flex-wrap items-center gap-2 border-t border-border/40 pt-2 mt-1">
+              <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Leaderboard attendance:</span>
+              <Button size="sm" variant={m.home_present !== false ? "default" : "destructive"} onClick={() => togglePresence(m, "home")}>
+                {m.home_present !== false ? <Check className="h-3 w-3 mr-1" /> : <X className="h-3 w-3 mr-1" />}
+                {(m.match_kind === "shooter" ? m.home_player?.name : m.home_team?.name) ?? "Home"}: {m.home_present !== false ? "Present" : "Absent"}
+              </Button>
+              <Button size="sm" variant={m.away_present !== false ? "default" : "destructive"} onClick={() => togglePresence(m, "away")}>
+                {m.away_present !== false ? <Check className="h-3 w-3 mr-1" /> : <X className="h-3 w-3 mr-1" />}
+                {(m.match_kind === "shooter" ? m.away_player?.name : m.away_team?.name) ?? "Away"}: {m.away_present !== false ? "Present" : "Absent"}
+              </Button>
+              <span className="text-[9px] text-muted-foreground">Only sides marked <b>Present</b> earn leaderboard stats when the match ends.</span>
             </div>
           </Card>
         ))}
@@ -3345,160 +3380,196 @@ function WithdrawalsPanel() {
 
 /* ============================ LEADERBOARD ADMIN ============================ */
 function LeaderboardAdminPanel() {
-  const [list, setList] = useState<any[]>([]);
-  const [draft, setDraft] = useState({ kind: "gang", name: "", top_player: "", wins: 0, losses: 0, draws: 0, played: 0, points: 0, manual_rank: "", is_hidden: false });
-  const [editId, setEditId] = useState<string | null>(null);
+  const [gangs, setGangs] = useState<LbRow[]>([]);
+  const [shooters, setShooters] = useState<LbRow[]>([]);
+  const [tab, setTab] = useState<"gang" | "shooter">("gang");
+  const [edits, setEdits] = useState<Record<string, Partial<LbRow>>>({});
+  const [savingKey, setSavingKey] = useState<string | null>(null);
   const confirm = useConfirm();
-  async function load() { setList((await supabase.from("leaderboard_overrides").select("*").order("kind").order("manual_rank", { ascending: true, nullsFirst: false })).data ?? []); }
+
+  async function load() {
+    const { gangs, shooters } = await loadStandings();
+    setGangs(gangs);
+    setShooters(shooters);
+    setEdits({});
+  }
   useEffect(() => { load(); }, []);
-  async function save() {
-    if (!draft.name) { toast.error("Name required"); return; }
-    const payload: any = { ...draft, manual_rank: draft.manual_rank ? Number(draft.manual_rank) : null };
-    if (editId) payload.id = editId;
+
+  const rows = tab === "gang" ? gangs : shooters;
+  const rowKey = (r: LbRow) => `${tab}:${r.name}`;
+  function field(r: LbRow, k: keyof LbRow): any {
+    const e = edits[rowKey(r)];
+    return e && k in e ? (e as any)[k] : (r as any)[k];
+  }
+  function setField(r: LbRow, k: keyof LbRow, v: any) {
+    setEdits((prev) => ({ ...prev, [rowKey(r)]: { ...prev[rowKey(r)], [k]: v } }));
+  }
+
+  async function saveRow(r: LbRow) {
+    setSavingKey(rowKey(r));
+    const payload: any = {
+      kind: tab,
+      name: r.name,
+      top_player: tab === "gang" ? (field(r, "top_player") || null) : (field(r, "gang_faction") || null),
+      total_score: Number(field(r, "TS") ?? 0),
+      wins: Number(field(r, "W") ?? 0),
+      losses: Number(field(r, "L") ?? 0),
+      draws: Number(field(r, "D") ?? 0),
+      played: Number(field(r, "P") ?? 0),
+      points: Number(field(r, "PTS") ?? 0),
+      manual_rank: field(r, "manual_rank") != null && String(field(r, "manual_rank")) !== "" ? Number(field(r, "manual_rank")) : null,
+      is_hidden: false,
+    };
+    if (r.override_id) payload.id = r.override_id;
+    const { error } = await supabase.from("leaderboard_overrides").upsert(payload);
+    setSavingKey(null);
+    if (error) { toast.error(error.message); return; }
+    await logAudit("leaderboard_override_edit", "leaderboard_overrides", r.override_id ?? undefined, payload);
+    toast.success(`${r.name} updated`);
+    load();
+  }
+
+  async function resetRow(r: LbRow) {
+    if (!r.override_id) { toast.info("This row is auto-computed — nothing to reset."); return; }
+    if (!await confirm({ title: `Reset ${r.name} to auto-computed stats?`, description: "Removes the manual override so the row reflects match results again.", confirmText: "Reset" })) return;
+    await supabase.from("leaderboard_overrides").delete().eq("id", r.override_id);
+    await logAudit("leaderboard_override_delete", "leaderboard_overrides", r.override_id);
+    toast.success("Reset to auto stats");
+    load();
+  }
+
+  async function hideRow(r: LbRow) {
+    if (!await confirm({ title: `Remove ${r.name} from the leaderboard?`, description: "Hidden from the public board without touching match history. You can restore it later.", tone: "danger", confirmText: "Remove" })) return;
+    const payload: any = { kind: tab, name: r.name, is_hidden: true, wins: 0, losses: 0, draws: 0, played: 0, points: 0, total_score: 0 };
+    if (r.override_id) payload.id = r.override_id;
     const { error } = await supabase.from("leaderboard_overrides").upsert(payload);
     if (error) { toast.error(error.message); return; }
-    await logAudit(editId ? "leaderboard_override_edit" : "leaderboard_override_create", "leaderboard_overrides", editId ?? undefined, payload);
-    toast.success(editId ? "Entry updated" : "Override saved");
-    setDraft({ kind: "gang", name: "", top_player: "", wins: 0, losses: 0, draws: 0, played: 0, points: 0, manual_rank: "", is_hidden: false });
-    setEditId(null);
+    await logAudit("leaderboard_hide", "leaderboard_overrides", r.override_id ?? undefined, { name: r.name, kind: tab });
+    toast.success(`${r.name} removed`);
     load();
   }
-  async function del(id: string) {
-    if (!await confirm({ title: "Delete leaderboard entry?", tone: "danger", confirmText: "Delete" })) return;
-    await supabase.from("leaderboard_overrides").delete().eq("id", id);
-    await logAudit("leaderboard_override_delete", "leaderboard_overrides", id);
-    load();
-  }
-  async function toggleHide(o: any) {
-    const next = !o.is_hidden;
-    const { error } = await supabase.from("leaderboard_overrides").update({ is_hidden: next }).eq("id", o.id);
+
+  // move a row up/down by assigning explicit positions (manual_rank) to it and its neighbour
+  async function move(r: LbRow, dir: -1 | 1) {
+    const idx = rows.findIndex((x) => x.name === r.name);
+    const other = rows[idx + dir];
+    if (!other) return;
+    const myRank = idx + 1;
+    const otherRank = idx + dir + 1;
+    const mk = (row: LbRow, rank: number) => {
+      const p: any = {
+        kind: tab, name: row.name,
+        top_player: tab === "gang" ? (row.top_player || null) : (row.gang_faction || null),
+        total_score: row.TS, wins: row.W, losses: row.L, draws: row.D, played: row.P, points: row.PTS,
+        manual_rank: rank, is_hidden: false,
+      };
+      if (row.override_id) p.id = row.override_id;
+      return p;
+    };
+    const { error } = await supabase.from("leaderboard_overrides").upsert([mk(r, otherRank), mk(other, myRank)]);
     if (error) { toast.error(error.message); return; }
-    await logAudit(next ? "leaderboard_hide" : "leaderboard_unhide", "leaderboard_overrides", o.id, { name: o.name, kind: o.kind });
-    toast.success(next ? `${o.name} hidden from leaderboard` : `${o.name} restored`);
+    await logAudit("leaderboard_reorder", "leaderboard_overrides", undefined, { moved: r.name, to: otherRank });
     load();
   }
-  async function hideTeam() {
-    if (!draft.name) { toast.error("Enter the team or shooter name to hide"); return; }
-    const payload: any = { kind: draft.kind, name: draft.name, is_hidden: true, wins: 0, losses: 0, draws: 0, played: 0, points: 0 };
-    const { error } = await supabase.from("leaderboard_overrides").upsert(payload, { onConflict: "id" });
-    if (error) { toast.error(error.message); return; }
-    await logAudit("leaderboard_hide", "leaderboard_overrides", undefined, payload);
-    toast.success(`${draft.name} hidden from leaderboard`);
-    setDraft({ kind: "gang", name: "", top_player: "", wins: 0, losses: 0, draws: 0, played: 0, points: 0, manual_rank: "", is_hidden: false });
-    load();
-  }
-  function editEntry(o: any) {
-    setEditId(o.id);
-    setDraft({
-      kind: o.kind ?? "gang", name: o.name ?? "", top_player: o.top_player ?? "",
-      wins: Number(o.wins ?? 0), losses: Number(o.losses ?? 0), draws: Number(o.draws ?? 0),
-      played: Number(o.played ?? 0), points: Number(o.points ?? 0),
-      manual_rank: o.manual_rank ? String(o.manual_rank) : "",
-      is_hidden: !!o.is_hidden,
-    });
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
+
   async function clearAll() {
     if (!await confirm({
       title: `Wipe entire Leaderboard?`,
-      description: "Hides every manual override AND every auto-computed gang/shooter row generated from past match results. Match history itself is preserved — new finished matches after this moment will start a fresh leaderboard.",
+      description: "Removes every manual override AND resets the auto-computed gang/shooter rows from past match results. Match history itself is preserved — new finished matches after this moment start a fresh leaderboard.",
       tone: "danger", confirmText: "Clear leaderboard",
     })) return;
     const now = new Date().toISOString();
     const { error: delErr } = await supabase.from("leaderboard_overrides").delete().neq("id", "00000000-0000-0000-0000-000000000000");
     if (delErr) { toast.error(delErr.message); return; }
-    const { error: setErr } = await supabase.from("app_settings").update({
-      leaderboard_gangs_reset_at: now,
-      leaderboard_shooters_reset_at: now,
-    } as any).eq("id", 1);
+    const { error: setErr } = await supabase.from("app_settings").update({ leaderboard_gangs_reset_at: now, leaderboard_shooters_reset_at: now } as any).eq("id", 1);
     if (setErr) { toast.error(setErr.message); return; }
-    await logAudit("leaderboard_clear_all", "leaderboard_overrides", undefined, { previous_count: list.length, reset_at: now });
+    await logAudit("leaderboard_clear_all", "leaderboard_overrides", undefined, { reset_at: now });
     toast.success("Leaderboard cleared");
     load();
   }
   async function wipeKind(kind: "gang" | "shooter", label: string) {
-    const rows = list.filter((o) => o.kind === kind);
-    if (!await confirm({
-      title: `Wipe ${label}?`,
-      description: `Hides every ${label} row — both manual overrides (${rows.length}) and the auto-computed rows from past matches/bets. New activity after this moment starts a fresh list.`,
-      tone: "danger", confirmText: `Wipe ${label}`,
-    })) return;
+    if (!await confirm({ title: `Wipe ${label}?`, description: `Hides every ${label} row — both manual overrides and auto-computed rows. New activity after this moment starts a fresh list.`, tone: "danger", confirmText: `Wipe ${label}` })) return;
     const now = new Date().toISOString();
     const { error } = await supabase.from("leaderboard_overrides").delete().eq("kind", kind);
     if (error) { toast.error(error.message); return; }
-    const patch: Record<string, string> =
-      kind === "gang"
-        ? { leaderboard_gangs_reset_at: now, hall_of_fame_reset_at: now }
-        : { leaderboard_shooters_reset_at: now };
+    const patch: Record<string, string> = kind === "gang" ? { leaderboard_gangs_reset_at: now, hall_of_fame_reset_at: now } : { leaderboard_shooters_reset_at: now };
     const { error: setErr } = await supabase.from("app_settings").update(patch as any).eq("id", 1);
     if (setErr) { toast.error(setErr.message); return; }
-    await logAudit("leaderboard_wipe_kind", "leaderboard_overrides", undefined, { kind, previous_count: rows.length, reset_at: now });
+    await logAudit("leaderboard_wipe_kind", "leaderboard_overrides", undefined, { kind, reset_at: now });
     toast.success(`${label} wiped`);
     load();
   }
+
+  const numCls = "h-8 w-14 text-center px-1 tabular-nums";
+
   return (
     <div className="space-y-3">
       <Card className="glass-strong p-3 flex flex-wrap items-center gap-2 border-destructive/40">
         <div className="text-xs font-bold tracking-widest text-destructive mr-1">DANGER ZONE</div>
-        <Button variant="destructive" size="sm" onClick={clearAll}>
-          <Trash2 className="h-3 w-3 mr-1" />Wipe Leaderboard
-        </Button>
-        <Button variant="destructive" size="sm" onClick={() => wipeKind("shooter", "Shooters")}>
-          <Trash2 className="h-3 w-3 mr-1" />Wipe Shooters
-        </Button>
-        <Button variant="destructive" size="sm" onClick={() => wipeKind("gang", "Hall of Fame")}>
-          <Trash2 className="h-3 w-3 mr-1" />Wipe Hall of Fame
-        </Button>
-        <span className="text-[10px] text-muted-foreground ml-auto">Wipes auto-computed rows AND manual overrides. Match history is preserved.</span>
+        <Button variant="destructive" size="sm" onClick={clearAll}><Trash2 className="h-3 w-3 mr-1" />Wipe Leaderboard</Button>
+        <Button variant="destructive" size="sm" onClick={() => wipeKind("shooter", "Shooters")}><Trash2 className="h-3 w-3 mr-1" />Wipe Shooters</Button>
+        <Button variant="destructive" size="sm" onClick={() => wipeKind("gang", "Gangs / Factions")}><Trash2 className="h-3 w-3 mr-1" />Wipe Gangs</Button>
+        <span className="text-[10px] text-muted-foreground ml-auto">This editor mirrors the public Leaderboard exactly. Edits are saved as overrides.</span>
       </Card>
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <div className="text-xs text-muted-foreground">{list.length} manual override{list.length === 1 ? "" : "s"}</div>
+
+      <div className="flex items-center gap-2">
+        <Button size="sm" variant={tab === "gang" ? "default" : "outline"} onClick={() => setTab("gang")}>Top Gangs / Factions</Button>
+        <Button size="sm" variant={tab === "shooter" ? "default" : "outline"} onClick={() => setTab("shooter")}>Top Shooters</Button>
+        <span className="text-[11px] text-muted-foreground ml-auto">{rows.length} entries</span>
       </div>
-      <Card className="glass-strong p-4 space-y-2">
-        <div className="font-bold flex items-center gap-2">
-          {editId ? <><Pencil className="h-4 w-4 text-primary" />Editing entry</> : "Manual override (auto-stats are computed from match results)"}
-          {editId && <button onClick={() => { setEditId(null); setDraft({ kind: "gang", name: "", top_player: "", wins: 0, losses: 0, draws: 0, played: 0, points: 0, manual_rank: "", is_hidden: false }); }} className="ml-auto text-xs text-muted-foreground hover:text-foreground underline">Cancel edit</button>}
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          <Select value={draft.kind} onValueChange={(v) => setDraft({ ...draft, kind: v })}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent><SelectItem value="gang">Gang/Faction</SelectItem><SelectItem value="shooter">Shooter</SelectItem></SelectContent>
-          </Select>
-          <Input placeholder="Name" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
-          <Input placeholder="Top player (gang only)" value={draft.top_player} onChange={(e) => setDraft({ ...draft, top_player: e.target.value })} />
-          <Input placeholder="Manual rank #" value={draft.manual_rank} onChange={(e) => setDraft({ ...draft, manual_rank: e.target.value })} />
-          <Input type="number" placeholder="W" value={draft.wins} onChange={(e) => setDraft({ ...draft, wins: Number(e.target.value) })} />
-          <Input type="number" placeholder="L" value={draft.losses} onChange={(e) => setDraft({ ...draft, losses: Number(e.target.value) })} />
-          <Input type="number" placeholder="D" value={draft.draws} onChange={(e) => setDraft({ ...draft, draws: Number(e.target.value) })} />
-          <Input type="number" placeholder="Played" value={draft.played} onChange={(e) => setDraft({ ...draft, played: Number(e.target.value) })} />
-          <Input type="number" placeholder="Points" value={draft.points} onChange={(e) => setDraft({ ...draft, points: Number(e.target.value) })} />
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button className="btn-luxury" onClick={save}>
-            {editId ? <><Check className="h-4 w-4 mr-1" />Update entry</> : <><Plus className="h-4 w-4 mr-1" />Save override</>}
-          </Button>
-          {!editId && (
-            <Button variant="destructive" onClick={hideTeam} title="Hide this team/shooter from the public leaderboard without touching match history">
-              <Trash2 className="h-4 w-4 mr-1" />Remove from leaderboard
-            </Button>
-          )}
-        </div>
+
+      <Card className="glass-strong p-0 overflow-x-auto">
+        <table className="w-full text-xs min-w-[860px]">
+          <thead>
+            <tr className="text-left uppercase tracking-widest text-muted-foreground border-b border-border bg-card/40">
+              <th className="px-2 py-2">Pos</th>
+              <th className="px-2 py-2">{tab === "gang" ? "Gang / Faction" : "Player"}</th>
+              <th className="px-2 py-2">{tab === "gang" ? "Top Player" : "Gang & Faction"}</th>
+              <th className="px-2 py-2 text-center">TS</th>
+              <th className="px-2 py-2 text-center">W</th>
+              <th className="px-2 py-2 text-center">L</th>
+              <th className="px-2 py-2 text-center">D</th>
+              <th className="px-2 py-2 text-center">P</th>
+              <th className="px-2 py-2 text-center">PTS</th>
+              <th className="px-2 py-2 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.length === 0 && <tr><td colSpan={10} className="p-6 text-center text-muted-foreground">No entries yet.</td></tr>}
+            {rows.map((r, i) => {
+              const dirty = !!edits[rowKey(r)];
+              return (
+                <tr key={r.name} className="border-b border-border/40">
+                  <td className="px-2 py-1.5">
+                    <div className="flex items-center gap-1">
+                      <span className="font-bold w-5 text-right">{i + 1}</span>
+                      <button onClick={() => move(r, -1)} disabled={i === 0} className="text-muted-foreground disabled:opacity-30 hover:text-primary"><ChevronLeft className="h-3.5 w-3.5 rotate-90" /></button>
+                      <button onClick={() => move(r, 1)} disabled={i === rows.length - 1} className="text-muted-foreground disabled:opacity-30 hover:text-primary"><ChevronRight className="h-3.5 w-3.5 rotate-90" /></button>
+                    </div>
+                  </td>
+                  <td className="px-2 py-1.5 font-bold whitespace-nowrap">{r.name}{r.is_override && <Badge variant="outline" className="ml-1 text-[8px]">manual</Badge>}</td>
+                  <td className="px-2 py-1.5">
+                    <Input value={field(r, tab === "gang" ? "top_player" : "gang_faction") ?? ""} onChange={(e) => setField(r, tab === "gang" ? "top_player" : "gang_faction", e.target.value)} className="h-8 w-32" />
+                  </td>
+                  <td className="px-2 py-1.5"><Input type="number" value={field(r, "TS") ?? 0} onChange={(e) => setField(r, "TS", e.target.value)} className={numCls} /></td>
+                  <td className="px-2 py-1.5"><Input type="number" value={field(r, "W") ?? 0} onChange={(e) => setField(r, "W", e.target.value)} className={numCls} /></td>
+                  <td className="px-2 py-1.5"><Input type="number" value={field(r, "L") ?? 0} onChange={(e) => setField(r, "L", e.target.value)} className={numCls} /></td>
+                  <td className="px-2 py-1.5"><Input type="number" value={field(r, "D") ?? 0} onChange={(e) => setField(r, "D", e.target.value)} className={numCls} /></td>
+                  <td className="px-2 py-1.5"><Input type="number" value={field(r, "P") ?? 0} onChange={(e) => setField(r, "P", e.target.value)} className={numCls} /></td>
+                  <td className="px-2 py-1.5"><Input type="number" value={field(r, "PTS") ?? 0} onChange={(e) => setField(r, "PTS", e.target.value)} className={numCls} /></td>
+                  <td className="px-2 py-1.5">
+                    <div className="flex items-center justify-end gap-1">
+                      <Button size="sm" variant={dirty ? "default" : "outline"} className="h-8" onClick={() => saveRow(r)} disabled={savingKey === rowKey(r)}><Check className="h-3 w-3" /></Button>
+                      {r.is_override && <Button size="sm" variant="outline" className="h-8" title="Reset to auto stats" onClick={() => resetRow(r)}><RotateCw className="h-3 w-3" /></Button>}
+                      <Button size="sm" variant="destructive" className="h-8" title="Remove from leaderboard" onClick={() => hideRow(r)}><Trash2 className="h-3 w-3" /></Button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </Card>
-      <div className="space-y-1">
-        {list.map((o) => (
-          <Card key={o.id} className={`glass p-2 flex items-center gap-2 flex-wrap text-sm ${o.is_hidden ? "opacity-60 border-destructive/40" : ""}`}>
-            <Badge variant="outline" className="capitalize">{o.kind}</Badge>
-            {o.is_hidden && <Badge variant="destructive" className="text-[10px]">Hidden</Badge>}
-            <div className="font-bold flex-1 min-w-0 truncate">{o.name} {o.top_player && <span className="text-xs text-muted-foreground">· top: {o.top_player}</span>}</div>
-            <span className="text-xs text-muted-foreground">W {o.wins} · L {o.losses} · D {o.draws} · PTS {o.points}{o.manual_rank ? ` · #${o.manual_rank}` : ""}</span>
-            <Button size="sm" variant="outline" onClick={() => toggleHide(o)} title={o.is_hidden ? "Show on leaderboard" : "Hide from leaderboard"}>
-              {o.is_hidden ? <Eye className="h-3 w-3" /> : <X className="h-3 w-3" />}
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => editEntry(o)}><Pencil className="h-3 w-3" /></Button>
-            <Button size="sm" variant="destructive" onClick={() => del(o.id)}><Trash2 className="h-3 w-3" /></Button>
-          </Card>
-        ))}
-      </div>
     </div>
   );
 }
@@ -4264,17 +4335,28 @@ function ChallengesAdminPanel() {
 function SeasonsAdminPanel() {
   const [list, setList] = useState<any[]>([]);
   const [form, setForm] = useState<any>({ name: "", description: "", banner_url: "", starts_at: new Date().toISOString().slice(0, 16), ends_at: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 16), is_active: true });
+  const [bannerBusy, setBannerBusy] = useState(false);
   const load = async () => {
     const { data } = await supabase.from("seasons").select("*").order("starts_at", { ascending: false });
     setList(data ?? []);
   };
   useEffect(() => { load(); }, []);
+  async function uploadBanner(file: File) {
+    setBannerBusy(true);
+    const path = `season-${crypto.randomUUID()}.${file.name.split(".").pop() || "jpg"}`;
+    const { error } = await supabase.storage.from("ads").upload(path, file, { upsert: true });
+    setBannerBusy(false);
+    if (error) { toast.error(error.message); return; }
+    const url = supabase.storage.from("ads").getPublicUrl(path).data.publicUrl;
+    setForm((f: any) => ({ ...f, banner_url: url }));
+    toast.success("Banner uploaded");
+  }
   async function save() {
     if (!form.name) return toast.error("Name required");
     const { error } = await supabase.from("seasons").insert({ ...form, starts_at: new Date(form.starts_at).toISOString(), ends_at: new Date(form.ends_at).toISOString() });
     if (error) return toast.error(error.message);
     toast.success("Season created");
-    setForm({ ...form, name: "", description: "" });
+    setForm({ ...form, name: "", description: "", banner_url: "" });
     load();
   }
   async function toggle(s: any) {
@@ -4293,7 +4375,15 @@ function SeasonsAdminPanel() {
         <div className="font-bold">Create Season</div>
         <div className="grid md:grid-cols-2 gap-2">
           <Input placeholder="Season name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-          <Input placeholder="Banner URL (optional)" value={form.banner_url} onChange={(e) => setForm({ ...form, banner_url: e.target.value })} />
+          <div className="space-y-1">
+            <label className="text-xs text-muted-foreground">Season banner image (upload from device — optional)</label>
+            <div className="flex items-center gap-2">
+              {form.banner_url
+                ? <img src={form.banner_url} alt="" className="h-9 w-16 rounded object-cover border border-primary/30" />
+                : <div className="h-9 w-16 rounded bg-primary/15 grid place-items-center text-primary"><ImageIcon className="h-4 w-4" /></div>}
+              <Input type="file" accept="image/*" disabled={bannerBusy} onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadBanner(f); }} />
+            </div>
+          </div>
           <Input type="datetime-local" value={form.starts_at} onChange={(e) => setForm({ ...form, starts_at: e.target.value })} />
           <Input type="datetime-local" value={form.ends_at} onChange={(e) => setForm({ ...form, ends_at: e.target.value })} />
         </div>

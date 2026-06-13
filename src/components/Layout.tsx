@@ -9,6 +9,7 @@ import { LevelUpModal } from "@/components/Spotlight";
 import { ReactNode, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLocation } from "@tanstack/react-router";
+import lslHeroBg from "@/assets/lsl-hero-bg.png.asset.json";
 
 // Site-wide background ticker so virtual rounds keep advancing even when
 // no one is on /virtual. Any authenticated client pings every 15s.
@@ -54,6 +55,13 @@ export const Layout = ({ children }: { children: ReactNode }) => {
   return (
     <div className="relative min-h-screen">
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+        <img
+          src={lslHeroBg.url}
+          alt=""
+          aria-hidden
+          className="absolute inset-0 h-full w-full object-cover opacity-[0.10] mix-blend-luminosity"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/85 to-background" />
         <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-primary/10 blur-3xl animate-pulse-glow" />
         <div className="absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-accent/10 blur-3xl animate-pulse-glow" />
       </div>

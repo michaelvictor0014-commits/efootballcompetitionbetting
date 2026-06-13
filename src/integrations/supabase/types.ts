@@ -902,6 +902,7 @@ export type Database = {
           played: number
           points: number
           top_player: string | null
+          total_score: number
           updated_at: string
           wins: number
         }
@@ -916,6 +917,7 @@ export type Database = {
           played?: number
           points?: number
           top_player?: string | null
+          total_score?: number
           updated_at?: string
           wins?: number
         }
@@ -930,6 +932,7 @@ export type Database = {
           played?: number
           points?: number
           top_player?: string | null
+          total_score?: number
           updated_at?: string
           wins?: number
         }
@@ -977,12 +980,14 @@ export type Database = {
       matches: {
         Row: {
           away_player_id: string | null
+          away_present: boolean
           away_score: number
           away_team_id: string
           category_id: string | null
           created_at: string
           created_by: string | null
           home_player_id: string | null
+          home_present: boolean
           home_score: number
           home_team_id: string
           id: string
@@ -996,6 +1001,7 @@ export type Database = {
           marketing_enabled: boolean
           match_kind: string
           name: string
+          restrict_repeat_contender: boolean
           settled_at: string | null
           settled_by: string | null
           start_time: string
@@ -1008,12 +1014,14 @@ export type Database = {
         }
         Insert: {
           away_player_id?: string | null
+          away_present?: boolean
           away_score?: number
           away_team_id: string
           category_id?: string | null
           created_at?: string
           created_by?: string | null
           home_player_id?: string | null
+          home_present?: boolean
           home_score?: number
           home_team_id: string
           id?: string
@@ -1027,6 +1035,7 @@ export type Database = {
           marketing_enabled?: boolean
           match_kind?: string
           name: string
+          restrict_repeat_contender?: boolean
           settled_at?: string | null
           settled_by?: string | null
           start_time: string
@@ -1039,12 +1048,14 @@ export type Database = {
         }
         Update: {
           away_player_id?: string | null
+          away_present?: boolean
           away_score?: number
           away_team_id?: string
           category_id?: string | null
           created_at?: string
           created_by?: string | null
           home_player_id?: string | null
+          home_present?: boolean
           home_score?: number
           home_team_id?: string
           id?: string
@@ -1058,6 +1069,7 @@ export type Database = {
           marketing_enabled?: boolean
           match_kind?: string
           name?: string
+          restrict_repeat_contender?: boolean
           settled_at?: string | null
           settled_by?: string | null
           start_time?: string

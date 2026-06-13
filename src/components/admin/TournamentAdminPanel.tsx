@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Plus, Trash2, Crown, Swords, Wand2, ArrowUp, ArrowDown, ImageIcon, Search, X } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useConfirm } from "@/components/ConfirmDialog";
@@ -42,6 +43,7 @@ export function TournamentAdminPanel() {
   const [participants, setParticipants] = useState<TParticipant[]>([]);
   const [matches, setMatches] = useState<TMatch[]>([]);
   const [futureMatches, setFutureMatches] = useState<any[]>([]);
+  const [roster, setRoster] = useState<Array<{ id: string; name: string; logo_url: string | null; kind: "player" | "team" }>>([]);
 
   // create form
   const [name, setName] = useState("");
@@ -72,6 +74,14 @@ export function TournamentAdminPanel() {
     if (!selId && data?.length) setSelId(data[0].id);
     const { data: fm } = await (supabase as any).from("matches").select("id,name").eq("match_kind", "future").eq("is_archived", false).order("created_at", { ascending: false });
     setFutureMatches(fm ?? []);
+    const [{ data: pls }, { data: tms }] = await Promise.all([
+      supabase.from("players").select("id,name,avatar_url").order("name"),
+      supabase.from("teams").select("id,name,logo_url").order("name"),
+    ]);
+    setRoster([
+      ...((tms ?? []).map((t: any) => ({ id: `team:${t.id}`, name: t.name, logo_url: t.logo_url ?? null, kind: "team" as const }))),
+      ...((pls ?? []).map((p: any) => ({ id: `player:${p.id}`, name: p.name, logo_url: p.avatar_url ?? null, kind: "player" as const }))),
+    ]);
   }
   async function loadDetail(id: string) {
     const [{ data: ps }, { data: ms }] = await Promise.all([
@@ -138,8 +148,20 @@ export function TournamentAdminPanel() {
     while (size < participants.length) size *= 2;
     const totalRounds = Math.log2(size);
 
+    // standard single-elimination seeding order (1, size, …) so byes spread evenly
+    let seedPos: number[] = [1, 2];
+    for (let r = 1; r < totalRounds; r++) {
+      const sum = seedPos.length * 2 + 1;
+      const next: number[] = [];
+      for (const p of seedPos) { next.push(p); next.push(sum - p); }
+      seedPos = next;
+    }
+    // map each bracket slot to a participant id (or null = bye) using the manual order as seeding
+    const slotIds: (string | null)[] = seedPos.map((seed) => participants[seed - 1]?.id ?? null);
+
     // build from final round down so we know next_match ids
     let aboveIds: string[] = [];
+    let round1Rows: any[] = [];
     for (let r = totalRounds; r >= 1; r--) {
       const matchesInRound = size / Math.pow(2, r);
       const rows = Array.from({ length: matchesInRound }, (_, j) => {
@@ -151,14 +173,32 @@ export function TournamentAdminPanel() {
           next_match_id, next_slot, status: "pending",
         };
         if (r === 1) {
-          row.participant_a_id = participants[2 * j]?.id ?? null;
-          row.participant_b_id = participants[2 * j + 1]?.id ?? null;
+          row.participant_a_id = slotIds[2 * j] ?? null;
+          row.participant_b_id = slotIds[2 * j + 1] ?? null;
         }
         return row;
       });
-      const { data, error } = await (supabase as any).from("tournament_matches").insert(rows).select("id,slot");
+      const { data, error } = await (supabase as any).from("tournament_matches").insert(rows).select("id,slot,next_match_id,next_slot,participant_a_id,participant_b_id");
       if (error) { toast.error(error.message); return; }
-      aboveIds = (data ?? []).sort((a: any, b: any) => a.slot - b.slot).map((d: any) => d.id);
+      const sorted = (data ?? []).sort((a: any, b: any) => a.slot - b.slot);
+      aboveIds = sorted.map((d: any) => d.id);
+      if (r === 1) round1Rows = sorted;
+    }
+
+    // auto-advance byes: any first-round match with exactly one participant is won by default,
+    // so we never render empty/incomplete bracket slots.
+    for (const m of round1Rows) {
+      const a = m.participant_a_id, b = m.participant_b_id;
+      const hasA = !!a, hasB = !!b;
+      if (hasA !== hasB) {
+        const winner = a || b;
+        await (supabase as any).from("tournament_matches").update({ winner_id: winner, status: "completed" }).eq("id", m.id);
+        if (m.next_match_id) {
+          const col = m.next_slot === "b" ? "participant_b_id" : "participant_a_id";
+          await (supabase as any).from("tournament_matches").update({ [col]: winner }).eq("id", m.next_match_id);
+        }
+        await (supabase as any).from("tournament_participants").update({ current_round: 2 }).eq("id", winner);
+      }
     }
     toast.success("Bracket generated");
     loadDetail(sel.id);
@@ -235,7 +275,26 @@ export function TournamentAdminPanel() {
               <Button size="sm" variant="destructive" onClick={deleteTournament}><Trash2 className="h-3 w-3 mr-1" />Delete</Button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-2 items-end">
-              <div className="space-y-1"><Label className="text-xs text-muted-foreground">Participant name (player / gang)</Label><Input value={pName} onChange={(e) => setPName(e.target.value)} placeholder="e.g. Marki LM" onKeyDown={(e) => e.key === "Enter" && addParticipant()} /></div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Participant — pick a seeded shooter/gang or type a name</Label>
+                <div className="flex gap-2">
+                  <Select value="" onValueChange={(v) => {
+                    const r = roster.find((x) => x.id === v);
+                    if (r) { setPName(r.name); if (r.logo_url) setPLogo(r.logo_url); }
+                  }}>
+                    <SelectTrigger className="w-40 shrink-0"><SelectValue placeholder="Select from list" /></SelectTrigger>
+                    <SelectContent className="max-h-72">
+                      {roster.length === 0 && <div className="px-2 py-3 text-xs text-muted-foreground">No seeded players/teams</div>}
+                      {roster.map((r) => (
+                        <SelectItem key={r.id} value={r.id}>
+                          <span className="text-[10px] text-muted-foreground mr-1">{r.kind === "team" ? "GANG" : "SHOOTER"}</span>{r.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Input value={pName} onChange={(e) => setPName(e.target.value)} placeholder="…or type manually" onKeyDown={(e) => e.key === "Enter" && addParticipant()} />
+                </div>
+              </div>
               <div className="space-y-1">
                 <Label className="text-xs text-muted-foreground">Bracket image (upload — optional)</Label>
                 <div className="flex items-center gap-2">
