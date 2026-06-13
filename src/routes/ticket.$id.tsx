@@ -414,13 +414,15 @@ function FutureTicketProgress({ odd }: { odd: any }) {
   );
 }
 
-function CashoutButton({ betId, amount }: { betId: string; amount: number }) {
+function CashoutButton({ betId, amount, full }: { betId: string; amount: number; full: boolean }) {
   const confirm = useConfirm();
   const [busy, setBusy] = useState(false);
   async function go() {
     const ok = await confirm({
-      title: "Cash out this winning ticket?",
-      description: `All selections won. ${amount.toLocaleString()} tokens will be credited to your wallet immediately.`,
+      title: full ? "Cash out this winning ticket?" : "Cash out early?",
+      description: full
+        ? `All selections won. ${amount.toLocaleString()} tokens will be credited to your wallet immediately.`
+        : `Every selection is winning so far. Lock in ${amount.toLocaleString()} tokens now (a reduced early-cashout value) while the match is still running. Credited to your wallet immediately.`,
       confirmText: "Cash out now",
     });
     if (!ok) return;
