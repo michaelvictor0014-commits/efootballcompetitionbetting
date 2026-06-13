@@ -3150,13 +3150,14 @@ const QA_PALETTE = [
 ];
 
 function QuickActionsBar({ onOpen }: { onOpen: (t: string) => void }) {
+  const actions = [...QUICK_ACTIONS].sort((a, b) => a.l.localeCompare(b.l));
   return (
     <Card className="border-primary/20 bg-card/60 p-3">
       <div className="text-[10px] sm:text-xs font-bold tracking-widest text-primary mb-2">QUICK ACTIONS</div>
       <div className="overflow-x-auto pb-2 -mb-2">
         {/* 4 buttons stacked per column; columns flow horizontally and scroll left/right */}
         <div className="grid grid-rows-4 grid-flow-col auto-cols-[68px] sm:auto-cols-[84px] gap-1.5 w-max">
-          {QUICK_ACTIONS.map((q, idx) => {
+          {actions.map((q, idx) => {
             const c = QA_PALETTE[idx % QA_PALETTE.length];
             return (
               <button key={q.l} onClick={() => onOpen(q.t)} className={`flex flex-col items-center justify-center gap-1 p-1.5 rounded border active:scale-95 transition ${c.bd}`}>
