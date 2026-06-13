@@ -1130,8 +1130,18 @@ function MatchesPanel() {
   useEffect(() => { load(); }, []);
 
   async function setStatus(id: string, status: string) {
-    await supabase.from("matches").update({ status: status as any }).eq("id", id);
+    const { data, error } = await supabase
+      .from("matches")
+      .update({ status: status as any })
+      .eq("id", id)
+      .select("id");
+    if (error) { toast.error(error.message); return; }
+    if (!data || data.length === 0) {
+      toast.error("Update blocked — you may not have admin permissions for this match.");
+      return;
+    }
     await logAudit(`match_${status}`, "match", id);
+    toast.success(status === "live" ? "Match is now live" : `Match ${status}`);
     load();
   }
   async function toggleOdds(m: any) {
