@@ -34,9 +34,9 @@ export function MaintenanceGate({ children }: { children: React.ReactNode }) {
   if (s?.closed && !isAdmin) {
     return (
       <div className="min-h-screen grid place-items-center px-4">
-        <div className="max-w-lg text-center space-y-4">
+        <div className="max-w-4xl w-full text-center space-y-4">
           {s.closedImg ? (
-            <img src={s.closedImg} alt="Website closed" className="mx-auto w-auto max-w-full max-h-[65vh] object-contain rounded-2xl border-2 border-amber-400/50 shadow-[0_0_40px_-10px_rgba(212,175,55,0.55)]" />
+            <img src={s.closedImg} alt="Website closed" className="mx-auto w-full max-w-full max-h-[85vh] object-contain rounded-2xl border-2 border-amber-400/50 shadow-[0_0_40px_-10px_rgba(212,175,55,0.55)]" />
           ) : (
             <Lock className="h-14 w-14 text-primary mx-auto animate-pulse-glow" />
           )}
@@ -50,9 +50,9 @@ export function MaintenanceGate({ children }: { children: React.ReactNode }) {
   if (s?.on && !isAdmin) {
     return (
       <div className="min-h-screen grid place-items-center px-4">
-        <div className="max-w-lg text-center space-y-4">
+        <div className="max-w-4xl w-full text-center space-y-4">
           {s.img ? (
-            <img src={s.img} alt="Down for maintenance" className="mx-auto w-auto max-w-full max-h-[65vh] object-contain rounded-2xl border-2 border-amber-400/50 shadow-[0_0_40px_-10px_rgba(212,175,55,0.55)]" />
+            <img src={s.img} alt="Down for maintenance" className="mx-auto w-full max-w-full max-h-[85vh] object-contain rounded-2xl border-2 border-amber-400/50 shadow-[0_0_40px_-10px_rgba(212,175,55,0.55)]" />
           ) : (
             <Crosshair className="h-14 w-14 text-primary mx-auto animate-pulse-glow" />
           )}
