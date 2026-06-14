@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Layout } from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trophy } from "lucide-react";
+import { Trophy, Medal as MedalIcon } from "lucide-react";
 import { loadStandings, type LbRow } from "@/lib/leaderboard";
 import { supabase } from "@/integrations/supabase/client";
 import leaderboardHeaderAsset from "@/assets/leaderboard-header.png.asset.json";
@@ -33,10 +33,14 @@ export const Route = createFileRoute("/leaderboard")({
 
 function Medal({ i }: { i: number }) {
   const tiers = ["from-amber-300 to-yellow-600", "from-slate-200 to-slate-400", "from-amber-600 to-orange-800"];
+  const medalColors = ["text-yellow-300", "text-slate-200", "text-amber-600"];
   if (i < 3) {
     return (
-      <span className={`inline-grid place-items-center h-8 w-8 rounded-lg bg-gradient-to-b ${tiers[i]} text-black font-black text-sm shadow-[0_0_14px_-2px_rgba(212,175,55,0.6)] border border-white/30`}>
-        {i + 1}
+      <span className="inline-flex items-center gap-1.5">
+        <span className={`inline-grid place-items-center h-8 w-8 rounded-lg bg-gradient-to-b ${tiers[i]} text-black font-black text-sm shadow-[0_0_14px_-2px_rgba(212,175,55,0.6)] border border-white/30`}>
+          {i + 1}
+        </span>
+        <MedalIcon className={`h-5 w-5 ${medalColors[i]} drop-shadow-[0_0_6px_rgba(212,175,55,0.6)]`} />
       </span>
     );
   }
