@@ -1450,7 +1450,7 @@ function FuturesAdminPanel() {
     setTeams(tm ?? []);
     setPlayers(pl ?? []);
     const { data: lm } = await supabase.from("matches")
-      .select("id,name,home_score,away_score,status,home_team:teams!home_team_id(name),away_team:teams!away_team_id(name),home_player:players!home_player_id(name),away_player:players!away_player_id(name)")
+      .select("id,name,home_team_id,away_team_id,winner_team_id,home_score,away_score,status,home_team:teams!home_team_id(name),away_team:teams!away_team_id(name),home_player:players!home_player_id(name),away_player:players!away_player_id(name)")
       .eq("is_archived", false).eq("is_virtual", false).neq("match_kind", "future")
       .order("start_time", { ascending: false }).limit(300);
     setLinkableMatches(lm ?? []);
@@ -1521,13 +1521,19 @@ function FuturesAdminPanel() {
       return;
     }
     const lm = linkableMatches.find((m) => m.id === matchId);
-    const cs = lm ? (side === "away" ? lm.away_score : lm.home_score) : null;
-    const os = lm ? (side === "away" ? lm.home_score : lm.away_score) : null;
-    const opp = lm ? getLinkedOpponentName(lm, side) : null;
+    const matchedSide = lm ? getMatchSideForContender(lm, odd.label) : null;
+    if (lm && !matchedSide) {
+      toast.error(`${odd.label} is not in that match. Pick the normal match where this contender actually played.`);
+      return;
+    }
+    const linkedSide = matchedSide ?? side;
+    const cs = lm ? (linkedSide === "away" ? lm.away_score : lm.home_score) : null;
+    const os = lm ? (linkedSide === "away" ? lm.home_score : lm.away_score) : null;
+    const opp = lm ? getLinkedOpponentName(lm, linkedSide) : null;
     const ended = lm && ["ended", "completed", "settled"].includes(lm.status);
     await supabase.from("odds").update({
       future_match_id: matchId,
-      future_match_side: side,
+      future_match_side: linkedSide,
       future_live_score: lm ? `${cs ?? 0}-${os ?? 0}` : null,
       future_live_opponent: opp ?? null,
       future_live_outcome: ended ? ((cs ?? 0) >= (os ?? 0) ? "won" : "lost") : "pending",
@@ -1637,6 +1643,15 @@ function getMatchSideName(match: any, side: "home" | "away") {
 
 function getLinkedOpponentName(match: any, side: "home" | "away") {
   return getMatchSideName(match, side === "away" ? "home" : "away");
+}
+
+function getMatchSideForContender(match: any, label: string): "home" | "away" | null {
+  const contender = label.trim().toLowerCase();
+  const homeNames = [match?.home_player?.name, match?.home_team?.name].map((name) => name?.trim?.().toLowerCase()).filter(Boolean);
+  const awayNames = [match?.away_player?.name, match?.away_team?.name].map((name) => name?.trim?.().toLowerCase()).filter(Boolean);
+  if (homeNames.includes(contender)) return "home";
+  if (awayNames.includes(contender)) return "away";
+  return null;
 }
 
 function getLinkableMatchLabel(match: any) {
