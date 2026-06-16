@@ -491,6 +491,24 @@
     border-color: oklch(0.78 0.16 88 / 0.22) !important;
     backdrop-filter: blur(18px) saturate(150%);
   }
+
+  /* Unblurred mode — strip the frosted-glass blur so admins can verify
+     sensitive-data alignment & layout against a clean, solid surface. */
+  .admin-console-page.admin-unblurred .admin-hero-frame,
+  .admin-console-page.admin-unblurred .rounded-xl,
+  .admin-console-page.admin-unblurred .rounded-2xl,
+  .admin-console-page.admin-unblurred [class*="bg-card"],
+  .admin-console-page.admin-unblurred [class*="bg-background"],
+  .admin-console-page.admin-unblurred .glass,
+  .admin-console-page.admin-unblurred .glass-strong,
+  .admin-console-page.admin-unblurred .glass-ice,
+  .admin-console-page.admin-unblurred input,
+  .admin-console-page.admin-unblurred textarea,
+  .admin-console-page.admin-unblurred [role="combobox"] {
+    backdrop-filter: none !important;
+    background:
+      linear-gradient(135deg, oklch(0.10 0.03 165 / 0.96), oklch(0.07 0.02 190 / 0.96)) !important;
+  }
 }
 
 @keyframes admin-aurora {
