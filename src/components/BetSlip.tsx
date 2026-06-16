@@ -109,6 +109,21 @@ function BetSlipDrawer({ open, onClose }: { open: boolean; onClose: () => void }
       toast.error(`Maximum ${maxSel} selections per ticket (you have ${selections.length}).`);
       return;
     }
+    // Re-bet guardrail: when admins turn OFF re-betting, members may not stack
+    // another active ticket on a match they already have an open bet on.
+    if (!allowRebet && !isVirtualTicket) {
+      const matchIds = Array.from(new Set(selections.map((s) => s.match_id)));
+      const { data: prior } = await supabase
+        .from("bet_selections")
+        .select("match_id, bets!inner(user_id,status)")
+        .in("match_id", matchIds)
+        .eq("bets.user_id", user.id);
+      const active = (prior ?? []).filter((p: any) => p.bets?.status === "open");
+      if (active.length) {
+        toast.error("Re-betting is turned off. You already have an active ticket on one of these matches.");
+        return;
+      }
+    }
     // Future tournaments: allow many tickets, but block betting the same contender twice when enabled by admin.
     if (isFutureTicket) {
       const matchIds = Array.from(new Set(selections.map((s) => s.match_id)));
