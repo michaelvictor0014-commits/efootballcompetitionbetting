@@ -44,6 +44,9 @@ import {
 import { useConfirm } from "@/components/ConfirmDialog";
 import { ActionConfirmDialog } from "@/components/ActionConfirmDialog";
 import { notifyAction, humanizeAction } from "@/lib/notify-action";
+
+// High-frequency admin actions that should not trigger a pop-out dialog.
+const SILENT_AUDIT_ACTIONS = new Set(["match_live_score", "match_presence"]);
 import { SpotlightsAdminPanel } from "@/components/Spotlight";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { ClansAdminPanel } from "@/components/admin/ClansAdminPanel";
