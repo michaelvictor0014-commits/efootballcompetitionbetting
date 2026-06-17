@@ -94,7 +94,8 @@ export const Layout = ({ children }: { children: ReactNode }) => {
             {user && <NavLink to="/withdraw" icon={Wallet} label="Withdraw" />}
             {user && <NavLink to="/support" icon={LifeBuoy} label="Support" />}
             {user && <NavLink to="/settings" icon={SettingsIcon} label="Settings" />}
-            {(isAdmin || isMod) && <NavLink to="/admin" icon={Shield} label={isAdmin ? "Admin" : "Mod"} danger />}
+            {isAdmin && <NavLink to="/admin" icon={Shield} label="Admin" danger />}
+            {!isAdmin && isMod && <NavLink to="/mod" icon={Shield} label="Mod" danger />}
           </nav>
           <div className="flex items-center gap-2 shrink-0 ml-auto lg:ml-0">
             {user && profile ? (
