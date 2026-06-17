@@ -160,7 +160,8 @@ export const Layout = ({ children }: { children: ReactNode }) => {
             <MobLink to="/settings" icon={SettingsIcon} label="Settings" />
             <MobLink to="/support" icon={LifeBuoy} label="Help" />
           </>}
-          {(isAdmin || isMod) && <MobLink to="/admin" icon={Shield} label={isAdmin ? "Admin" : "Mod"} />}
+          {isAdmin && <MobLink to="/admin" icon={Shield} label="Admin" />}
+          {!isAdmin && isMod && <MobLink to="/mod" icon={Shield} label="Mod" />}
           </>}
         </div>
       </nav>
