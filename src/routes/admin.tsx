@@ -3144,7 +3144,7 @@ function AnalyticsPanel() {
 
       {/* ROW 7 — Recent Activity | Live Gang Wars + Event Countdown | Highlights Hub */}
       <div className="grid grid-cols-[1.15fr_0.9fr_1.35fr] gap-3">
-        <PanelBlock title="RECENT ACTIVITY" accent="sky" onView={() => setActiveTabFromAnalytics(nav, "activity")}>
+        <PanelBlock title="RECENT ACTIVITY" accent="sky" count={activity.length} hideWhenEmpty onView={() => setActiveTabFromAnalytics(nav, "activity")}>
           {activity.length === 0 && <div className="text-[10px] text-muted-foreground">No activity yet</div>}
           {activity.slice(0, 5).map((a, i) => (
             <button key={i} onClick={() => setActiveTabFromAnalytics(nav, "audit")} className="w-full text-left flex items-start gap-1.5 text-[9px] sm:text-xs py-1 border-b border-border/40 last:border-0 hover:bg-sky-500/10 rounded transition">
@@ -3157,7 +3157,7 @@ function AnalyticsPanel() {
           ))}
         </PanelBlock>
         <div className="space-y-3">
-          <PanelBlock title="LIVE GANG WARS" accent="rose" compact onView={() => nav({ to: "/matches" })}>
+          <PanelBlock title="LIVE GANG WARS" accent="rose" compact count={liveMatches.length} hideWhenEmpty onView={() => nav({ to: "/matches" })}>
             {liveMatches.length === 0 && <div className="text-[10px] text-muted-foreground">No live wars</div>}
             {liveMatches.slice(0, 2).map((m: any) => {
               const home = m.home_team; const away = m.away_team;
@@ -3171,7 +3171,7 @@ function AnalyticsPanel() {
               );
             })}
           </PanelBlock>
-          <PanelBlock title="EVENT COUNTDOWN" compact onView={() => setActiveTabFromAnalytics(nav, "events")}>
+          <PanelBlock title="EVENT COUNTDOWN" compact count={event ? 1 : 0} hideWhenEmpty onView={() => setActiveTabFromAnalytics(nav, "events")}>
             {event ? (
               <button onClick={() => setActiveTabFromAnalytics(nav, "events")} className="relative w-full min-h-24 text-left rounded-lg p-2 transition space-y-1 overflow-hidden border border-primary/20 bg-card/50">
                 {event.banner_url ? <img src={event.banner_url} alt="" className="absolute inset-0 h-full w-full object-cover opacity-70" /> : <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20" />}
@@ -3183,7 +3183,7 @@ function AnalyticsPanel() {
             ) : <div className="text-[10px] text-muted-foreground">No active event</div>}
           </PanelBlock>
         </div>
-        <PanelBlock title="HIGHLIGHTS HUB" accent="violet" onView={() => setActiveTabFromAnalytics(nav, "content")}>
+        <PanelBlock title="HIGHLIGHTS HUB" accent="violet" count={highlights.length} hideWhenEmpty onView={() => setActiveTabFromAnalytics(nav, "content")}>
           {highlights.length === 0 && <div className="text-[10px] text-muted-foreground">No highlights yet</div>}
           {highlights.slice(0, 4).map((h) => (
             <button key={h.id} onClick={() => setActiveTabFromAnalytics(nav, "content")} className="w-full flex items-center gap-1.5 text-[9px] sm:text-xs py-1 border-b border-border/40 last:border-0 hover:bg-violet-500/10 rounded px-1 transition">
@@ -3198,7 +3198,7 @@ function AnalyticsPanel() {
 
       {/* ROW 8 — Broadcast Center | Quick Actions | Top Bets */}
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
-        <PanelBlock title="BROADCAST CENTER" compact onView={() => setActiveTabFromAnalytics(nav, "broadcast")}>
+        <PanelBlock title="BROADCAST CENTER" compact count={broadcasts.length} hideWhenEmpty onView={() => setActiveTabFromAnalytics(nav, "broadcast")}>
           {broadcasts.length === 0 && <div className="text-[10px] text-muted-foreground">No broadcasts</div>}
           {broadcasts.map((b) => (
             <button key={b.id} onClick={() => setActiveTabFromAnalytics(nav, "broadcast")} className="w-full text-left text-[9px] sm:text-xs py-1 border-b border-primary/10 last:border-0 hover:bg-primary/5 rounded px-1 transition">
