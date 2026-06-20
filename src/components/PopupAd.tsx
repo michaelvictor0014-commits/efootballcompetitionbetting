@@ -25,14 +25,16 @@ export function PopupAd() {
   const hasImage = !!s.popup_ad_image;
   const Inner = (
     <div className={`relative ${sizeCls} w-full bg-transparent`}>
-      <button onClick={close} className="absolute top-3 right-3 z-10 h-10 w-10 grid place-items-center rounded-full bg-background/80 hover:bg-background border border-border"><X className="h-5 w-5" /></button>
+      <button onClick={close} className="absolute top-3 right-3 z-20 h-10 w-10 grid place-items-center rounded-full bg-background/80 hover:bg-background border border-amber-300/60 text-amber-100 shadow-lg"><X className="h-5 w-5" /></button>
       {hasImage && (
-        <img
-          src={s.popup_ad_image}
-          alt=""
-          className={`w-full ${imgCls} ${isFull ? "object-cover" : "object-contain"} drop-shadow-2xl rounded-2xl`}
-          style={{ background: "transparent" }}
-        />
+        <div className="popup-ice-frame relative">
+          <img
+            src={s.popup_ad_image}
+            alt=""
+            className={`relative z-10 w-full ${imgCls} ${isFull ? "object-cover" : "object-contain"} rounded-[18px]`}
+            style={{ background: "transparent" }}
+          />
+        </div>
       )}
       {hasText && (
         <div className="mt-3 p-6 text-base whitespace-pre-wrap rounded-3xl border border-primary/40 bg-card/70 backdrop-blur-2xl shadow-2xl">

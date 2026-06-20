@@ -54,13 +54,25 @@ function Index() {
     Promise.all([fetchMatches(), fetchSettings()]).then(([m, s]) => { setMatches(m); setSettings(s); }).finally(() => setLoading(false));
     supabase.from("profiles").select("id", { count: "exact", head: true })
       .then(({ count }) => setUserCount(count ?? 0));
+    // Debounce refetches so a burst of realtime row changes (odds/markets
+    // updating together) only triggers one network round-trip, not dozens.
+    let matchTimer: ReturnType<typeof setTimeout> | undefined;
+    const refetchMatches = () => {
+      clearTimeout(matchTimer);
+      matchTimer = setTimeout(() => { fetchMatches().then(setMatches); }, 600);
+    };
+    let settingsTimer: ReturnType<typeof setTimeout> | undefined;
+    const refetchSettings = () => {
+      clearTimeout(settingsTimer);
+      settingsTimer = setTimeout(() => { fetchSettings().then(setSettings); }, 600);
+    };
     const ch = supabase.channel("home-feed")
-      .on("postgres_changes", { event: "*", schema: "public", table: "matches" }, () => fetchMatches().then(setMatches))
-      .on("postgres_changes", { event: "*", schema: "public", table: "odds" }, () => fetchMatches().then(setMatches))
-      .on("postgres_changes", { event: "*", schema: "public", table: "markets" }, () => fetchMatches().then(setMatches))
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "app_settings" }, () => fetchSettings().then(setSettings))
+      .on("postgres_changes", { event: "*", schema: "public", table: "matches" }, refetchMatches)
+      .on("postgres_changes", { event: "*", schema: "public", table: "odds" }, refetchMatches)
+      .on("postgres_changes", { event: "*", schema: "public", table: "markets" }, refetchMatches)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "app_settings" }, refetchSettings)
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => { clearTimeout(matchTimer); clearTimeout(settingsTimer); supabase.removeChannel(ch); };
   }, []);
 
   const futures = matches.filter((m) => m.match_kind === "future" && m.status === "scheduled");
@@ -212,23 +224,37 @@ function Index() {
         </div>
       </section>
 
-      {/* Fudged global community counter — sits below the matches feed. */}
+      {/* Fudged global community counter — golden 3D showcase below the matches feed. */}
       <section className="container mt-12">
-        <Card className="glass-strong relative overflow-hidden border-primary/30 p-8 md:p-10 text-center">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-accent/10 pointer-events-none" />
-          <div className="relative">
-            <div className="flex items-center justify-center gap-2 text-primary">
-              <Skull className="h-5 w-5" />
-              <span className="text-xs uppercase tracking-[0.32em] font-bold">The League is growing</span>
+        <div className="relative">
+          <div className="absolute -inset-4 rounded-[36px] bg-[radial-gradient(circle_at_30%_20%,oklch(0.92_0.2_92/0.25),transparent_60%),radial-gradient(circle_at_80%_80%,oklch(0.85_0.22_152/0.18),transparent_60%)] blur-3xl pointer-events-none" />
+          <Card className="count-3d relative overflow-hidden text-center p-8 md:p-12">
+            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-gold" />
+            <div className="pointer-events-none absolute inset-0 opacity-[0.07] grid place-items-center">
+              <Skull className="h-40 w-40" />
             </div>
-            <div className="mt-3 text-5xl md:text-7xl font-black gradient-gold-text tabular-nums">
-              {fudgedUsers.toLocaleString()}+
+            <div className="relative">
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-1.5">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+                </span>
+                <span className="text-[10px] md:text-xs uppercase tracking-[0.32em] font-bold text-primary">The League is growing</span>
+              </div>
+              <div className="mt-4 count-foil font-display text-6xl md:text-8xl font-black tabular-nums leading-none">
+                {fudgedUsers.toLocaleString()}+
+              </div>
+              <div className="mt-3 text-sm md:text-lg text-foreground/80 font-bold uppercase tracking-[0.3em]">
+                Shooters worldwide
+              </div>
+              <div className="mt-4 flex items-center justify-center gap-2 text-amber-300/80">
+                <span className="h-px w-10 bg-gradient-to-r from-transparent to-amber-400/60" />
+                <Trophy className="h-4 w-4" />
+                <span className="h-px w-10 bg-gradient-to-l from-transparent to-amber-400/60" />
+              </div>
             </div>
-            <div className="mt-2 text-sm md:text-base text-muted-foreground font-semibold uppercase tracking-widest">
-              Shooters worldwide
-            </div>
-          </div>
-        </Card>
+          </Card>
+        </div>
       </section>
 
     </Layout>
@@ -248,9 +274,29 @@ function FuturesSection({ title, markets, maxSelections }: { title: string; mark
   const { selections, add, remove, setOpen } = useBetSlip();
   return (
     <section className="container mt-10">
-      <div className="flex items-end justify-between gap-3 mb-4">
-        <SectionHeader icon={Trophy} title={title} subtitle={`Season-long markets · pick up to ${maxSelections} contender${maxSelections === 1 ? "" : "s"}.`} />
-        <Badge variant="outline" className="border-accent/40 text-accent">Seasonal</Badge>
+      <div className="seasonal-golden relative overflow-hidden rounded-3xl mb-5 px-5 py-6 md:px-8 md:py-8">
+        <div className="pointer-events-none absolute -right-10 -top-10 opacity-25">
+          <Trophy className="h-44 w-44 text-amber-200" />
+        </div>
+        <div className="pointer-events-none absolute inset-0 seasonal-golden-shine" />
+        <div className="relative flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full bg-black/30 backdrop-blur px-3 py-1 text-[10px] uppercase tracking-[0.32em] font-black text-amber-100">
+              <Trophy className="h-3.5 w-3.5" /> Seasonal Tournament
+            </div>
+            <h2 className="mt-2 font-display text-3xl md:text-5xl font-black uppercase tracking-tight seasonal-golden-title">
+              {title}
+            </h2>
+            <p className="mt-1 text-sm md:text-base font-semibold text-amber-50/90">
+              Season-long markets · pick up to {maxSelections} contender{maxSelections === 1 ? "" : "s"}.
+            </p>
+          </div>
+          <Link to="/tournament">
+            <Button className="seasonal-golden-btn font-black tracking-wide">
+              Go to Tournament <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </Link>
+        </div>
       </div>
       {markets.length === 0 && (
         <Card className="glass-strong p-5 border-accent/30">

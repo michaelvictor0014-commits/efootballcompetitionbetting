@@ -56,14 +56,20 @@ export const Layout = ({ children }: { children: ReactNode }) => {
   const [bgFit, setBgFit] = useState<string>("cover");
   const [bgPos, setBgPos] = useState<string>("center");
   const [siteName, setSiteName] = useState<string | null>(null);
+  const [navBg, setNavBg] = useState<string | null>(null);
+  const [navBgFit, setNavBgFit] = useState<string>("cover");
+  const [navBgPos, setNavBgPos] = useState<string>("center");
   useEffect(() => {
     const apply = (d: any) => {
       setSiteBg(d?.site_bg_url ?? null);
       setBgFit(d?.site_bg_fit ?? "cover");
       setBgPos(d?.site_bg_position ?? "center");
       setSiteName(d?.site_name ?? null);
+      setNavBg(d?.nav_bg_url ?? null);
+      setNavBgFit(d?.nav_bg_fit ?? "cover");
+      setNavBgPos(d?.nav_bg_position ?? "center");
     };
-    supabase.from("app_settings").select("site_bg_url,site_bg_fit,site_bg_position,site_name").eq("id", 1).maybeSingle()
+    supabase.from("app_settings").select("site_bg_url,site_bg_fit,site_bg_position,site_name,nav_bg_url,nav_bg_fit,nav_bg_position").eq("id", 1).maybeSingle()
       .then(({ data }) => apply(data));
     const ch = supabase.channel("site-bg")
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "app_settings" }, (p: any) => apply(p.new))
@@ -84,7 +90,19 @@ export const Layout = ({ children }: { children: ReactNode }) => {
         <div className="absolute inset-0 bg-background/40" />
       </div>
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-gradient-to-b from-card/80 to-card/50 border-b border-primary/20 shadow-[0_2px_30px_-12px_rgba(0,0,0,0.6)]">
-        <div className="container mx-auto px-4 flex h-16 items-center gap-3 lg:gap-4">
+        {navBg && (
+          <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+            <img
+              src={navBg}
+              alt=""
+              aria-hidden
+              className="absolute inset-0 h-full w-full"
+              style={{ objectFit: (navBgFit as any) || "cover", objectPosition: navBgPos || "center" }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-background/55 via-background/45 to-background/65" />
+          </div>
+        )}
+        <div className="container mx-auto px-4 flex h-16 items-center gap-3 lg:gap-4 relative">
           <Link to="/" className="flex items-center gap-2 group shrink-0">
             <GangLogo size={38} className="transition-transform group-hover:scale-105 group-hover:rotate-3 duration-300" />
             <div className="leading-tight">

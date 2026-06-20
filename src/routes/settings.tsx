@@ -1,10 +1,9 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Layout } from "@/components/Layout";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Settings as SettingsIcon, UserCog, Bell, ChevronRight } from "lucide-react";
 import { PushNotifSettings } from "@/components/UserHubSections";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -13,14 +12,20 @@ export const Route = createFileRoute("/settings")({
       { name: "description", content: "Manage your LSL account preferences, notifications, and profile settings." },
     ],
   }),
-  beforeLoad: async () => {
-    const { data } = await supabase.auth.getUser();
-    if (!data.user) throw redirect({ to: "/login" });
-  },
   component: SettingsPage,
 });
 
 function SettingsPage() {
+  const { user, loading } = useAuth();
+  if (!loading && !user) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-16 text-center">
+          <p>Please <Link to="/login" className="text-primary underline">sign in</Link> to manage your settings.</p>
+        </div>
+      </Layout>
+    );
+  }
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8 max-w-3xl space-y-6">
