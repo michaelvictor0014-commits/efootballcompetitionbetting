@@ -54,13 +54,25 @@ function Index() {
     Promise.all([fetchMatches(), fetchSettings()]).then(([m, s]) => { setMatches(m); setSettings(s); }).finally(() => setLoading(false));
     supabase.from("profiles").select("id", { count: "exact", head: true })
       .then(({ count }) => setUserCount(count ?? 0));
+    // Debounce refetches so a burst of realtime row changes (odds/markets
+    // updating together) only triggers one network round-trip, not dozens.
+    let matchTimer: ReturnType<typeof setTimeout> | undefined;
+    const refetchMatches = () => {
+      clearTimeout(matchTimer);
+      matchTimer = setTimeout(() => { fetchMatches().then(setMatches); }, 600);
+    };
+    let settingsTimer: ReturnType<typeof setTimeout> | undefined;
+    const refetchSettings = () => {
+      clearTimeout(settingsTimer);
+      settingsTimer = setTimeout(() => { fetchSettings().then(setSettings); }, 600);
+    };
     const ch = supabase.channel("home-feed")
-      .on("postgres_changes", { event: "*", schema: "public", table: "matches" }, () => fetchMatches().then(setMatches))
-      .on("postgres_changes", { event: "*", schema: "public", table: "odds" }, () => fetchMatches().then(setMatches))
-      .on("postgres_changes", { event: "*", schema: "public", table: "markets" }, () => fetchMatches().then(setMatches))
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "app_settings" }, () => fetchSettings().then(setSettings))
+      .on("postgres_changes", { event: "*", schema: "public", table: "matches" }, refetchMatches)
+      .on("postgres_changes", { event: "*", schema: "public", table: "odds" }, refetchMatches)
+      .on("postgres_changes", { event: "*", schema: "public", table: "markets" }, refetchMatches)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "app_settings" }, refetchSettings)
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => { clearTimeout(matchTimer); clearTimeout(settingsTimer); supabase.removeChannel(ch); };
   }, []);
 
   const futures = matches.filter((m) => m.match_kind === "future" && m.status === "scheduled");
