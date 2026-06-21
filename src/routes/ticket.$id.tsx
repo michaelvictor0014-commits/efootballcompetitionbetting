@@ -167,9 +167,9 @@ export function BetVoucher({ bet, sels, statusBadge, copy, shareCode }: {
               <span className="text-[10px] sm:text-[11px] tracking-[0.32em] text-muted-foreground font-bold">LOMITA SHOOTERS LEAGUE</span>
             </div>
               <h2 className="font-display text-3xl sm:text-5xl font-black tracking-[0.08em] leading-none">
-              <Sparkles className="inline h-4 w-4 text-primary mr-2 -mt-2" />
-                <span className="gold-foil">BET</span> <span className="gold-foil">VOUCHER</span>
-              <Sparkles className="inline h-4 w-4 text-primary ml-2 -mt-2" />
+              <Sparkles className="inline h-4 w-4 text-emerald-300 mr-2 -mt-2" />
+                <span className="gold-foil">BET</span> <span className="green-foil">VOUCHER</span>
+              <Sparkles className="inline h-4 w-4 text-emerald-300 ml-2 -mt-2" />
             </h2>
             <Badge variant="outline" className="border-primary/40 bg-primary/10 text-primary uppercase tracking-[0.22em] text-[10px]">
               {isVirtualTicket ? "Virtual Matches Voucher" : isFutureTicket ? "Tournament Futures Voucher" : "Real Matches Voucher"}
