@@ -55,6 +55,18 @@ function ProfilePage() {
     <Layout>
       <div className="container mx-auto px-4 py-10 max-w-2xl">
         <h1 className="text-3xl font-bold text-primary mb-6">Your Profile</h1>
+        <Card className="p-5 mb-6 border-primary/30 bg-gradient-to-r from-primary/10 to-accent/5">
+          <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">Your Special ID</div>
+          <div className="mt-1 flex items-center gap-3 flex-wrap">
+            <span className="font-mono text-2xl font-black tracking-[0.2em] text-primary">{(profile as any).special_id ?? "—"}</span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => { navigator.clipboard?.writeText((profile as any).special_id ?? ""); toast.success("Special ID copied"); }}
+            >Copy</Button>
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">Share this ID so others can transfer tokens to you.</p>
+        </Card>
         <Card className="p-6 space-y-4">
           {(["full_name","phone","discord_username","country","gang_name"] as const).map((k) => (
             <div key={k}><Label className="capitalize">{k.replace("_"," ")}</Label><Input value={(f as any)[k]} onChange={(e) => setF((p) => ({ ...p, [k]: e.target.value }))} /></div>
