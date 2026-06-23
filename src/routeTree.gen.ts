@@ -23,6 +23,7 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as ModRouteImport } from './routes/mod'
 import { Route as MatchesRouteImport } from './routes/matches'
+import { Route as LotteryRouteImport } from './routes/lottery'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as GangsRouteImport } from './routes/gangs'
@@ -108,6 +109,11 @@ const ModRoute = ModRouteImport.update({
 const MatchesRoute = MatchesRouteImport.update({
   id: '/matches',
   path: '/matches',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LotteryRoute = LotteryRouteImport.update({
+  id: '/lottery',
+  path: '/lottery',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -203,6 +209,7 @@ export interface FileRoutesByFullPath {
   '/gangs': typeof GangsRoute
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
+  '/lottery': typeof LotteryRoute
   '/matches': typeof MatchesRouteWithChildren
   '/mod': typeof ModRoute
   '/notifications': typeof NotificationsRoute
@@ -235,6 +242,7 @@ export interface FileRoutesByTo {
   '/gangs': typeof GangsRoute
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
+  '/lottery': typeof LotteryRoute
   '/matches': typeof MatchesRouteWithChildren
   '/mod': typeof ModRoute
   '/notifications': typeof NotificationsRoute
@@ -268,6 +276,7 @@ export interface FileRoutesById {
   '/gangs': typeof GangsRoute
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
+  '/lottery': typeof LotteryRoute
   '/matches': typeof MatchesRouteWithChildren
   '/mod': typeof ModRoute
   '/notifications': typeof NotificationsRoute
@@ -302,6 +311,7 @@ export interface FileRouteTypes {
     | '/gangs'
     | '/leaderboard'
     | '/login'
+    | '/lottery'
     | '/matches'
     | '/mod'
     | '/notifications'
@@ -334,6 +344,7 @@ export interface FileRouteTypes {
     | '/gangs'
     | '/leaderboard'
     | '/login'
+    | '/lottery'
     | '/matches'
     | '/mod'
     | '/notifications'
@@ -366,6 +377,7 @@ export interface FileRouteTypes {
     | '/gangs'
     | '/leaderboard'
     | '/login'
+    | '/lottery'
     | '/matches'
     | '/mod'
     | '/notifications'
@@ -399,6 +411,7 @@ export interface RootRouteChildren {
   GangsRoute: typeof GangsRoute
   LeaderboardRoute: typeof LeaderboardRoute
   LoginRoute: typeof LoginRoute
+  LotteryRoute: typeof LotteryRoute
   MatchesRoute: typeof MatchesRouteWithChildren
   ModRoute: typeof ModRoute
   NotificationsRoute: typeof NotificationsRoute
@@ -516,6 +529,13 @@ declare module '@tanstack/react-router' {
       path: '/matches'
       fullPath: '/matches'
       preLoaderRoute: typeof MatchesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lottery': {
+      id: '/lottery'
+      path: '/lottery'
+      fullPath: '/lottery'
+      preLoaderRoute: typeof LotteryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -667,6 +687,7 @@ const rootRouteChildren: RootRouteChildren = {
   GangsRoute: GangsRoute,
   LeaderboardRoute: LeaderboardRoute,
   LoginRoute: LoginRoute,
+  LotteryRoute: LotteryRoute,
   MatchesRoute: MatchesRouteWithChildren,
   ModRoute: ModRoute,
   NotificationsRoute: NotificationsRoute,

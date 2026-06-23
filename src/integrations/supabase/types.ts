@@ -110,6 +110,10 @@ export type Database = {
           leaderboard_gangs_reset_at: string | null
           leaderboard_header_url: string | null
           leaderboard_shooters_reset_at: string | null
+          lottery_enabled: boolean
+          lottery_intro: string | null
+          lottery_max_stake: number
+          lottery_min_stake: number
           maintenance_image: string | null
           maintenance_message: string | null
           maintenance_mode: boolean
@@ -205,6 +209,10 @@ export type Database = {
           leaderboard_gangs_reset_at?: string | null
           leaderboard_header_url?: string | null
           leaderboard_shooters_reset_at?: string | null
+          lottery_enabled?: boolean
+          lottery_intro?: string | null
+          lottery_max_stake?: number
+          lottery_min_stake?: number
           maintenance_image?: string | null
           maintenance_message?: string | null
           maintenance_mode?: boolean
@@ -300,6 +308,10 @@ export type Database = {
           leaderboard_gangs_reset_at?: string | null
           leaderboard_header_url?: string | null
           leaderboard_shooters_reset_at?: string | null
+          lottery_enabled?: boolean
+          lottery_intro?: string | null
+          lottery_max_stake?: number
+          lottery_min_stake?: number
           maintenance_image?: string | null
           maintenance_message?: string | null
           maintenance_mode?: boolean
@@ -1059,6 +1071,86 @@ export type Database = {
           wins?: number
         }
         Relationships: []
+      }
+      lottery_draws: {
+        Row: {
+          created_at: string
+          draw_at: string | null
+          drawn_at: string | null
+          id: string
+          multiplier: number
+          number_max: number
+          status: string
+          title: string
+          updated_at: string
+          winning_number: number | null
+        }
+        Insert: {
+          created_at?: string
+          draw_at?: string | null
+          drawn_at?: string | null
+          id?: string
+          multiplier?: number
+          number_max?: number
+          status?: string
+          title?: string
+          updated_at?: string
+          winning_number?: number | null
+        }
+        Update: {
+          created_at?: string
+          draw_at?: string | null
+          drawn_at?: string | null
+          id?: string
+          multiplier?: number
+          number_max?: number
+          status?: string
+          title?: string
+          updated_at?: string
+          winning_number?: number | null
+        }
+        Relationships: []
+      }
+      lottery_tickets: {
+        Row: {
+          created_at: string
+          draw_id: string
+          id: string
+          number: number
+          payout: number
+          stake: number
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          draw_id: string
+          id?: string
+          number: number
+          payout?: number
+          stake: number
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          draw_id?: string
+          id?: string
+          number?: number
+          payout?: number
+          stake?: number
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lottery_tickets_draw_id_fkey"
+            columns: ["draw_id"]
+            isOneToOne: false
+            referencedRelation: "lottery_draws"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       markets: {
         Row: {
@@ -3082,6 +3174,10 @@ export type Database = {
         Args: { _id: string; _note?: string }
         Returns: undefined
       }
+      draw_lottery: {
+        Args: { _draw_id: string; _winning_number?: number }
+        Returns: Json
+      }
       fix_pending_virtual_bets: { Args: never; Returns: Json }
       fix_stuck_bets: { Args: never; Returns: number }
       gang_directory: {
@@ -3113,6 +3209,10 @@ export type Database = {
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_mod_or_admin: { Args: { _user_id: string }; Returns: boolean }
+      place_lottery_ticket: {
+        Args: { _draw_id: string; _number: number; _stake: number }
+        Returns: Json
+      }
       place_virtual_bet: {
         Args: { _match_id: string; _odd_id: string; _stake: number }
         Returns: Json
