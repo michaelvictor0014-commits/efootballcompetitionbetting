@@ -4151,6 +4151,32 @@ function BetTrackerPanel() {
 }
 
 function TasksAchievementsPanel() {
+  return <TasksAchievementsPanelInner />;
+}
+
+function TasksBackgroundControl() {
+  const [bg, setBg] = useState<{ url: string | null; fit: string; pos: string }>({ url: null, fit: "cover", pos: "center" });
+  const [saving, setSaving] = useState(false);
+  useEffect(() => {
+    supabase.from("app_settings").select("tasks_bg_url,tasks_bg_fit,tasks_bg_position").eq("id", 1).maybeSingle()
+      .then(({ data }) => { if (data) setBg({ url: (data as any).tasks_bg_url ?? null, fit: (data as any).tasks_bg_fit ?? "cover", pos: (data as any).tasks_bg_position ?? "center" }); });
+  }, []);
+  async function save() {
+    setSaving(true);
+    const { error } = await (supabase as any).from("app_settings").update({ tasks_bg_url: bg.url, tasks_bg_fit: bg.fit, tasks_bg_position: bg.pos }).eq("id", 1);
+    setSaving(false);
+    if (error) toast.error(error.message); else toast.success("Tasks page background saved");
+  }
+  return (
+    <Card className="glass p-4 space-y-3">
+      <div className="flex items-center gap-2 font-bold"><ImageIcon className="h-4 w-4 text-primary" />Tasks Page Background</div>
+      <ImageSettingControl label="Background image" value={bg.url} onChange={(url) => setBg((p) => ({ ...p, url }))} fit={bg.fit} onFitChange={(v) => setBg((p) => ({ ...p, fit: v }))} position={bg.pos} onPositionChange={(v) => setBg((p) => ({ ...p, pos: v }))} />
+      <Button variant="outline" onClick={save} disabled={saving}>{saving ? "Saving…" : "Save background"}</Button>
+    </Card>
+  );
+}
+
+function TasksAchievementsPanelInner() {
   const [users, setUsers] = useState<any[]>([]);
   const [tasks, setTasks] = useState<any[]>([]);
   const [achievements, setAchievements] = useState<any[]>([]);
@@ -4256,7 +4282,7 @@ function TasksAchievementsPanel() {
             <Input type="datetime-local" value={draft.ends_at} onChange={(e) => setDraft({ ...draft, ends_at: e.target.value })} />
           </div>
         </div>
-        <ImageSettingControl label="Task banner image" value={draft.banner_url} onChange={(url) => setDraft({ ...draft, banner_url: url })} />
+        <ImageSettingControl label="Task banner image" value={draft.banner_url} onChange={(url) => setDraft({ ...draft, banner_url: url || "" })} />
         <Button className="btn-luxury" onClick={createTask}><Plus className="h-4 w-4 mr-1" />Assign task</Button>
       </Card>
       <div className="grid lg:grid-cols-2 gap-4">
