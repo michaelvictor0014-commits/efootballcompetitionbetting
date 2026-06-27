@@ -907,7 +907,17 @@ function UserEditDialog({ user, roles, onClose }: { user: any; roles: string[]; 
               </div>
             </TabsContent>
 
-            <TabsContent value="history" className="space-y-6 mt-5">
+            <TabsContent value="history" className="mt-5">
+              <Tabs defaultValue="bets" className="w-full">
+                <TabsList className="flex w-full flex-wrap justify-start gap-1 bg-muted/30 rounded-xl p-1 h-auto mb-1">
+                  <TabsTrigger value="bets" className="rounded-lg text-[11px] px-2.5 py-1.5 data-[state=active]:bg-gradient-gold data-[state=active]:text-background">Bet History ({bets.length})</TabsTrigger>
+                  <TabsTrigger value="tx" className="rounded-lg text-[11px] px-2.5 py-1.5 data-[state=active]:bg-gradient-gold data-[state=active]:text-background">Token Tx ({tx.length})</TabsTrigger>
+                  <TabsTrigger value="withdrawals" className="rounded-lg text-[11px] px-2.5 py-1.5 data-[state=active]:bg-gradient-gold data-[state=active]:text-background">Withdrawals ({withdrawals.length})</TabsTrigger>
+                  <TabsTrigger value="promos" className="rounded-lg text-[11px] px-2.5 py-1.5 data-[state=active]:bg-gradient-gold data-[state=active]:text-background">Promos ({redemptions.length})</TabsTrigger>
+                  <TabsTrigger value="audit" className="rounded-lg text-[11px] px-2.5 py-1.5 data-[state=active]:bg-gradient-gold data-[state=active]:text-background">Admin Actions ({audits.length})</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="bets" className="mt-4 space-y-6">
               {/* BETS */}
               <section>
                 <div className="flex items-center justify-between mb-2">
@@ -955,7 +965,9 @@ function UserEditDialog({ user, roles, onClose }: { user: any; roles: string[]; 
                   })}
                 </div>
               </section>
+                </TabsContent>
 
+                <TabsContent value="tx" className="mt-4 space-y-6">
               {/* TOKEN TRANSACTIONS */}
               <section>
                 <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-2">Token transactions ({tx.length})</div>
@@ -1061,7 +1073,9 @@ function UserEditDialog({ user, roles, onClose }: { user: any; roles: string[]; 
                   })}
                 </div>
               </section>
+                </TabsContent>
 
+                <TabsContent value="withdrawals" className="mt-4 space-y-6">
               {/* WITHDRAWALS */}
               <section>
                 <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-2">Withdrawal requests ({withdrawals.length})</div>
@@ -1083,7 +1097,9 @@ function UserEditDialog({ user, roles, onClose }: { user: any; roles: string[]; 
                   ))}
                 </div>
               </section>
+                </TabsContent>
 
+                <TabsContent value="promos" className="mt-4 space-y-6">
               {/* PROMO REDEMPTIONS */}
               <section>
                 <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-2">Promo redemptions ({redemptions.length})</div>
@@ -1098,7 +1114,9 @@ function UserEditDialog({ user, roles, onClose }: { user: any; roles: string[]; 
                   ))}
                 </div>
               </section>
+                </TabsContent>
 
+                <TabsContent value="audit" className="mt-4 space-y-6">
               {/* ADMIN AUDIT TIMELINE */}
               <section>
                 <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-2">Admin actions on this user ({audits.length})</div>
@@ -1130,6 +1148,8 @@ function UserEditDialog({ user, roles, onClose }: { user: any; roles: string[]; 
                   })}
                 </div>
               </section>
+                </TabsContent>
+              </Tabs>
             </TabsContent>
           </Tabs>
         </div>
