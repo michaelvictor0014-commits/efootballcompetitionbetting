@@ -12,15 +12,18 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as WithdrawRouteImport } from './routes/withdraw'
 import { Route as WatchlistRouteImport } from './routes/watchlist'
 import { Route as VirtualRouteImport } from './routes/virtual'
+import { Route as TriviaRouteImport } from './routes/trivia'
 import { Route as TournamentRouteImport } from './routes/tournament'
 import { Route as TasksRouteImport } from './routes/tasks'
 import { Route as SurveysRouteImport } from './routes/surveys'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as PollsRouteImport } from './routes/polls'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as ModRouteImport } from './routes/mod'
 import { Route as MatchesRouteImport } from './routes/matches'
@@ -29,9 +32,11 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as GangsRouteImport } from './routes/gangs'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as FaqRouteImport } from './routes/faq'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as ChatRouteImport } from './routes/chat'
+import { Route as ArcadeRouteImport } from './routes/arcade'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AchievementsRouteImport } from './routes/achievements'
 import { Route as AboutRouteImport } from './routes/about'
@@ -55,6 +60,11 @@ const WatchlistRoute = WatchlistRouteImport.update({
 const VirtualRoute = VirtualRouteImport.update({
   id: '/virtual',
   path: '/virtual',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TriviaRoute = TriviaRouteImport.update({
+  id: '/trivia',
+  path: '/trivia',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TournamentRoute = TournamentRouteImport.update({
@@ -82,6 +92,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ShopRoute = ShopRouteImport.update({
+  id: '/shop',
+  path: '/shop',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -100,6 +115,11 @@ const RegisterRoute = RegisterRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PollsRoute = PollsRouteImport.update({
+  id: '/polls',
+  path: '/polls',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NotificationsRoute = NotificationsRouteImport.update({
@@ -142,6 +162,11 @@ const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -155,6 +180,11 @@ const CheckoutRoute = CheckoutRouteImport.update({
 const ChatRoute = ChatRouteImport.update({
   id: '/chat',
   path: '/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ArcadeRoute = ArcadeRouteImport.update({
+  id: '/arcade',
+  path: '/arcade',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -208,9 +238,11 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/achievements': typeof AchievementsRoute
   '/admin': typeof AdminRoute
+  '/arcade': typeof ArcadeRoute
   '/chat': typeof ChatRoute
   '/checkout': typeof CheckoutRoute
   '/dashboard': typeof DashboardRoute
+  '/faq': typeof FaqRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/gangs': typeof GangsRoute
   '/leaderboard': typeof LeaderboardRoute
@@ -219,15 +251,18 @@ export interface FileRoutesByFullPath {
   '/matches': typeof MatchesRouteWithChildren
   '/mod': typeof ModRoute
   '/notifications': typeof NotificationsRoute
+  '/polls': typeof PollsRoute
   '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
+  '/shop': typeof ShopRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/support': typeof SupportRoute
   '/surveys': typeof SurveysRoute
   '/tasks': typeof TasksRoute
   '/tournament': typeof TournamentRoute
+  '/trivia': typeof TriviaRoute
   '/virtual': typeof VirtualRouteWithChildren
   '/watchlist': typeof WatchlistRoute
   '/withdraw': typeof WithdrawRoute
@@ -242,9 +277,11 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/achievements': typeof AchievementsRoute
   '/admin': typeof AdminRoute
+  '/arcade': typeof ArcadeRoute
   '/chat': typeof ChatRoute
   '/checkout': typeof CheckoutRoute
   '/dashboard': typeof DashboardRoute
+  '/faq': typeof FaqRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/gangs': typeof GangsRoute
   '/leaderboard': typeof LeaderboardRoute
@@ -253,15 +290,18 @@ export interface FileRoutesByTo {
   '/matches': typeof MatchesRouteWithChildren
   '/mod': typeof ModRoute
   '/notifications': typeof NotificationsRoute
+  '/polls': typeof PollsRoute
   '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
+  '/shop': typeof ShopRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/support': typeof SupportRoute
   '/surveys': typeof SurveysRoute
   '/tasks': typeof TasksRoute
   '/tournament': typeof TournamentRoute
+  '/trivia': typeof TriviaRoute
   '/virtual': typeof VirtualRouteWithChildren
   '/watchlist': typeof WatchlistRoute
   '/withdraw': typeof WithdrawRoute
@@ -277,9 +317,11 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/achievements': typeof AchievementsRoute
   '/admin': typeof AdminRoute
+  '/arcade': typeof ArcadeRoute
   '/chat': typeof ChatRoute
   '/checkout': typeof CheckoutRoute
   '/dashboard': typeof DashboardRoute
+  '/faq': typeof FaqRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/gangs': typeof GangsRoute
   '/leaderboard': typeof LeaderboardRoute
@@ -288,15 +330,18 @@ export interface FileRoutesById {
   '/matches': typeof MatchesRouteWithChildren
   '/mod': typeof ModRoute
   '/notifications': typeof NotificationsRoute
+  '/polls': typeof PollsRoute
   '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
+  '/shop': typeof ShopRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/support': typeof SupportRoute
   '/surveys': typeof SurveysRoute
   '/tasks': typeof TasksRoute
   '/tournament': typeof TournamentRoute
+  '/trivia': typeof TriviaRoute
   '/virtual': typeof VirtualRouteWithChildren
   '/watchlist': typeof WatchlistRoute
   '/withdraw': typeof WithdrawRoute
@@ -313,9 +358,11 @@ export interface FileRouteTypes {
     | '/about'
     | '/achievements'
     | '/admin'
+    | '/arcade'
     | '/chat'
     | '/checkout'
     | '/dashboard'
+    | '/faq'
     | '/forgot-password'
     | '/gangs'
     | '/leaderboard'
@@ -324,15 +371,18 @@ export interface FileRouteTypes {
     | '/matches'
     | '/mod'
     | '/notifications'
+    | '/polls'
     | '/profile'
     | '/register'
     | '/reset-password'
     | '/settings'
+    | '/shop'
     | '/sitemap.xml'
     | '/support'
     | '/surveys'
     | '/tasks'
     | '/tournament'
+    | '/trivia'
     | '/virtual'
     | '/watchlist'
     | '/withdraw'
@@ -347,9 +397,11 @@ export interface FileRouteTypes {
     | '/about'
     | '/achievements'
     | '/admin'
+    | '/arcade'
     | '/chat'
     | '/checkout'
     | '/dashboard'
+    | '/faq'
     | '/forgot-password'
     | '/gangs'
     | '/leaderboard'
@@ -358,15 +410,18 @@ export interface FileRouteTypes {
     | '/matches'
     | '/mod'
     | '/notifications'
+    | '/polls'
     | '/profile'
     | '/register'
     | '/reset-password'
     | '/settings'
+    | '/shop'
     | '/sitemap.xml'
     | '/support'
     | '/surveys'
     | '/tasks'
     | '/tournament'
+    | '/trivia'
     | '/virtual'
     | '/watchlist'
     | '/withdraw'
@@ -381,9 +436,11 @@ export interface FileRouteTypes {
     | '/about'
     | '/achievements'
     | '/admin'
+    | '/arcade'
     | '/chat'
     | '/checkout'
     | '/dashboard'
+    | '/faq'
     | '/forgot-password'
     | '/gangs'
     | '/leaderboard'
@@ -392,15 +449,18 @@ export interface FileRouteTypes {
     | '/matches'
     | '/mod'
     | '/notifications'
+    | '/polls'
     | '/profile'
     | '/register'
     | '/reset-password'
     | '/settings'
+    | '/shop'
     | '/sitemap.xml'
     | '/support'
     | '/surveys'
     | '/tasks'
     | '/tournament'
+    | '/trivia'
     | '/virtual'
     | '/watchlist'
     | '/withdraw'
@@ -416,9 +476,11 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AchievementsRoute: typeof AchievementsRoute
   AdminRoute: typeof AdminRoute
+  ArcadeRoute: typeof ArcadeRoute
   ChatRoute: typeof ChatRoute
   CheckoutRoute: typeof CheckoutRoute
   DashboardRoute: typeof DashboardRoute
+  FaqRoute: typeof FaqRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   GangsRoute: typeof GangsRoute
   LeaderboardRoute: typeof LeaderboardRoute
@@ -427,15 +489,18 @@ export interface RootRouteChildren {
   MatchesRoute: typeof MatchesRouteWithChildren
   ModRoute: typeof ModRoute
   NotificationsRoute: typeof NotificationsRoute
+  PollsRoute: typeof PollsRoute
   ProfileRoute: typeof ProfileRoute
   RegisterRoute: typeof RegisterRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SettingsRoute: typeof SettingsRoute
+  ShopRoute: typeof ShopRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SupportRoute: typeof SupportRoute
   SurveysRoute: typeof SurveysRoute
   TasksRoute: typeof TasksRoute
   TournamentRoute: typeof TournamentRoute
+  TriviaRoute: typeof TriviaRoute
   VirtualRoute: typeof VirtualRouteWithChildren
   WatchlistRoute: typeof WatchlistRoute
   WithdrawRoute: typeof WithdrawRoute
@@ -465,6 +530,13 @@ declare module '@tanstack/react-router' {
       path: '/virtual'
       fullPath: '/virtual'
       preLoaderRoute: typeof VirtualRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/trivia': {
+      id: '/trivia'
+      path: '/trivia'
+      fullPath: '/trivia'
+      preLoaderRoute: typeof TriviaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tournament': {
@@ -502,6 +574,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/shop': {
+      id: '/shop'
+      path: '/shop'
+      fullPath: '/shop'
+      preLoaderRoute: typeof ShopRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
@@ -528,6 +607,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/polls': {
+      id: '/polls'
+      path: '/polls'
+      fullPath: '/polls'
+      preLoaderRoute: typeof PollsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/notifications': {
@@ -586,6 +672,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -605,6 +698,13 @@ declare module '@tanstack/react-router' {
       path: '/chat'
       fullPath: '/chat'
       preLoaderRoute: typeof ChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/arcade': {
+      id: '/arcade'
+      path: '/arcade'
+      fullPath: '/arcade'
+      preLoaderRoute: typeof ArcadeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -700,9 +800,11 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AchievementsRoute: AchievementsRoute,
   AdminRoute: AdminRoute,
+  ArcadeRoute: ArcadeRoute,
   ChatRoute: ChatRoute,
   CheckoutRoute: CheckoutRoute,
   DashboardRoute: DashboardRoute,
+  FaqRoute: FaqRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   GangsRoute: GangsRoute,
   LeaderboardRoute: LeaderboardRoute,
@@ -711,15 +813,18 @@ const rootRouteChildren: RootRouteChildren = {
   MatchesRoute: MatchesRouteWithChildren,
   ModRoute: ModRoute,
   NotificationsRoute: NotificationsRoute,
+  PollsRoute: PollsRoute,
   ProfileRoute: ProfileRoute,
   RegisterRoute: RegisterRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SettingsRoute: SettingsRoute,
+  ShopRoute: ShopRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SupportRoute: SupportRoute,
   SurveysRoute: SurveysRoute,
   TasksRoute: TasksRoute,
   TournamentRoute: TournamentRoute,
+  TriviaRoute: TriviaRoute,
   VirtualRoute: VirtualRouteWithChildren,
   WatchlistRoute: WatchlistRoute,
   WithdrawRoute: WithdrawRoute,

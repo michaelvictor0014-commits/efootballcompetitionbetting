@@ -79,6 +79,10 @@ export type Database = {
           closed_image: string | null
           closed_message: string
           closed_mode: boolean
+          coinflip_enabled: boolean | null
+          coinflip_max: number | null
+          coinflip_min: number | null
+          coinflip_payout: number | null
           contact_email: string | null
           contact_phone: string | null
           contact_whatsapp: string | null
@@ -125,6 +129,7 @@ export type Database = {
           nav_bg_fit: string | null
           nav_bg_position: string | null
           nav_bg_url: string | null
+          polls_enabled: boolean | null
           popup_ad_active: boolean
           popup_ad_image: string | null
           popup_ad_link: string | null
@@ -132,6 +137,9 @@ export type Database = {
           popup_ad_text: string | null
           referral_bonus_referee: number
           referral_bonus_referrer: number
+          scratch_enabled: boolean | null
+          scratch_price: number | null
+          shop_enabled: boolean | null
           site_bg_fit: string | null
           site_bg_position: string | null
           site_bg_url: string | null
@@ -145,6 +153,10 @@ export type Database = {
           tasks_bg_position: string | null
           tasks_bg_url: string | null
           terms_content: string | null
+          ticker_enabled: boolean | null
+          ticker_speed: number | null
+          ticker_text: string | null
+          trivia_enabled: boolean | null
           updated_at: string
           vapid_public_key: string | null
           vip_enabled: boolean
@@ -165,6 +177,9 @@ export type Database = {
           virtual_round_duration_seconds: number
           virtual_win_bonus_tokens: number
           virtual_xp_per_win: number
+          wheel_enabled: boolean | null
+          wheel_max: number | null
+          wheel_min: number | null
           why_trust_us: string | null
           xp_per_bet: number
           xp_per_login: number
@@ -181,6 +196,10 @@ export type Database = {
           closed_image?: string | null
           closed_message?: string
           closed_mode?: boolean
+          coinflip_enabled?: boolean | null
+          coinflip_max?: number | null
+          coinflip_min?: number | null
+          coinflip_payout?: number | null
           contact_email?: string | null
           contact_phone?: string | null
           contact_whatsapp?: string | null
@@ -227,6 +246,7 @@ export type Database = {
           nav_bg_fit?: string | null
           nav_bg_position?: string | null
           nav_bg_url?: string | null
+          polls_enabled?: boolean | null
           popup_ad_active?: boolean
           popup_ad_image?: string | null
           popup_ad_link?: string | null
@@ -234,6 +254,9 @@ export type Database = {
           popup_ad_text?: string | null
           referral_bonus_referee?: number
           referral_bonus_referrer?: number
+          scratch_enabled?: boolean | null
+          scratch_price?: number | null
+          shop_enabled?: boolean | null
           site_bg_fit?: string | null
           site_bg_position?: string | null
           site_bg_url?: string | null
@@ -247,6 +270,10 @@ export type Database = {
           tasks_bg_position?: string | null
           tasks_bg_url?: string | null
           terms_content?: string | null
+          ticker_enabled?: boolean | null
+          ticker_speed?: number | null
+          ticker_text?: string | null
+          trivia_enabled?: boolean | null
           updated_at?: string
           vapid_public_key?: string | null
           vip_enabled?: boolean
@@ -267,6 +294,9 @@ export type Database = {
           virtual_round_duration_seconds?: number
           virtual_win_bonus_tokens?: number
           virtual_xp_per_win?: number
+          wheel_enabled?: boolean | null
+          wheel_max?: number | null
+          wheel_min?: number | null
           why_trust_us?: string | null
           xp_per_bet?: number
           xp_per_login?: number
@@ -283,6 +313,10 @@ export type Database = {
           closed_image?: string | null
           closed_message?: string
           closed_mode?: boolean
+          coinflip_enabled?: boolean | null
+          coinflip_max?: number | null
+          coinflip_min?: number | null
+          coinflip_payout?: number | null
           contact_email?: string | null
           contact_phone?: string | null
           contact_whatsapp?: string | null
@@ -329,6 +363,7 @@ export type Database = {
           nav_bg_fit?: string | null
           nav_bg_position?: string | null
           nav_bg_url?: string | null
+          polls_enabled?: boolean | null
           popup_ad_active?: boolean
           popup_ad_image?: string | null
           popup_ad_link?: string | null
@@ -336,6 +371,9 @@ export type Database = {
           popup_ad_text?: string | null
           referral_bonus_referee?: number
           referral_bonus_referrer?: number
+          scratch_enabled?: boolean | null
+          scratch_price?: number | null
+          shop_enabled?: boolean | null
           site_bg_fit?: string | null
           site_bg_position?: string | null
           site_bg_url?: string | null
@@ -349,6 +387,10 @@ export type Database = {
           tasks_bg_position?: string | null
           tasks_bg_url?: string | null
           terms_content?: string | null
+          ticker_enabled?: boolean | null
+          ticker_speed?: number | null
+          ticker_text?: string | null
+          trivia_enabled?: boolean | null
           updated_at?: string
           vapid_public_key?: string | null
           vip_enabled?: boolean
@@ -369,6 +411,9 @@ export type Database = {
           virtual_round_duration_seconds?: number
           virtual_win_bonus_tokens?: number
           virtual_xp_per_win?: number
+          wheel_enabled?: boolean | null
+          wheel_max?: number | null
+          wheel_min?: number | null
           why_trust_us?: string | null
           xp_per_bet?: number
           xp_per_login?: number
@@ -477,6 +522,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      beneficiaries: {
+        Row: {
+          beneficiary_special_id: string
+          created_at: string
+          id: string
+          label: string
+          user_id: string
+        }
+        Insert: {
+          beneficiary_special_id: string
+          created_at?: string
+          id?: string
+          label: string
+          user_id: string
+        }
+        Update: {
+          beneficiary_special_id?: string
+          created_at?: string
+          id?: string
+          label?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       bet_selections: {
         Row: {
@@ -633,6 +702,39 @@ export type Database = {
           segment?: string
           sent_count?: number
           title?: string
+        }
+        Relationships: []
+      }
+      casino_plays: {
+        Row: {
+          created_at: string
+          detail: Json | null
+          game: string
+          id: string
+          outcome: string | null
+          payout: number
+          stake: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          detail?: Json | null
+          game: string
+          id?: string
+          outcome?: string | null
+          payout?: number
+          stake?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          detail?: Json | null
+          game?: string
+          id?: string
+          outcome?: string | null
+          payout?: number
+          stake?: number
+          user_id?: string
         }
         Relationships: []
       }
@@ -821,6 +923,72 @@ export type Database = {
           is_active?: boolean
           starts_at?: string | null
           title?: string
+        }
+        Relationships: []
+      }
+      faqs: {
+        Row: {
+          answer: string
+          category: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          question: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          answer: string
+          category?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          question: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          answer?: string
+          category?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          question?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      feedback: {
+        Row: {
+          admin_reply: string | null
+          category: string
+          created_at: string
+          id: string
+          message: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_reply?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          message: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_reply?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          message?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -1092,7 +1260,9 @@ export type Database = {
           status: string
           title: string
           updated_at: string
+          win_count: number
           winning_number: number | null
+          winning_numbers: number[] | null
         }
         Insert: {
           created_at?: string
@@ -1104,7 +1274,9 @@ export type Database = {
           status?: string
           title?: string
           updated_at?: string
+          win_count?: number
           winning_number?: number | null
+          winning_numbers?: number[] | null
         }
         Update: {
           created_at?: string
@@ -1116,7 +1288,9 @@ export type Database = {
           status?: string
           title?: string
           updated_at?: string
+          win_count?: number
           winning_number?: number | null
+          winning_numbers?: number[] | null
         }
         Relationships: []
       }
@@ -1125,7 +1299,8 @@ export type Database = {
           created_at: string
           draw_id: string
           id: string
-          number: number
+          number: number | null
+          numbers: number[] | null
           payout: number
           stake: number
           status: string
@@ -1135,7 +1310,8 @@ export type Database = {
           created_at?: string
           draw_id: string
           id?: string
-          number: number
+          number?: number | null
+          numbers?: number[] | null
           payout?: number
           stake: number
           status?: string
@@ -1145,7 +1321,8 @@ export type Database = {
           created_at?: string
           draw_id?: string
           id?: string
-          number?: number
+          number?: number | null
+          numbers?: number[] | null
           payout?: number
           stake?: number
           status?: string
@@ -1553,6 +1730,65 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      poll_votes: {
+        Row: {
+          created_at: string
+          id: string
+          poll_id: string
+          selected_index: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          poll_id: string
+          selected_index: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          poll_id?: string
+          selected_index?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      polls: {
+        Row: {
+          closes_at: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          options: Json
+          question: string
+        }
+        Insert: {
+          closes_at?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          options?: Json
+          question: string
+        }
+        Update: {
+          closes_at?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          options?: Json
+          question?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -1978,6 +2214,77 @@ export type Database = {
           starts_at?: string
         }
         Relationships: []
+      }
+      shop_items: {
+        Row: {
+          cost: number
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          name: string
+          stock: number | null
+          updated_at: string
+        }
+        Insert: {
+          cost?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name: string
+          stock?: number | null
+          updated_at?: string
+        }
+        Update: {
+          cost?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name?: string
+          stock?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      shop_redemptions: {
+        Row: {
+          cost: number
+          created_at: string
+          id: string
+          item_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          cost?: number
+          created_at?: string
+          id?: string
+          item_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          cost?: number
+          created_at?: string
+          id?: string
+          item_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shop_redemptions_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "shop_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       spins: {
         Row: {
@@ -2528,6 +2835,74 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      trivia_attempts: {
+        Row: {
+          created_at: string
+          id: string
+          is_correct: boolean
+          question_id: string
+          reward: number
+          selected_index: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_correct?: boolean
+          question_id: string
+          reward?: number
+          selected_index: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_correct?: boolean
+          question_id?: string
+          reward?: number
+          selected_index?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trivia_attempts_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "trivia_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trivia_questions: {
+        Row: {
+          correct_index: number
+          created_at: string
+          id: string
+          is_active: boolean
+          options: Json
+          question: string
+          reward: number
+        }
+        Insert: {
+          correct_index?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          options?: Json
+          question: string
+          reward?: number
+        }
+        Update: {
+          correct_index?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          options?: Json
+          question?: string
+          reward?: number
+        }
+        Relationships: []
       }
       user_achievements: {
         Row: {
@@ -3163,6 +3538,17 @@ export type Database = {
       }
     }
     Functions: {
+      _casino_settle: {
+        Args: {
+          _detail: Json
+          _game: string
+          _outcome: string
+          _payout: number
+          _stake: number
+          _user: string
+        }
+        Returns: Json
+      }
       admin_adjust_xp: {
         Args: { _delta: number; _reason?: string; _user_id: string }
         Returns: Json
@@ -3288,6 +3674,10 @@ export type Database = {
         Args: { _bet_id: string; _reason?: string; _refund?: boolean }
         Returns: undefined
       }
+      answer_trivia: {
+        Args: { _question_id: string; _selected_index: number }
+        Returns: Json
+      }
       apply_referral_code: { Args: { _code: string }; Returns: Json }
       approve_promo_request: {
         Args: { _id: string; _note?: string }
@@ -3353,6 +3743,10 @@ export type Database = {
         Args: { _draw_id: string; _number: number; _stake: number }
         Returns: Json
       }
+      place_lottery_ticket_multi: {
+        Args: { _draw_id: string; _numbers: number[]; _stake: number }
+        Returns: Json
+      }
       place_virtual_bet: {
         Args: { _match_id: string; _odd_id: string; _stake: number }
         Returns: Json
@@ -3361,6 +3755,12 @@ export type Database = {
         Args: { _selections: Json; _stake: number }
         Returns: Json
       }
+      play_coinflip: {
+        Args: { _choice: string; _stake: number }
+        Returns: Json
+      }
+      play_scratch: { Args: never; Returns: Json }
+      play_wheel: { Args: { _stake: number }; Returns: Json }
       public_profiles: {
         Args: { _ids?: string[] }
         Returns: {
@@ -3381,6 +3781,7 @@ export type Database = {
       recalc_vip_tier: { Args: { _user_id: string }; Returns: string }
       redeem_promo_code: { Args: { _code: string }; Returns: Json }
       redeem_referral_code: { Args: { _code: string }; Returns: Json }
+      redeem_shop_item: { Args: { _item_id: string }; Returns: Json }
       resolve_special_id: {
         Args: { _special_id: string }
         Returns: {
