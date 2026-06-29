@@ -3308,6 +3308,7 @@ const QUICK_ACTIONS: { i: any; l: string; t: string }[] = [
   { i: ClipboardList, l: "Bet Tracker", t: "bettracker" },
   { i: Eye, l: "Attendance", t: "attendance" },
   { i: Send, l: "Broadcast", t: "broadcast" },
+  { i: BellRing, l: "Push Blast", t: "pushblast" },
   { i: Sparkles, l: "Challenges", t: "challenges" },
   { i: MessageSquare, l: "Chat", t: "chat" },
   { i: Megaphone, l: "Content", t: "content" },
