@@ -63,7 +63,7 @@ export const broadcastPush = createServerFn({ method: "POST" })
         if (err?.statusCode === 410 || err?.statusCode === 404) dead.push(sub.id);
       }
     }
-    if (dead.length) await supabaseAdmin.from("push_subscriptions").delete().in("id", dead);
+    if (dead.length) await supabaseAdmin.from("push_subscriptions").update({ enabled: false, disabled_at: new Date().toISOString() } as any).in("id", dead);
 
     // Record the broadcast for history.
     await supabaseAdmin.from("broadcasts").insert({
@@ -76,4 +76,18 @@ export const broadcastPush = createServerFn({ method: "POST" })
     });
 
     return { ok: true, sent, removed: dead.length, total: (subs ?? []).length };
+  });
+
+export const getPushSubscriberCount = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+    if (!isAdmin) throw new Error("Forbidden");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { count } = await supabaseAdmin
+      .from("push_subscriptions")
+      .select("id", { count: "exact", head: true })
+      .eq("enabled", true);
+    return { count: count ?? 0 };
   });

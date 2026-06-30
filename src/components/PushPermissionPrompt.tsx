@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Bell, BellRing, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { getPushState, subscribeToPush, pushSupported } from "@/lib/push";
+import { getPushState, subscribeToPush, pushSupported, syncExistingPushSubscription } from "@/lib/push";
 import { toast } from "sonner";
 
 const DISMISS_KEY = "lsl-push-prompt-dismissed-at";
@@ -17,6 +17,14 @@ export function PushPermissionPrompt() {
     if (!user || !pushSupported()) return;
     let alive = true;
     (async () => {
+      // If this browser already allowed notifications, keep the DB record alive
+      // silently and do not keep asking after every refresh.
+      if (Notification.permission === "granted") {
+        await syncExistingPushSubscription(user.id);
+        if (!alive) return;
+        setShow(false);
+        return;
+      }
       const state = await getPushState();
       if (!alive) return;
       if (state === "subscribed" || state === "denied" || state === "unsupported") return;

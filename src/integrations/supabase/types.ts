@@ -2051,13 +2051,54 @@ export type Database = {
           },
         ]
       }
+      push_delivery_log: {
+        Row: {
+          created_at: string
+          delivered_at: string | null
+          last_error: string | null
+          notification_id: string
+          removed_count: number
+          sent_count: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          delivered_at?: string | null
+          last_error?: string | null
+          notification_id: string
+          removed_count?: number
+          sent_count?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          delivered_at?: string | null
+          last_error?: string | null
+          notification_id?: string
+          removed_count?: number
+          sent_count?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_delivery_log_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: true
+            referencedRelation: "notifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       push_subscriptions: {
         Row: {
           auth_key: string
           created_at: string
+          disabled_at: string | null
           enabled: boolean
           endpoint: string
+          failure_count: number
           id: string
+          last_seen_at: string
           p256dh: string
           user_agent: string | null
           user_id: string
@@ -2065,9 +2106,12 @@ export type Database = {
         Insert: {
           auth_key: string
           created_at?: string
+          disabled_at?: string | null
           enabled?: boolean
           endpoint: string
+          failure_count?: number
           id?: string
+          last_seen_at?: string
           p256dh: string
           user_agent?: string | null
           user_id: string
@@ -2075,9 +2119,12 @@ export type Database = {
         Update: {
           auth_key?: string
           created_at?: string
+          disabled_at?: string | null
           enabled?: boolean
           endpoint?: string
+          failure_count?: number
           id?: string
+          last_seen_at?: string
           p256dh?: string
           user_agent?: string | null
           user_id?: string

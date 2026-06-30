@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
-import { broadcastPush } from "@/lib/push-admin.functions";
+import { broadcastPush, getPushSubscriberCount } from "@/lib/push-admin.functions";
 import { toast } from "sonner";
 
 export function PushBroadcastPanel() {
   const send = useServerFn(broadcastPush);
+  const readCount = useServerFn(getPushSubscriberCount);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [link, setLink] = useState("");
@@ -18,11 +18,7 @@ export function PushBroadcastPanel() {
   const [count, setCount] = useState<number | null>(null);
 
   const loadCount = () => {
-    supabase
-      .from("push_subscriptions")
-      .select("id", { count: "exact", head: true })
-      .eq("enabled", true)
-      .then(({ count }) => setCount(count ?? 0));
+    readCount().then((r: any) => setCount(r?.count ?? 0)).catch(() => setCount(0));
   };
   useEffect(() => { loadCount(); }, []);
 

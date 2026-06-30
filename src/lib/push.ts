@@ -37,44 +37,17 @@ async function getVapidPublicKey(): Promise<string | null> {
   return (data as any)?.vapid_public_key || null;
 }
 
-/** Current permission/subscription state for the UI. */
-export async function getPushState(): Promise<PushState> {
-  if (!pushSupported()) return "unsupported";
-  if (Notification.permission === "denied") return "denied";
-  if (Notification.permission === "default") return "default";
+async function readLocalSubscription(): Promise<PushSubscription | null> {
+  if (!pushSupported() || Notification.permission !== "granted") return null;
   try {
     const reg = await navigator.serviceWorker.getRegistration();
-    const sub = reg ? await reg.pushManager.getSubscription() : null;
-    return sub ? "subscribed" : "granted";
+    return reg ? await reg.pushManager.getSubscription() : null;
   } catch {
-    return "granted";
+    return null;
   }
 }
 
-/**
- * Registers the service worker, requests permission, subscribes to push and
- * stores the subscription token in the database for the given user.
- */
-export async function subscribeToPush(userId: string): Promise<{ ok: boolean; error?: string }> {
-  if (!pushSupported()) return { ok: false, error: "Notifications are not supported on this device/browser." };
-
-  const vapid = await getVapidPublicKey();
-  if (!vapid) return { ok: false, error: "Push is not configured yet. Please try again later." };
-
-  const permission = await Notification.requestPermission();
-  if (permission !== "granted") return { ok: false, error: "Permission was not granted." };
-
-  const reg = await navigator.serviceWorker.register("/sw.js");
-  await navigator.serviceWorker.ready;
-
-  let sub = await reg.pushManager.getSubscription();
-  if (!sub) {
-    sub = await reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(vapid) as BufferSource,
-    });
-  }
-
+async function saveSubscription(userId: string, sub: PushSubscription): Promise<{ ok: boolean; error?: string }> {
   const json: any = sub.toJSON();
   const endpoint = sub.endpoint;
   const p256dh = json?.keys?.p256dh ?? bufToBase64(sub.getKey("p256dh"));
@@ -91,11 +64,65 @@ export async function subscribeToPush(userId: string): Promise<{ ok: boolean; er
         auth_key,
         user_agent: navigator.userAgent.slice(0, 300),
         enabled: true,
-      },
+        last_seen_at: new Date().toISOString(),
+        disabled_at: null,
+        failure_count: 0,
+      } as any,
       { onConflict: "endpoint" },
     );
   if (error) return { ok: false, error: error.message };
   return { ok: true };
+}
+
+/** Current permission/subscription state for the UI. */
+export async function getPushState(): Promise<PushState> {
+  if (!pushSupported()) return "unsupported";
+  if (Notification.permission === "denied") return "denied";
+  if (Notification.permission === "default") return "default";
+  try {
+    const reg = await navigator.serviceWorker.getRegistration();
+    const sub = reg ? await reg.pushManager.getSubscription() : null;
+    return sub ? "subscribed" : "granted";
+  } catch {
+    return "granted";
+  }
+}
+
+/** Silently keeps an already-allowed device stored in the database. */
+export async function syncExistingPushSubscription(userId: string): Promise<{ ok: boolean; error?: string; subscribed?: boolean }> {
+  if (!pushSupported()) return { ok: false, error: "Notifications are not supported on this device/browser." };
+  if (Notification.permission !== "granted") return { ok: true, subscribed: false };
+  const sub = await readLocalSubscription();
+  if (!sub) return { ok: true, subscribed: false };
+  const saved = await saveSubscription(userId, sub);
+  return { ...saved, subscribed: saved.ok };
+}
+
+/**
+ * Registers the service worker, requests permission, subscribes to push and
+ * stores the subscription token in the database for the given user.
+ */
+export async function subscribeToPush(userId: string): Promise<{ ok: boolean; error?: string }> {
+  if (!pushSupported()) return { ok: false, error: "Notifications are not supported on this device/browser." };
+
+  const vapid = await getVapidPublicKey();
+  if (!vapid) return { ok: false, error: "Push is not configured yet. Please try again later." };
+
+  const permission = Notification.permission === "granted" ? "granted" : await Notification.requestPermission();
+  if (permission !== "granted") return { ok: false, error: "Permission was not granted." };
+
+  const reg = await navigator.serviceWorker.register("/sw.js");
+  await navigator.serviceWorker.ready;
+
+  let sub = await reg.pushManager.getSubscription();
+  if (!sub) {
+    sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(vapid) as BufferSource,
+    });
+  }
+
+  return saveSubscription(userId, sub);
 }
 
 /** Removes the local subscription and disables it in the database. */
