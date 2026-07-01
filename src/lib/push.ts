@@ -47,6 +47,25 @@ async function readLocalSubscription(): Promise<PushSubscription | null> {
   }
 }
 
+async function ensurePushSubscription(): Promise<{ sub: PushSubscription | null; error?: string }> {
+  if (!pushSupported() || Notification.permission !== "granted") return { sub: null };
+  const vapid = await getVapidPublicKey();
+  if (!vapid) return { sub: null, error: "Push is not configured yet. Please try again later." };
+
+  const existingReg = await navigator.serviceWorker.getRegistration();
+  const reg = existingReg ?? await navigator.serviceWorker.register("/sw.js");
+  await navigator.serviceWorker.ready;
+
+  let sub = await reg.pushManager.getSubscription();
+  if (!sub) {
+    sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(vapid) as BufferSource,
+    });
+  }
+  return { sub };
+}
+
 async function saveSubscription(userId: string, sub: PushSubscription): Promise<{ ok: boolean; error?: string }> {
   const json: any = sub.toJSON();
   const endpoint = sub.endpoint;
@@ -62,6 +81,7 @@ async function saveSubscription(userId: string, sub: PushSubscription): Promise<
         endpoint,
         p256dh,
         auth_key,
+        locale: navigator.language || null,
         user_agent: navigator.userAgent.slice(0, 300),
         enabled: true,
         last_seen_at: new Date().toISOString(),
@@ -92,7 +112,9 @@ export async function getPushState(): Promise<PushState> {
 export async function syncExistingPushSubscription(userId: string): Promise<{ ok: boolean; error?: string; subscribed?: boolean }> {
   if (!pushSupported()) return { ok: false, error: "Notifications are not supported on this device/browser." };
   if (Notification.permission !== "granted") return { ok: true, subscribed: false };
-  const sub = await readLocalSubscription();
+  const ensured = await ensurePushSubscription();
+  if (ensured.error) return { ok: false, error: ensured.error, subscribed: false };
+  const sub = ensured.sub ?? await readLocalSubscription();
   if (!sub) return { ok: true, subscribed: false };
   const saved = await saveSubscription(userId, sub);
   return { ...saved, subscribed: saved.ok };
@@ -105,22 +127,13 @@ export async function syncExistingPushSubscription(userId: string): Promise<{ ok
 export async function subscribeToPush(userId: string): Promise<{ ok: boolean; error?: string }> {
   if (!pushSupported()) return { ok: false, error: "Notifications are not supported on this device/browser." };
 
-  const vapid = await getVapidPublicKey();
-  if (!vapid) return { ok: false, error: "Push is not configured yet. Please try again later." };
-
   const permission = Notification.permission === "granted" ? "granted" : await Notification.requestPermission();
   if (permission !== "granted") return { ok: false, error: "Permission was not granted." };
 
-  const reg = await navigator.serviceWorker.register("/sw.js");
-  await navigator.serviceWorker.ready;
-
-  let sub = await reg.pushManager.getSubscription();
-  if (!sub) {
-    sub = await reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(vapid) as BufferSource,
-    });
-  }
+  const ensured = await ensurePushSubscription();
+  if (ensured.error) return { ok: false, error: ensured.error };
+  const sub = ensured.sub;
+  if (!sub) return { ok: false, error: "Could not create a push subscription on this device." };
 
   return saveSubscription(userId, sub);
 }

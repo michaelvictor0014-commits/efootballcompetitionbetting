@@ -2099,6 +2099,7 @@ export type Database = {
           failure_count: number
           id: string
           last_seen_at: string
+          locale: string | null
           p256dh: string
           user_agent: string | null
           user_id: string
@@ -2112,6 +2113,7 @@ export type Database = {
           failure_count?: number
           id?: string
           last_seen_at?: string
+          locale?: string | null
           p256dh: string
           user_agent?: string | null
           user_id: string
@@ -2125,6 +2127,7 @@ export type Database = {
           failure_count?: number
           id?: string
           last_seen_at?: string
+          locale?: string | null
           p256dh?: string
           user_agent?: string | null
           user_id?: string
