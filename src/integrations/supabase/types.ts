@@ -426,6 +426,7 @@ export type Database = {
         Row: {
           admin_ai_enabled: boolean
           admin_ai_model: string
+          broadcast_endpoint_url: string | null
           exposure_warn_pct: number
           house_low_balance: number
           id: number
@@ -436,6 +437,7 @@ export type Database = {
         Insert: {
           admin_ai_enabled?: boolean
           admin_ai_model?: string
+          broadcast_endpoint_url?: string | null
           exposure_warn_pct?: number
           house_low_balance?: number
           id?: number
@@ -446,6 +448,7 @@ export type Database = {
         Update: {
           admin_ai_enabled?: boolean
           admin_ai_model?: string
+          broadcast_endpoint_url?: string | null
           exposure_warn_pct?: number
           house_low_balance?: number
           id?: number
@@ -1132,6 +1135,48 @@ export type Database = {
           media_type?: string
           media_url?: string
           title?: string
+        }
+        Relationships: []
+      }
+      home_banners: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          cta_label: string
+          id: string
+          image_url: string
+          is_active: boolean
+          link_url: string
+          sort_order: number
+          subtitle: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string
+          id?: string
+          image_url: string
+          is_active?: boolean
+          link_url?: string
+          sort_order?: number
+          subtitle?: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string
+          id?: string
+          image_url?: string
+          is_active?: boolean
+          link_url?: string
+          sort_order?: number
+          subtitle?: string
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -2201,6 +2246,7 @@ export type Database = {
           last_active_days: number | null
           link: string
           locale: string
+          repeat_interval: string
           role: string
           scheduled_for: string
           sent_at: string | null
@@ -2219,6 +2265,7 @@ export type Database = {
           last_active_days?: number | null
           link?: string
           locale?: string
+          repeat_interval?: string
           role?: string
           scheduled_for: string
           sent_at?: string | null
@@ -2237,6 +2284,7 @@ export type Database = {
           last_active_days?: number | null
           link?: string
           locale?: string
+          repeat_interval?: string
           role?: string
           scheduled_for?: string
           sent_at?: string | null
