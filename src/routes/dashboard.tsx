@@ -196,51 +196,6 @@ function GiftsAndSpin({ onClaimed }: { onClaimed: () => void }) {
   );
 }
 
-function TransactionRecords() {
-  const { user } = useAuth();
-  const [txns, setTxns] = useState<any[]>([]);
-  const [filter, setFilter] = useState<"all" | "credit" | "debit">("all");
-  useEffect(() => {
-    if (!user) return;
-    const load = () => supabase.from("token_transactions").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(100)
-      .then(({ data }) => setTxns(data ?? []));
-    load();
-    const ch = supabase.channel(`my-txns-${user.id}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "token_transactions", filter: `user_id=eq.${user.id}` }, load)
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
-  }, [user?.id]);
-  const filtered = txns.filter((t) => filter === "all" || (filter === "credit" ? t.amount > 0 : t.amount < 0));
-  return (
-    <div className="mt-10">
-      <h2 className="text-xl font-bold flex items-center gap-2 mb-4"><Receipt className="h-5 w-5 text-primary" />Transaction Records</h2>
-      <div className="flex gap-2 mb-4">
-        {[{ k: "all", l: "All" }, { k: "credit", l: "Credits" }, { k: "debit", l: "Debits" }].map((f) => (
-          <button key={f.k} onClick={() => setFilter(f.k as any)} className={`text-xs font-semibold rounded-full px-3 py-1.5 border transition ${filter === f.k ? "bg-primary/20 border-primary/60 text-primary" : "border-border text-muted-foreground hover:text-foreground hover:border-primary/40"}`}>{f.l}</button>
-        ))}
-      </div>
-      <div className="space-y-2">
-        {filtered.length === 0 && <p className="text-sm text-muted-foreground">No transactions yet.</p>}
-        {filtered.map((t) => (
-          <Card key={t.id} className="p-3">
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <div className="font-semibold text-sm capitalize">{String(t.kind).replace(/_/g, " ")}</div>
-                {t.description && <div className="text-[11px] text-muted-foreground truncate">{t.description}</div>}
-                <div className="text-[10px] text-muted-foreground mt-0.5">{new Date(t.created_at).toLocaleString()}</div>
-              </div>
-              <div className="text-right">
-                <div className={`font-bold ${t.amount >= 0 ? "text-emerald-300" : "text-destructive"}`}>{t.amount >= 0 ? "+" : ""}{Number(t.amount).toLocaleString()}</div>
-                <div className="text-[10px] text-muted-foreground">bal {Number(t.balance_after).toLocaleString()}</div>
-              </div>
-            </div>
-          </Card>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function StatCard({ label, value, accent }: { label: string; value: string; accent?: "primary" | "emerald" }) {
   const tone = accent === "primary" ? "text-primary" : accent === "emerald" ? "text-emerald-300" : "text-foreground";
   return (
