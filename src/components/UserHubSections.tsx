@@ -174,11 +174,13 @@ export function VipCard() {
               const m = TIER_META[t];
               const reached = xp >= m.min;
               const isCurrent = t === tier;
+              // Blind progression: only reveal names for tiers already reached (or the current one).
+              const revealName = reached || isCurrent;
               return (
                 <div key={t} className={`flex items-center justify-between text-xs rounded-md px-2 py-1.5 ${isCurrent ? "bg-amber-500/15 border border-amber-500/40" : "bg-background/30"}`}>
                   <div className="flex items-center gap-2">
                     <span className={`h-2 w-2 rounded-full bg-gradient-to-r ${m.color}`} />
-                    <span className={reached ? "font-semibold" : "text-muted-foreground"}>{m.label}</span>
+                    <span className={reached ? "font-semibold" : "text-muted-foreground"}>{revealName ? m.label : "???"}</span>
                     {isCurrent && <Badge variant="outline" className="h-4 px-1 text-[9px]">YOU</Badge>}
                   </div>
                   <span className={`text-[10px] font-semibold ${reached ? "text-emerald-300" : "text-muted-foreground"}`}>
