@@ -881,3 +881,33 @@
   50%      { box-shadow: 0 0 40px 6px rgba(16,185,129,.45); }
 }
 .animate-win-glow { animation: win-glow 1.4s ease-in-out infinite; }
+
+/* ================= STREAK FIRE CELEBRATION ================= */
+@keyframes streak-flame-rise {
+  0%   { transform: translateY(20%) scale(0.85) rotate(-2deg); opacity: 0; }
+  20%  { opacity: 1; }
+  50%  { transform: translateY(-6%) scale(1.08) rotate(2deg); }
+  100% { transform: translateY(-14%) scale(1) rotate(0deg); opacity: 1; }
+}
+@keyframes streak-flicker {
+  0%, 100% { transform: scale(1) translateY(0); filter: brightness(1); }
+  25%      { transform: scale(1.06) translateY(-3%); filter: brightness(1.15); }
+  50%      { transform: scale(0.97) translateY(1%); filter: brightness(0.95); }
+  75%      { transform: scale(1.04) translateY(-2%); filter: brightness(1.1); }
+}
+@keyframes streak-ember {
+  0%   { transform: translateY(0) scale(1); opacity: 0.9; }
+  100% { transform: translateY(-120px) scale(0.2); opacity: 0; }
+}
+@keyframes streak-backdrop {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes streak-ring {
+  0%   { transform: scale(0.6); opacity: 0.8; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+.streak-flame { animation: streak-flame-rise 0.5s cubic-bezier(.22,1,.36,1) both, streak-flicker 0.9s ease-in-out 0.5s infinite; }
+.streak-ember { animation: streak-ember 1.4s ease-out forwards; }
+.streak-ring  { animation: streak-ring 1.2s ease-out forwards; }
+.streak-backdrop { animation: streak-backdrop 0.3s ease-out both; }
