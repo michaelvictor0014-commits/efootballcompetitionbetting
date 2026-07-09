@@ -102,7 +102,7 @@ function LotteryPage() {
               {myTickets.map((t) => (
                 <Card key={t.id} className="p-3 flex items-center justify-between flex-wrap gap-2">
                   <div>
-                    <div className="font-bold text-sm">{t.lottery_draws?.title} · picked <span className="text-primary">{t.number}</span></div>
+                    <div className="font-bold text-sm">{t.lottery_draws?.title} · picked <span className="text-primary">{(Array.isArray(t.numbers) && t.numbers.length ? t.numbers : [t.number]).join(", ")}</span></div>
                     <div className="text-xs text-muted-foreground">Stake {Number(t.stake).toLocaleString()}{t.lottery_draws?.status === "drawn" && <> · winner was {t.lottery_draws?.winning_number}</>}</div>
                   </div>
                   <Badge variant="outline" className={t.status === "won" ? "border-emerald-500/50 text-emerald-300" : t.status === "lost" ? "border-destructive/50 text-destructive" : "border-primary/50 text-primary"}>
