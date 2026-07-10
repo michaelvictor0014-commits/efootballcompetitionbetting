@@ -92,6 +92,9 @@ export type Database = {
           daily_login_max_streak: number
           discord_support_url: string | null
           emblem_auto_approve: boolean
+          featured_bg_fit: string | null
+          featured_bg_position: string | null
+          featured_bg_url: string | null
           force_reload_at: string | null
           friends_enabled: boolean
           futures_max_payout: number
@@ -210,6 +213,9 @@ export type Database = {
           daily_login_max_streak?: number
           discord_support_url?: string | null
           emblem_auto_approve?: boolean
+          featured_bg_fit?: string | null
+          featured_bg_position?: string | null
+          featured_bg_url?: string | null
           force_reload_at?: string | null
           friends_enabled?: boolean
           futures_max_payout?: number
@@ -328,6 +334,9 @@ export type Database = {
           daily_login_max_streak?: number
           discord_support_url?: string | null
           emblem_auto_approve?: boolean
+          featured_bg_fit?: string | null
+          featured_bg_position?: string | null
+          featured_bg_url?: string | null
           force_reload_at?: string | null
           friends_enabled?: boolean
           futures_max_payout?: number

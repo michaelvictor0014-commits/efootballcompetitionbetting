@@ -76,12 +76,12 @@ export function MatchCardLive({ match }: { match: MatchRow }) {
                 }}
                 className={`px-2 py-2 rounded-md text-xs font-bold transition-all border ${
                   locked ? "bg-secondary/30 text-muted-foreground cursor-not-allowed border-transparent"
-                  : selected ? "bg-primary text-primary-foreground border-transparent"
-                  : "bg-secondary/40 border-border hover:border-primary/60"
+                  : selected ? "bg-primary text-primary-foreground border-transparent shadow-[0_0_0_1px_hsl(var(--primary))]"
+                  : "bg-emerald-500/10 border-emerald-500/25 text-emerald-100 hover:bg-emerald-500/20 hover:border-emerald-400/50"
                 }`}
               >
                 <div className="text-[9px] uppercase tracking-wider opacity-80 truncate">{o.label}</div>
-                <div className="text-sm flex items-center justify-center gap-1">
+                <div className="text-sm font-mono flex items-center justify-center gap-1">
                   {locked && <Lock className="h-3 w-3" />}{Number(o.value).toFixed(2)}
                 </div>
               </button>

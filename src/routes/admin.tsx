@@ -3683,6 +3683,17 @@ function SettingsPanel() {
           help="Background image behind the hero headline at the very top of the home page. Leave empty for a clean dark hero (no image)."
         />
         <ImageSettingControl
+          label="Featured Matches background"
+          value={s.featured_bg_url}
+          onChange={(url) => setS({ ...s, featured_bg_url: url })}
+          fit={s.featured_bg_fit ?? "cover"}
+          onFitChange={(v) => setS({ ...s, featured_bg_fit: v })}
+          position={s.featured_bg_position ?? "center"}
+          onPositionChange={(v) => setS({ ...s, featured_bg_position: v })}
+          aspect="16 / 9"
+          help="Background image shown behind the “Featured Matches” section on the home page. Only appears when there is NO active Seasonal Tournament. Leave empty for the plain dark section."
+        />
+        <ImageSettingControl
           label="Admin console header image"
           value={s.admin_hero_url}
           onChange={(url) => setS({ ...s, admin_hero_url: url })}
