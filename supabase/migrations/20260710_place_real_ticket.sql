@@ -2,8 +2,8 @@
 CREATE OR REPLACE FUNCTION public.place_real_ticket(
   _selections json,
   _stake bigint,
-  _total_odds numeric,
-  _potential_payout bigint
+  _potential_payout bigint,
+  _total_odds numeric
 )
 RETURNS json
 LANGUAGE plpgsql
@@ -81,4 +81,4 @@ END;
 $$;
 
 -- Grant execute to authenticated users
-GRANT EXECUTE ON FUNCTION public.place_real_ticket(json, bigint, numeric, bigint) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.place_real_ticket(json, bigint, bigint, numeric) TO authenticated;
