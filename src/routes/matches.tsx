@@ -66,8 +66,8 @@ function MatchesPage() {
               {groups[k].length === 0 ? (
                 <p className="text-muted-foreground text-sm">No matches in this section.</p>
               ) : (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {groups[k].map((m) => <MatchCardLive key={m.id} match={m} />)}
+                <div className="space-y-2 max-w-3xl">
+                  {groups[k].map((m) => <MatchCardLive key={m.id} match={m} variant="row" />)}
                 </div>
               )}
             </TabsContent>
