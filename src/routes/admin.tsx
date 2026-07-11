@@ -3715,17 +3715,9 @@ function SettingsPanel() {
           aspect="21 / 9"
           help="Background image behind the hero headline at the very top of the home page. Leave empty for a clean dark hero (no image)."
         />
-        <ImageSettingControl
-          label="Featured Matches background"
-          value={s.featured_bg_url}
-          onChange={(url) => setS({ ...s, featured_bg_url: url })}
-          fit={s.featured_bg_fit ?? "cover"}
-          onFitChange={(v) => setS({ ...s, featured_bg_fit: v })}
-          position={s.featured_bg_position ?? "center"}
-          onPositionChange={(v) => setS({ ...s, featured_bg_position: v })}
-          aspect="16 / 9"
-          help="Background image shown behind the “Featured Matches” section on the home page. Only appears when there is NO active Seasonal Tournament. Leave empty for the plain dark section."
-        />
+        <div className="rounded-lg border border-primary/15 bg-background/30 p-3 text-[11px] text-muted-foreground">
+          <span className="font-semibold text-foreground">Featured match images</span> are now set per match. Add an image when you create or edit a Featured match (or shooter match / tournament fixture) — it appears as the backdrop of that specific match in the home page Featured section.
+        </div>
         <ImageSettingControl
           label="Admin console header image"
           value={s.admin_hero_url}
