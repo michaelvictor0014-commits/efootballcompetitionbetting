@@ -146,7 +146,7 @@ function BetTicket({ bet, viewerId }: { bet: any; viewerId: string }) {
 
   return (
     <Layout>
-      <div className="w-full max-w-xl px-3 py-6 md:ml-0 md:mr-auto">
+      <div className="w-full max-w-3xl px-3 py-6 md:ml-0 md:mr-auto">
         <Link to="/dashboard" className="text-muted-foreground text-sm flex items-center gap-1 hover:text-primary mb-3">
           <ArrowLeft className="h-4 w-4" />
           My bets
