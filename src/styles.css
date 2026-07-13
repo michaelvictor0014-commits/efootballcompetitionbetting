@@ -885,3 +885,37 @@
 .streak-ember { animation: streak-ember 1.4s ease-out forwards; }
 .streak-ring  { animation: streak-ring 1.2s ease-out forwards; }
 .streak-backdrop { animation: streak-backdrop 0.3s ease-out both; }
+
+/* ================= WIN TROPHY CELEBRATION ================= */
+@keyframes trophy-pop {
+  0%   { transform: scale(0.2) rotate(-14deg); opacity: 0; }
+  55%  { transform: scale(1.14) rotate(4deg); opacity: 1; }
+  72%  { transform: scale(0.94) rotate(-2deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+@keyframes trophy-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+@keyframes trophy-shine {
+  0%   { transform: translateX(-140%) skewX(-18deg); }
+  60%, 100% { transform: translateX(240%) skewX(-18deg); }
+}
+@keyframes trophy-ring {
+  0%   { transform: scale(0.55); opacity: 0.7; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+@keyframes win-text-rise {
+  0%   { transform: translateY(18px) scale(0.96); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes confetti-fall {
+  0%   { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}
+.trophy-pop   { animation: trophy-pop 0.7s cubic-bezier(.22,1.2,.36,1) both; }
+.trophy-float { animation: trophy-float 2.6s ease-in-out infinite; }
+.trophy-shine { animation: trophy-shine 2.8s ease-in-out infinite; }
+.trophy-ring  { animation: trophy-ring 1.6s ease-out infinite; }
+.win-text-rise { animation: win-text-rise 0.6s ease-out both; }
+.confetti-piece { animation: confetti-fall linear forwards; }
