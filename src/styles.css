@@ -222,32 +222,19 @@
 @layer utilities {
   .voucher-bg {
     background:
-      radial-gradient(ellipse at top left, oklch(0.40 0.13 152 / 0.55), transparent 60%),
-      radial-gradient(ellipse at bottom right, oklch(0.42 0.11 78 / 0.45), transparent 64%),
-      radial-gradient(ellipse at center, oklch(0.22 0.08 158 / 0.40), transparent 72%),
       linear-gradient(160deg,
-        oklch(0.18 0.07 158) 0%,
-        oklch(0.15 0.06 156) 38%,
-        oklch(0.16 0.06 110) 62%,
-        oklch(0.18 0.07 78) 85%,
-        oklch(0.13 0.06 70) 100%);
-    backdrop-filter: blur(22px) saturate(180%);
+        oklch(0.20 0.03 158 / 0.55) 0%,
+        oklch(0.17 0.02 150 / 0.50) 50%,
+        oklch(0.18 0.03 90 / 0.52) 100%);
+    backdrop-filter: blur(26px) saturate(120%);
   }
   .voucher-frame {
     border-radius: 32px;
     box-shadow:
-      0 0 0 2px oklch(0.85 0.22 152 / 0.80),
-      0 0 0 5px oklch(0.10 0.04 158 / 0.95),
-      0 0 0 8px oklch(0.62 0.15 82 / 0.70),
-      0 0 0 10px oklch(0.45 0.12 80 / 0.55),
-      0 18px 34px -8px oklch(0 0 0 / 0.85),
-      0 34px 70px -14px oklch(0 0 0 / 0.75),
-      0 0 34px -2px oklch(0.85 0.22 152 / 0.55),
-      0 0 90px -8px oklch(0.60 0.16 82 / 0.45),
-      inset 0 3px 0 oklch(0.95 0.16 152 / 0.22),
-      inset 0 -5px 0 oklch(0 0 0 / 0.75),
-      inset 10px 0 18px -10px oklch(0.90 0.18 152 / 0.20),
-      inset -10px 0 18px -10px oklch(0.62 0.15 82 / 0.20);
+      0 0 0 1px oklch(0.85 0.10 120 / 0.30),
+      0 20px 40px -14px oklch(0 0 0 / 0.60),
+      0 40px 80px -30px oklch(0 0 0 / 0.45),
+      inset 0 1px 0 oklch(1 0 0 / 0.08);
     transition: transform .4s ease, box-shadow .4s ease;
   }
   .voucher-circuit {
@@ -269,15 +256,15 @@
   .voucher-holo {
     background:
       conic-gradient(from 90deg at 50% 50%,
-        oklch(0.85 0.18 30 / 0.55),
-        oklch(0.85 0.18 90 / 0.55),
-        oklch(0.85 0.18 158 / 0.55),
-        oklch(0.85 0.18 240 / 0.55),
-        oklch(0.85 0.18 320 / 0.55),
-        oklch(0.85 0.18 30 / 0.55));
-    filter: blur(2px) saturate(140%);
+        oklch(0.80 0.05 30 / 0.18),
+        oklch(0.80 0.05 90 / 0.18),
+        oklch(0.80 0.05 158 / 0.18),
+        oklch(0.80 0.05 240 / 0.18),
+        oklch(0.80 0.05 320 / 0.18),
+        oklch(0.80 0.05 30 / 0.18));
+    filter: blur(3px);
     mix-blend-mode: screen;
-    opacity: 0.55;
+    opacity: 0.18;
   }
   .voucher-perforation {
     background-image: radial-gradient(circle, var(--background) 4px, transparent 4.5px);
@@ -311,27 +298,20 @@
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    filter: drop-shadow(0 0 10px oklch(0.85 0.22 152 / 0.45)) drop-shadow(0 1px 0 oklch(0 0 0 / 0.4));
+    filter: drop-shadow(0 1px 0 oklch(0 0 0 / 0.4));
   }
   .neon-green {
     color: oklch(0.85 0.22 152);
-    text-shadow:
-      0 0 6px oklch(0.85 0.22 152 / 0.7),
-      0 0 18px oklch(0.65 0.22 152 / 0.5);
   }
   .neon-green-border {
-    box-shadow:
-      0 0 0 1px oklch(0.85 0.22 152 / 0.55),
-      0 0 14px -2px oklch(0.85 0.22 152 / 0.6);
+    box-shadow: 0 0 0 1px oklch(0.85 0.22 152 / 0.40);
   }
   .voucher-row {
-    background: linear-gradient(135deg, oklch(0.22 0.07 158 / 0.58), oklch(0.17 0.06 110 / 0.62), oklch(0.18 0.06 80 / 0.55));
-    border: 1px solid oklch(0.72 0.16 110 / 0.34);
+    background: oklch(0.22 0.02 158 / 0.35);
+    border: 1px solid oklch(0.80 0.04 120 / 0.16);
     border-radius: 18px;
-    backdrop-filter: blur(10px) saturate(150%);
-    box-shadow:
-      inset 0 1px 0 oklch(0.95 0.16 152 / 0.12),
-      0 0 16px -4px oklch(0.72 0.18 110 / 0.35);
+    backdrop-filter: blur(14px) saturate(115%);
+    box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.06);
   }
   .voucher-dashed {
     background-image: linear-gradient(90deg, oklch(0.85 0.22 152 / 0.7) 50%, transparent 50%);
@@ -350,40 +330,34 @@
     border-radius: 4px;
   }
   .badge-won {
-    background: oklch(0.18 0.06 158 / 0.85);
+    background: oklch(0.18 0.06 158 / 0.55);
     color: oklch(0.88 0.22 152);
-    border: 1.5px solid oklch(0.85 0.22 152 / 0.85);
-    box-shadow: 0 0 10px oklch(0.85 0.22 152 / 0.45), inset 0 0 8px oklch(0.85 0.22 152 / 0.25);
+    border: 1px solid oklch(0.85 0.22 152 / 0.55);
   }
   .badge-lost {
-    background: oklch(0.18 0.05 25 / 0.7);
+    background: oklch(0.18 0.05 25 / 0.5);
     color: oklch(0.78 0.22 25);
-    border: 1.5px solid oklch(0.78 0.22 25 / 0.85);
-    box-shadow: 0 0 10px oklch(0.78 0.22 25 / 0.45), inset 0 0 8px oklch(0.78 0.22 25 / 0.25);
+    border: 1px solid oklch(0.78 0.22 25 / 0.55);
   }
   .badge-pending {
-    background: oklch(0.18 0.06 90 / 0.7);
+    background: oklch(0.18 0.06 90 / 0.5);
     color: oklch(0.85 0.18 90);
-    border: 1.5px solid oklch(0.82 0.17 90 / 0.85);
-    box-shadow: 0 0 10px oklch(0.82 0.17 90 / 0.45), inset 0 0 8px oklch(0.82 0.17 90 / 0.25);
+    border: 1px solid oklch(0.82 0.17 90 / 0.55);
   }
   .voucher-status-bar-lost {
-    background: linear-gradient(90deg, oklch(0.22 0.08 25 / 0.5), oklch(0.18 0.10 25 / 0.7), oklch(0.22 0.08 25 / 0.5));
-    border: 1.5px solid oklch(0.78 0.22 25 / 0.7);
+    background: oklch(0.20 0.06 25 / 0.35);
+    border: 1px solid oklch(0.78 0.22 25 / 0.45);
     color: oklch(0.85 0.22 25);
-    box-shadow: 0 0 18px -4px oklch(0.78 0.22 25 / 0.6), inset 0 0 14px oklch(0.78 0.22 25 / 0.18);
   }
   .voucher-status-bar-won {
-    background: linear-gradient(90deg, oklch(0.22 0.08 158 / 0.5), oklch(0.18 0.10 158 / 0.7), oklch(0.22 0.08 158 / 0.5));
-    border: 1.5px solid oklch(0.85 0.22 152 / 0.7);
+    background: oklch(0.20 0.06 158 / 0.35);
+    border: 1px solid oklch(0.85 0.22 152 / 0.45);
     color: oklch(0.88 0.22 152);
-    box-shadow: 0 0 18px -4px oklch(0.85 0.22 152 / 0.6), inset 0 0 14px oklch(0.85 0.22 152 / 0.18);
   }
   .voucher-status-bar-pending {
-    background: linear-gradient(90deg, oklch(0.22 0.08 90 / 0.5), oklch(0.18 0.10 90 / 0.7), oklch(0.22 0.08 90 / 0.5));
-    border: 1.5px solid oklch(0.82 0.17 90 / 0.7);
+    background: oklch(0.20 0.06 90 / 0.35);
+    border: 1px solid oklch(0.82 0.17 90 / 0.45);
     color: oklch(0.88 0.17 90);
-    box-shadow: 0 0 18px -4px oklch(0.82 0.17 90 / 0.6), inset 0 0 14px oklch(0.82 0.17 90 / 0.18);
   }
 }
 
