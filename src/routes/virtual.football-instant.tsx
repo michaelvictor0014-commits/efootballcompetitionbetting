@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Layout } from "@/components/Layout";
-import { VirtualPage } from "./virtual.instant";
+import { VirtualFootballPage } from "./virtual.instant";
 
 export const Route = createFileRoute("/virtual/football-instant")({
   head: () => ({
@@ -9,7 +9,7 @@ export const Route = createFileRoute("/virtual/football-instant")({
       { name: "description", content: "Live shared shoot-out rounds for e-football. Watch the live feed, line-ups, and previous scores." },
     ],
   }),
-  component: () => <VirtualPage title="ECB Virtual E-Football League" />,
+  component: () => <VirtualFootballPage title="ECB Virtual E-Football League" />,
   errorComponent: ({ error }) => <Layout><div className="container py-12 text-center text-destructive">{error.message}</div></Layout>,
   notFoundComponent: () => <Layout><div className="container py-12 text-center text-muted-foreground">Not found.</div></Layout>,
 });
