@@ -132,13 +132,12 @@ function Index() {
             </h1>
           ) : (
             <h1 className="text-4xl md:text-7xl font-bold leading-tight max-w-3xl uppercase">
-              Where gangs clash and{" "}
-              <span className="gradient-gold-text">legends</span> are{" "}
-              <span className="gradient-emerald-text">gold-plated</span>.
+              Where <span className="gradient-emerald-text">E-Football</span> meets{" "}
+              <span className="gradient-gold-text">gold-plated</span> glory.
             </h1>
           )}
           <p className="mt-5 max-w-xl text-lg text-muted-foreground">
-            {settings?.hero_subtitle || "The E-Football Competition Bet is a virtual-token competitive shooting circuit. Pick your gang, place your wagers, and climb the leaderboard."}
+            {settings?.hero_subtitle || "E-Football Competition Bet is a virtual-token e-football league. Pick your squad, place your wagers, and climb the leaderboard — kick-off is instant."}
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Link to="/matches"><Button size="lg" className="btn-luxury">View Matches <ChevronRight className="h-4 w-4 ml-1" /></Button></Link>

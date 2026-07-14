@@ -158,6 +158,31 @@ function FootballInstantPage() {
               <FootballPitch scoreA={result?.home_score ?? 0} scoreB={result?.away_score ?? 0} nameA={pair[0].name} nameB={pair[1].name} live={!!result} />
             </Card>
 
+            {/* Previous scores — same layout as Gang Virtual */}
+            <Card className="virtual-panel p-3">
+              <div className="text-[10px] font-black uppercase tracking-[0.25em] text-primary/80 mb-2">
+                Previous scores
+              </div>
+              <div className="space-y-1.5">
+                {recent.length === 0 && <div className="text-[11px] text-muted-foreground">No history yet.</div>}
+                {recent.slice(0, 5).map((r, i) => (
+                  <div key={i} className="flex items-center justify-between text-[11px]">
+                    <div className="min-w-0 leading-tight">
+                      <div className="truncate">{r.home}</div>
+                      <div className="truncate text-muted-foreground">{r.away}</div>
+                    </div>
+                    <div className="font-mono font-black text-primary tabular-nums shrink-0">{r.hs}:{r.as}</div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            {/* Line-ups — mirror gang virtual */}
+            <div className="grid grid-cols-2 gap-3">
+              <FootballLineUp title="Line ups" team={pair[0].name} accent="red" />
+              <FootballLineUp title="Opposing line" team={pair[1].name} accent="sky" align="right" />
+            </div>
+
             {/* Pick side + stake */}
             <Card className="virtual-panel p-4 space-y-4">
               <div className="grid grid-cols-3 items-center gap-2">
@@ -236,29 +261,50 @@ function FootballInstantPage() {
               </div>
             </Card>
 
-            {/* Previous scores */}
-            <Card className="virtual-panel p-3">
-              <div className="text-[10px] font-black uppercase tracking-[0.25em] text-primary/80 mb-2">
-                Previous scores
-              </div>
-              <div className="space-y-1.5">
-                {recent.length === 0 && <div className="text-[11px] text-muted-foreground">No history yet.</div>}
-                {recent.map((r, i) => (
-                  <div key={i} className="flex items-center justify-between text-[11px]">
-                    <div className="min-w-0 leading-tight">
-                      <div className="truncate">{r.home}</div>
-                      <div className="truncate text-muted-foreground">{r.away}</div>
-                    </div>
-                    <div className="font-mono font-black text-primary tabular-nums shrink-0">{r.hs}:{r.as}</div>
-                  </div>
-                ))}
-              </div>
-            </Card>
             </>
           )}
         </div>
       </div>
     </Layout>
+  );
+}
+
+const FB_ROLES = ["Striker", "Winger", "Midfielder", "Defender", "Sweeper", "Keeper"];
+const FB_RATINGS = [9, 8, 7, 6, 5, 4];
+
+function FootballLineUp({
+  title,
+  team,
+  accent,
+  align,
+}: {
+  title: string;
+  team: string;
+  accent: "red" | "sky";
+  align?: "right";
+}) {
+  const dot = accent === "red" ? "bg-red-500" : "bg-sky-400";
+  return (
+    <Card className="virtual-panel p-3">
+      <div className={`text-[10px] font-black uppercase tracking-[0.25em] text-primary/80 mb-2 ${align === "right" ? "text-right" : ""}`}>
+        {title}
+      </div>
+      <div className="space-y-1.5">
+        {FB_ROLES.map((role, i) => (
+          <div
+            key={role}
+            className={`flex items-center gap-2 text-[11px] ${align === "right" ? "flex-row-reverse text-right" : ""}`}
+          >
+            <span className={`h-1.5 w-1.5 rounded-full ${dot} shrink-0`} />
+            <span className="text-muted-foreground w-3 shrink-0 tabular-nums">{i + 1}</span>
+            <span className="truncate flex-1">
+              <span className="font-semibold">{team}</span> {role} {i + 1}
+            </span>
+            <span className="font-mono font-black text-primary tabular-nums shrink-0">{FB_RATINGS[i]}</span>
+          </div>
+        ))}
+      </div>
+    </Card>
   );
 }
 
