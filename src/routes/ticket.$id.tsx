@@ -33,7 +33,8 @@ import {
 } from "lucide-react";
 import { GangLogo } from "@/components/GangLogo";
 import { toast } from "sonner";
-import lslLogo from "@/assets/lsl-logo.png";
+import _ecbLogo from "@/assets/ecb-logo.png.asset.json";
+const lslLogo = _ecbLogo.url;
 
 export const Route = createFileRoute("/ticket/$id")({
   head: () => ({ meta: [{ title: "Ticket — ECB" }] }),

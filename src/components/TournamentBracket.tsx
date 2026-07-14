@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import { Crown, Target, Trophy, Users, Crosshair, Swords } from "lucide-react";
 import { ScaleToFit } from "./ScaleToFit";
-import lslLogo from "@/assets/lsl-logo.png";
+import _ecbLogo from "@/assets/ecb-logo.png.asset.json";
+const lslLogo = _ecbLogo.url;
 
 export type TParticipant = { id: string; name: string; logo_url: string | null; is_eliminated: boolean; current_round: number; is_disqualified?: boolean };
 export type TMatch = {

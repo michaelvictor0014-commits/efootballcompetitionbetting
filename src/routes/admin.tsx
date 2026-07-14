@@ -22,7 +22,8 @@ import {
   Gift, BellRing, GalleryHorizontalEnd, Gamepad2, Vote, ShoppingBag, LifeBuoy, Newspaper,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import lslLogo from "@/assets/lsl-logo.png";
+import _ecbLogo from "@/assets/ecb-logo.png.asset.json";
+const lslLogo = _ecbLogo.url;
 import tileBattle from "@/assets/tile-battle.jpg";
 import tileVirtual from "@/assets/tile-virtual.jpg";
 import tileChallenges from "@/assets/tile-challenges.jpg";
