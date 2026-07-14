@@ -927,3 +927,45 @@
 .trophy-ring  { animation: trophy-ring 1.6s ease-out infinite; }
 .win-text-rise { animation: win-text-rise 0.6s ease-out both; }
 .confetti-piece { animation: confetti-fall linear forwards; }
+
+/* ================= LOSS SKULL ANIMATION ================= */
+@keyframes skull-pop {
+  0%   { transform: scale(0.2) rotate(10deg); opacity: 0; }
+  55%  { transform: scale(1.14) rotate(-3deg); opacity: 1; }
+  72%  { transform: scale(0.94) rotate(2deg); }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+@keyframes skull-shake {
+  0%,100% { transform: translateX(0) rotate(0); }
+  20%     { transform: translateX(-3px) rotate(-1.5deg); }
+  40%     { transform: translateX(3px) rotate(1.5deg); }
+  60%     { transform: translateX(-2px) rotate(-1deg); }
+  80%     { transform: translateX(2px) rotate(1deg); }
+}
+@keyframes skull-shine {
+  0%   { transform: translateX(-140%) skewX(-18deg); }
+  60%, 100% { transform: translateX(240%) skewX(-18deg); }
+}
+@keyframes loss-ring {
+  0%   { transform: scale(0.55); opacity: 0.7; border-color: rgba(244,63,94,0.7); }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+@keyframes loss-text-rise {
+  0%   { transform: translateY(18px) scale(0.96); opacity: 0; filter: blur(4px); }
+  100% { transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
+}
+@keyframes ash-fall {
+  0%   { transform: translateY(-10vh) rotate(0deg); opacity: 0.9; }
+  100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+}
+@keyframes skull-crack-draw {
+  0%   { stroke-dashoffset: 1; }
+  100% { stroke-dashoffset: 0; }
+}
+.skull-pop    { animation: skull-pop 0.7s cubic-bezier(.22,1.2,.36,1) both; }
+.skull-shake  { animation: skull-shake 0.55s ease-in-out 0.7s 2 both; }
+.skull-shine  { animation: skull-shine 3s ease-in-out infinite; }
+.loss-ring    { animation: loss-ring 1.8s ease-out infinite; }
+.loss-text-rise { animation: loss-text-rise 0.6s ease-out both; }
+.ash-piece    { animation: ash-fall linear forwards; }
+.skull-crack  { stroke-dasharray: 1; stroke-dashoffset: 1; animation: skull-crack-draw 0.9s ease-out 0.6s forwards; }
