@@ -57,7 +57,7 @@ const matchSelect = `
   markets(id,name,is_open,odds(id,label,value,is_winner,market_id))
 `;
 
-function VirtualPage() {
+export function VirtualPage({ title = "ECB Virtual Gang League" }: { title?: string } = {}) {
   const [round, setRound] = useState<VirtualMatch[]>([]);
   const [phase, setPhase] = useState<Phase>("idle");
   const [recent, setRecent] = useState<VirtualMatch[]>([]);
@@ -159,7 +159,7 @@ function VirtualPage() {
     <Layout>
       <div className="virtual-page min-h-[calc(100vh-4rem)]">
         <div className="container py-4 sm:py-6 space-y-4">
-          <RoundHeader featured={featured} phase={phase} round={round} />
+          <RoundHeader featured={featured} phase={phase} round={round} title={title} />
           <Card className="virtual-panel px-3 py-2 flex items-center gap-2 text-[11px]">
             <Radio className="h-3.5 w-3.5 text-emerald-400 animate-pulse" />
             <span className="font-black uppercase tracking-widest text-emerald-300">Play as you stake</span>
@@ -206,7 +206,7 @@ function roundCode(featured?: VirtualMatch) {
   return (10000 + (h % 89999)).toString();
 }
 
-function RoundHeader({ featured, phase, round }: { featured?: VirtualMatch; phase: Phase; round: VirtualMatch[] }) {
+function RoundHeader({ featured, phase, round, title }: { featured?: VirtualMatch; phase: Phase; round: VirtualMatch[]; title: string }) {
   const label = statusLabel(phase, featured);
   const tone =
     label === "MATCH"
@@ -220,7 +220,7 @@ function RoundHeader({ featured, phase, round }: { featured?: VirtualMatch; phas
         </Link>
         <div className="text-center">
           <div className="text-sm sm:text-base font-black tracking-wide gradient-gold-text">
-            ECB Virtual Gang League
+            {title}
           </div>
           <div className="flex items-center justify-center gap-2 mt-0.5">
             <span className="text-[11px] text-muted-foreground font-mono">

@@ -194,6 +194,7 @@ export function BetVoucher({
   }
   // Resolve a single selection's outcome even before the backend settles the whole bet,
   // so an ended match never lingers on "PENDING".
+  const betFinalized = ["won", "lost", "cashed_out", "void", "refunded"].includes(status);
   function selResult(s: any): "won" | "lost" | "pending" {
     if (s.result === "won") return "won";
     if (s.result === "lost") return "lost";
@@ -203,13 +204,12 @@ export function BetVoucher({
       if (["disqualified", "eliminated", "settled_lost"].includes(s.odds?.future_status)) return "lost";
       return "pending";
     }
-    // Never mark a selection as LOST until the backend has actually settled the
-    // match. Previously we compared against home/away scores as soon as
-    // status flipped to "ended", which briefly displayed winning
-    // Correct-Score picks as LOST while settlement was still running.
     if (!m) return "pending";
     if (s.odds?.is_winner === true) return "won";
-    if (!m.settled_at) return "pending";
+    // If the overall voucher is already settled OR the match has ended, resolve
+    // the leg from the score instead of leaving it stuck on PENDING.
+    const canResolve = betFinalized || m.status === "ended" || !!m.settled_at;
+    if (!canResolve) return "pending";
     if (s.markets?.name === "Correct Score")
       return s.selection_label === `${m.home_score}-${m.away_score}` ? "won" : "lost";
     const lead =
