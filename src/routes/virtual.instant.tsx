@@ -18,6 +18,7 @@ import { TeamLogo } from "@/components/TeamLogo";
 import type { MarketRow, MatchRow, OddRow } from "@/lib/queries";
 import { useBetSlip } from "@/contexts/BetSlipContext";
 import { toast } from "sonner";
+import { UserVirtualRoundDialog } from "@/components/UserVirtualRoundDialog";
 
 type VirtualMatch = MatchRow & {
   lock_time?: string | null;
@@ -160,6 +161,7 @@ function VirtualPage() {
       <div className="virtual-page min-h-[calc(100vh-4rem)]">
         <div className="container py-4 sm:py-6 space-y-4">
           <RoundHeader featured={featured} phase={phase} round={round} />
+          <UserVirtualRoundDialog />
 
           {!featured ? (
             <Card className="virtual-panel p-10 text-center text-muted-foreground">

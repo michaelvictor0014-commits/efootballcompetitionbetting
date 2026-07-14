@@ -84,6 +84,13 @@ export function ChampionshipAdminPanel() {
     toast.success("Cancelled"); load();
   }
 
+  async function startNow(id: string) {
+    const { error } = await sb.rpc("championship_start", { p_tournament: id });
+    if (error) return toast.error(error.message);
+    toast.success("Bracket drawn — tournament live");
+    load();
+  }
+
   return (
     <div className="space-y-4">
       <Card className="glass p-5 border-primary/30">
@@ -165,6 +172,9 @@ export function ChampionshipAdminPanel() {
                     {t.status === "live" ? <Radio className="h-3 w-3 mr-1 animate-pulse" /> : null}
                     {(t.status ?? "draft").toUpperCase()}
                   </Badge>
+                  {t.status === "scheduled" && (
+                    <Button variant="outline" size="sm" onClick={() => startNow(t.id)}>Start now</Button>
+                  )}
                   {t.status !== "completed" && t.status !== "cancelled" && (
                     <Button variant="ghost" size="sm" onClick={() => cancel(t.id)}><X className="h-3.5 w-3.5" /></Button>
                   )}
@@ -175,9 +185,9 @@ export function ChampionshipAdminPanel() {
         )}
       </Card>
 
-      <Card className="glass p-4 border-amber-500/30 text-xs text-muted-foreground">
-        <div className="font-bold text-amber-300 mb-1">Coming next build</div>
-        Bracket assignment (drag 16 teams into slots), live shootout engine for each knockout match, per-round bracket board reveal during the {gap}s inter-stage gap, and Championship-specific betting markets (Outright winner, Reach stage, Eliminated at stage, Per-match winner).
+      <Card className="glass p-4 border-primary/30 text-xs text-muted-foreground">
+        <div className="font-bold text-primary mb-1">How it works</div>
+        "Start now" auto-drafts 16 random teams into R16 and moves the tournament live. The engine then advances rounds every {gap}s: R16 → QF → SF → Final. Users can bet on outright champion, reach-stage (F/SF/QF), eliminated-at-stage, and per-match winners while stages are open.
       </Card>
     </div>
   );
