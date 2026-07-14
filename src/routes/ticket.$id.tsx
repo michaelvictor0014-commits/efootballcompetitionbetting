@@ -274,8 +274,13 @@ export function BetVoucher({
     <div className="relative px-0 py-4 animate-fade-in">
       <div className="relative rounded-[40px] voucher-frame voucher-bg overflow-hidden transition-transform duration-500 hover:[transform:perspective(1600px)_rotateX(0.6deg)_rotateY(-0.6deg)_translateY(-2px)]">
         {/* ECB logo watermark behind everything */}
-        <div className="pointer-events-none absolute inset-0 grid place-items-center opacity-[0.08]" aria-hidden>
-          <img src={lslLogo} alt="" className="w-2/3 max-w-[500px] object-contain mix-blend-screen" />
+        <div className="pointer-events-none absolute inset-0 grid place-items-center opacity-25" aria-hidden>
+          <img
+            src={lslLogo}
+            alt=""
+            className="w-3/4 max-w-[560px] object-contain drop-shadow-[0_0_28px_rgba(251,191,36,0.35)]"
+            style={{ filter: "brightness(1.15) contrast(1.05)" }}
+          />
         </div>
         {/* Holographic corner patches (4 corners like reference) */}
         <div className="absolute left-0 top-0 w-16 h-16 rounded-br-2xl overflow-hidden pointer-events-none">
