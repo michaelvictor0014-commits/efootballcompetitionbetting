@@ -8,6 +8,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Target, X, Swords, Lock, CheckCircle2, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { Link } from "@tanstack/react-router";
+import { Ticket } from "lucide-react";
 
 type Kind = "outright" | "reach_final" | "reach_semi" | "reach_quarter" | "eliminated_at" | "match_winner";
 type Team = { id: string; name: string | null; logo_url: string | null };
@@ -36,6 +38,7 @@ export function ChampionshipBetPanel({
   const [busy, setBusy] = useState(false);
   const [liveMatches, setLiveMatches] = useState<TMatch[]>([]);
   const [existing, setExisting] = useState<{ id: string; kind: string; stake: number; odds: number } | null>(null);
+  const [voucherBetId, setVoucherBetId] = useState<string | null>(null);
 
   const canBook = status === "booking" && !existing;
 
@@ -48,6 +51,17 @@ export function ChampionshipBetPanel({
         .eq("user_id", user.id).eq("tournament_id", tournamentId)
         .maybeSingle();
       setExisting((data ?? null) as any);
+      if (data?.id) {
+        const { data: v } = await (supabase as any)
+          .from("bets")
+          .select("id")
+          .eq("championship_bet_id", data.id)
+          .eq("user_id", user.id)
+          .maybeSingle();
+        setVoucherBetId(v?.id ?? null);
+      } else {
+        setVoucherBetId(null);
+      }
     })();
   }, [user?.id, tournamentId]);
 
@@ -93,6 +107,14 @@ export function ChampionshipBetPanel({
     if (error) return toast.error(error.message);
     toast.success(`Bet staked · potential ${(stake * ODDS[params.kind]).toFixed(0)} LSL`);
     setExisting({ id: "new", kind: params.kind, stake, odds: ODDS[params.kind] });
+    // Fetch voucher shortly after so "View voucher" appears.
+    setTimeout(async () => {
+      const { data: cb } = await (supabase as any).from("championship_bets").select("id").eq("user_id", user!.id).eq("tournament_id", tournamentId).maybeSingle();
+      if (cb?.id) {
+        const { data: v } = await (supabase as any).from("bets").select("id").eq("championship_bet_id", cb.id).maybeSingle();
+        if (v?.id) setVoucherBetId(v.id);
+      }
+    }, 250);
   };
 
   const cancelPick = async () => {
@@ -103,6 +125,7 @@ export function ChampionshipBetPanel({
     if (error) return toast.error(error.message);
     toast.success("Pick cancelled · stake refunded");
     setExisting(null);
+    setVoucherBetId(null);
   };
 
   const teamList = useMemo(() => teamIds.map((id) => teams[id]).filter(Boolean) as Team[], [teamIds, teams]);
@@ -118,13 +141,18 @@ export function ChampionshipBetPanel({
           <span className="text-amber-300 font-bold">{(existing.stake * existing.odds).toFixed(0)} LSL</span>.
           Change or remove your pick anytime while booking is open.
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Button size="sm" variant="outline" disabled={busy} onClick={cancelPick} className="border-primary/40">
             <Pencil className="h-3 w-3 mr-1" /> Change pick
           </Button>
           <Button size="sm" variant="destructive" disabled={busy} onClick={cancelPick}>
             <Trash2 className="h-3 w-3 mr-1" /> Cancel bet
           </Button>
+          {voucherBetId && (
+            <Link to="/ticket/$id" params={{ id: voucherBetId }}>
+              <Button size="sm" variant="outline" className="border-amber-500/40 text-amber-300"><Ticket className="h-3 w-3 mr-1"/>View voucher</Button>
+            </Link>
+          )}
         </div>
       </Card>
     );
@@ -139,6 +167,11 @@ export function ChampionshipBetPanel({
         <div className="text-xs text-muted-foreground">
           Potential payout <span className="text-amber-300 font-bold">{(existing.stake * existing.odds).toFixed(0)} LSL</span> if it lands.
         </div>
+        {voucherBetId && (
+          <Link to="/ticket/$id" params={{ id: voucherBetId }}>
+            <Button size="sm" variant="outline" className="border-amber-500/40 text-amber-300 mt-1"><Ticket className="h-3 w-3 mr-1"/>View bet voucher</Button>
+          </Link>
+        )}
       </Card>
     );
   }
