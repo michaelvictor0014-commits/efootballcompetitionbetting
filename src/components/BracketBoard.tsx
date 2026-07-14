@@ -94,7 +94,7 @@ export function BracketBoard({ tournamentId, currentStage }: { tournamentId: str
                       {!isFirst && (
                         <span
                           aria-hidden
-                          className="pointer-events-none absolute left-0 top-1/2 h-px w-3 bg-primary/40"
+                          className="pointer-events-none absolute -left-3 top-1/2 h-px w-3 bg-primary/40"
                         />
                       )}
                       <div className="w-full">
@@ -112,12 +112,12 @@ export function BracketBoard({ tournamentId, currentStage }: { tournamentId: str
                           {/* horizontal stub from card center to the vertical joiner */}
                           <span
                             aria-hidden
-                            className="pointer-events-none absolute right-0 top-1/2 h-px w-3 bg-primary/40"
+                            className="pointer-events-none absolute -right-3 top-1/2 h-px w-3 bg-primary/40"
                           />
                           {/* vertical joiner: top-of-pair goes DOWN from center to bottom, bottom-of-pair goes UP from top to center */}
                           <span
                             aria-hidden
-                            className={`pointer-events-none absolute right-0 w-px bg-primary/40 ${
+                            className={`pointer-events-none absolute -right-3 w-px bg-primary/40 ${
                               isTopOfPair ? "top-1/2 bottom-0" : "top-0 bottom-1/2"
                             }`}
                           />
