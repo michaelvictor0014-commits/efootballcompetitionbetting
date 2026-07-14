@@ -312,7 +312,7 @@ function PlacedPreview({ bet, onView, onClose, allowAgain, onAgain }: { bet: any
   function copy(t: string) { navigator.clipboard.writeText(t); toast.success("Copied"); }
   async function share() {
     const url = `${window.location.origin}/?code=${bet.booking_code}`;
-    if (navigator.share) { try { await navigator.share({ title: `ECB Booking ${bet.booking_code}`, url }); return; } catch {/*ignore*/} }
+    if (navigator.share) { try { await navigator.share({ title: `LSL Booking ${bet.booking_code}`, url }); return; } catch {/*ignore*/} }
     navigator.clipboard.writeText(url); toast.success("Share link copied");
   }
   return (

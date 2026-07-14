@@ -9,8 +9,8 @@ import { Receipt, ArrowLeft } from "lucide-react";
 export const Route = createFileRoute("/transactions")({
   head: () => ({
     meta: [
-      { title: "Transaction Records — ECB" },
-      { name: "description", content: "Every token credit and debit on your ECB account." },
+      { title: "Transaction Records — LSL" },
+      { name: "description", content: "Every token credit and debit on your LSL account." },
       { name: "robots", content: "noindex" },
     ],
   }),

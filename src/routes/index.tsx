@@ -32,13 +32,13 @@ import { DraggableFab } from "@/components/DraggableFab";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "E-Football Competition Bet — Virtual Token Shooting League" },
-      { name: "description", content: "Live matches, gang leaderboards and virtual-token wagering for the E-Football Competition Bet." },
-      { property: "og:title", content: "E-Football Competition Bet" },
+      { title: "Lomita Shooters League — Virtual Token Shooting League" },
+      { name: "description", content: "Live matches, gang leaderboards and virtual-token wagering for the Lomita Shooters League." },
+      { property: "og:title", content: "Lomita Shooters League" },
       { property: "og:description", content: "Follow live shooting matches, back your gang with virtual tokens, and climb the seasonal leaderboard." },
       { property: "og:url", content: "https://lslonlinebetting.lovable.app/" },
       { property: "og:image", content: hero },
-      { name: "twitter:title", content: "E-Football Competition Bet" },
+      { name: "twitter:title", content: "Lomita Shooters League" },
       { name: "twitter:description", content: "Follow live shooting matches, back your gang with virtual tokens, and climb the seasonal leaderboard." },
     ],
     links: [
@@ -138,7 +138,7 @@ function Index() {
             </h1>
           )}
           <p className="mt-5 max-w-xl text-lg text-muted-foreground">
-            {settings?.hero_subtitle || "The E-Football Competition Bet is a virtual-token competitive shooting circuit. Pick your gang, place your wagers, and climb the leaderboard."}
+            {settings?.hero_subtitle || "The Lomita Shooters League is a virtual-token competitive shooting circuit. Pick your gang, place your wagers, and climb the leaderboard."}
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Link to="/matches"><Button size="lg" className="btn-luxury">View Matches <ChevronRight className="h-4 w-4 ml-1" /></Button></Link>

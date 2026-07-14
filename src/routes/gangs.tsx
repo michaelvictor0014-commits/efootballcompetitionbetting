@@ -10,8 +10,8 @@ import { teamColor } from "@/lib/queries";
 export const Route = createFileRoute("/gangs")({
   head: () => ({
     meta: [
-      { title: "Gangs — ECB" },
-      { name: "description", content: "Explore the gangs and factions of the E-Football Competition Bet, ranked by tokens and members." },
+      { title: "Gangs — LSL" },
+      { name: "description", content: "Explore the gangs and factions of the Lomita Shooters League, ranked by tokens and members." },
     ],
   }),
   component: GangsPage,
@@ -36,7 +36,7 @@ function GangsPage() {
   return (
     <Layout>
       <div className="container py-10">
-        <h1 className="text-4xl font-bold gradient-gold-text">Gangs of ECB</h1>
+        <h1 className="text-4xl font-bold gradient-gold-text">Gangs of LSL</h1>
         <p className="text-muted-foreground mt-2">Factions registered in the league. Found a new one when you join.</p>
         {gangs.length === 0 && <Card className="glass p-6 mt-6 text-muted-foreground text-sm">No gangs yet — be the first to register one when you sign up.</Card>}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 mt-8">

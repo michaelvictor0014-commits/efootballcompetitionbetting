@@ -70,7 +70,7 @@ import { loadStandings, type LbRow } from "@/lib/leaderboard";
 const SILENT_AUDIT_ACTIONS = new Set(["match_live_score", "match_presence"]);
 
 export const Route = createFileRoute("/admin")({
-  head: () => ({ meta: [{ title: "Admin — ECB" }, { name: "description", content: "League administration dashboard." }] }),
+  head: () => ({ meta: [{ title: "Admin — LSL" }, { name: "description", content: "League administration dashboard." }] }),
   component: AdminPage,
 });
 
@@ -159,7 +159,7 @@ export function AdminPage() {
                 className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl bg-gradient-gold text-primary-foreground grid place-items-center shadow-gold overflow-hidden ring-2 ring-primary/40 shrink-0 hover:ring-primary/70 transition"
                 title="Open analytics"
               >
-                <img src={lslLogo} alt="ECB" className="h-14 w-14 sm:h-16 sm:w-16 object-contain" />
+                <img src={lslLogo} alt="LSL" className="h-14 w-14 sm:h-16 sm:w-16 object-contain" />
               </button>
               <div>
                 <p className="text-[11px] sm:text-xs uppercase tracking-[0.3em] text-muted-foreground">Command center</p>
@@ -1584,10 +1584,10 @@ function FuturesAdminPanel() {
   }, []);
 
   async function ensureFutureTeams() {
-    const { data } = await supabase.from("teams").select("id,name").in("name", ["ECB Futures", "Season Field"]);
-    let a = data?.find((t) => t.name === "ECB Futures")?.id;
+    const { data } = await supabase.from("teams").select("id,name").in("name", ["LSL Futures", "Season Field"]);
+    let a = data?.find((t) => t.name === "LSL Futures")?.id;
     let b = data?.find((t) => t.name === "Season Field")?.id;
-    if (!a) { const { data: row } = await supabase.from("teams").insert({ name: "ECB Futures" }).select("id").single(); a = row?.id; }
+    if (!a) { const { data: row } = await supabase.from("teams").insert({ name: "LSL Futures" }).select("id").single(); a = row?.id; }
     if (!b) { const { data: row } = await supabase.from("teams").insert({ name: "Season Field" }).select("id").single(); b = row?.id; }
     return { a, b };
   }
@@ -3646,7 +3646,7 @@ function SettingsPanel() {
           <Textarea rows={2} value={s.hero_title ?? ""} onChange={(e) => setS({ ...s, hero_title: e.target.value })} placeholder="Where gangs clash and legends are gold-plated." />
         </FieldLuxe>
         <FieldLuxe label="Home sub-text (small paragraph below the headline)">
-          <Textarea rows={3} value={s.hero_subtitle ?? ""} onChange={(e) => setS({ ...s, hero_subtitle: e.target.value })} placeholder="The E-Football Competition Bet is a virtual-token competitive shooting circuit…" />
+          <Textarea rows={3} value={s.hero_subtitle ?? ""} onChange={(e) => setS({ ...s, hero_subtitle: e.target.value })} placeholder="The Lomita Shooters League is a virtual-token competitive shooting circuit…" />
         </FieldLuxe>
         <p className="text-[10px] text-muted-foreground">Leave blank to keep the default styled headline. Custom headlines are automatically shown in gold capitals.</p>
       </SettingsSection>
@@ -3684,7 +3684,7 @@ function SettingsPanel() {
 
       <SettingsSection icon={Sparkles} title="Platform Identity" subtitle="Rename the platform and set the home-page logo.">
         <FieldLuxe label="Platform name (shown in header, footer & home page)">
-          <Input value={s.site_name ?? ""} onChange={(e) => setS({ ...s, site_name: e.target.value })} placeholder="E-Football Competition Bet" />
+          <Input value={s.site_name ?? ""} onChange={(e) => setS({ ...s, site_name: e.target.value })} placeholder="Lomita Shooters League" />
         </FieldLuxe>
         <ImageSettingControl
           label="Home page logo"

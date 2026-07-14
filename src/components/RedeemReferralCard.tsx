@@ -68,7 +68,7 @@ export function RedeemReferralCard() {
         <Input
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
-          placeholder="ECB-XXXXXX"
+          placeholder="LSL-XXXXXX"
           maxLength={32}
           className="font-mono uppercase"
         />

@@ -119,7 +119,7 @@ export function AdminSidebar({
       <SidebarHeader className="border-b border-primary/15 px-2 py-3">
         <div className="flex items-center gap-2">
           <div className="h-9 w-9 rounded-xl bg-gradient-gold grid place-items-center shadow-gold overflow-hidden ring-1 ring-primary/40 shrink-0">
-            <img src={lslLogo} alt="ECB" className="h-7 w-7 object-contain" />
+            <img src={lslLogo} alt="LSL" className="h-7 w-7 object-contain" />
           </div>
           {!collapsed && (
             <div className="min-w-0">

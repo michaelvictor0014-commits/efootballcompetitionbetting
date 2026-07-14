@@ -87,7 +87,7 @@ function FootballInstantPage() {
       if (i >= total) {
         clearInterval(timer);
         setTimeout(() => {
-          if (r.result === "won") toast.success(`Won ${r.payout.toLocaleString()} ECB`);
+          if (r.result === "won") toast.success(`Won ${r.payout.toLocaleString()} LSL`);
           else toast.error("Better luck next round");
         }, 400);
       }
@@ -196,7 +196,7 @@ function FootballInstantPage() {
               {!result && (
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label>Stake (ECB)</Label>
+                    <Label>Stake (LSL)</Label>
                     <Input type="number" value={stake} min={1} onChange={(e) => setStake(Number(e.target.value)||0)} />
                   </div>
                   <div className="flex items-end">

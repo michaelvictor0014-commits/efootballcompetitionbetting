@@ -55,7 +55,7 @@ export function UserVirtualRoundDialog() {
       if (i >= total) {
         clearInterval(timer);
         setTimeout(() => {
-          if (r.result === "won") toast.success(`Won ${r.payout.toLocaleString()} ECB`);
+          if (r.result === "won") toast.success(`Won ${r.payout.toLocaleString()} LSL`);
           else toast.error("Better luck next round");
         }, 400);
       }
@@ -98,9 +98,9 @@ export function UserVirtualRoundDialog() {
               </div>
             </div>
             <div>
-              <Label>Stake (ECB)</Label>
+              <Label>Stake (LSL)</Label>
               <Input type="number" min={1} value={stake} onChange={(e) => setStake(Number(e.target.value) || 0)} />
-              <div className="text-[11px] text-muted-foreground mt-1">Payout: {(stake * 1.9).toFixed(0)} ECB if your side wins</div>
+              <div className="text-[11px] text-muted-foreground mt-1">Payout: {(stake * 1.9).toFixed(0)} LSL if your side wins</div>
             </div>
             <Button className="btn-luxury w-full" disabled={busy} onClick={play}>{busy ? "Placing…" : "Kick off"}</Button>
           </div>
@@ -120,7 +120,7 @@ export function UserVirtualRoundDialog() {
               <div className={`text-center p-4 rounded-xl border ${result.result === "won" ? "border-emerald-500/50 bg-emerald-500/10" : "border-destructive/40 bg-destructive/10"}`}>
                 {result.result === "won" ? (
                   <div className="flex items-center justify-center gap-2 text-emerald-300 font-black">
-                    <Trophy className="h-5 w-5" /> You won {result.payout.toLocaleString()} ECB
+                    <Trophy className="h-5 w-5" /> You won {result.payout.toLocaleString()} LSL
                   </div>
                 ) : (
                   <div className="flex items-center justify-center gap-2 text-destructive font-black">

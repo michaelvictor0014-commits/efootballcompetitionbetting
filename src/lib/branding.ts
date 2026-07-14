@@ -14,8 +14,8 @@ export type Branding = {
 };
 
 const DEFAULTS: Branding = {
-  name: "ECB",
-  tagline: "E-Football Competition Bet",
+  name: "LSL",
+  tagline: "Lomita Shooters League",
   description: "Live virtual shooting matches, gang leaderboards, and token-only wagering.",
   logoUrl: null,
   logoAuthUrl: null,

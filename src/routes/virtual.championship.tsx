@@ -14,7 +14,7 @@ import { ChampionshipLiveFeed } from "@/components/ChampionshipLiveFeed";
 export const Route = createFileRoute("/virtual/championship")({
   head: () => ({
     meta: [
-      { title: "Championship Virtual — 16-team Knockout | ECB" },
+      { title: "Championship Virtual — 16-team Knockout | LSL" },
       { name: "description", content: "16-team virtual knockout tournament. Bet on champions, stage reachers, and per-match winners." },
     ],
   }),

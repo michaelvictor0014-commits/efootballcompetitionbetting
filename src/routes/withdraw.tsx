@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { Wallet, Sparkles, Clock, CheckCircle, XCircle } from "lucide-react";
 
 export const Route = createFileRoute("/withdraw")({
-  head: () => ({ meta: [{ title: "Withdraw Tokens — ECB" }] }),
+  head: () => ({ meta: [{ title: "Withdraw Tokens — LSL" }] }),
   component: Page,
 });
 
@@ -79,7 +79,7 @@ function Page() {
               <Input type="number" min={minAmt} max={profile?.token_balance ?? 0} value={amount || ""} onChange={(e) => setAmount(Number(e.target.value))} required />
               <p className="text-[10px] text-muted-foreground mt-1">Minimum withdrawal is {minAmt.toLocaleString()} tokens.</p>
             </Field>
-            <Field label="Bet Ticket ID / Tracking ID (optional)"><Input value={ticketRef} onChange={(e) => setTicketRef(e.target.value)} placeholder="ECB-XXXXXXXXXX" /></Field>
+            <Field label="Bet Ticket ID / Tracking ID (optional)"><Input value={ticketRef} onChange={(e) => setTicketRef(e.target.value)} placeholder="LSL-XXXXXXXXXX" /></Field>
             <Button className="btn-luxury w-full" disabled={busy}>{busy ? "Submitting…" : "Submit Withdrawal Request"}</Button>
           </form>
         </Card>
