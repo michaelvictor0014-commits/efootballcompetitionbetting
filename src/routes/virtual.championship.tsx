@@ -25,6 +25,7 @@ type Tournament = {
   id: string; name: string | null; starts_at: string | null; status: string | null;
   current_stage: string | null; next_stage_at: string | null; team_ids: string[] | null;
   champion_team_id: string | null;
+  booking_closes_at: string | null; stage_live_ends_at: string | null;
 };
 
 function ChampionshipPage() {
@@ -41,23 +42,21 @@ function ChampionshipPage() {
       setEnabled(!!s?.virtual_championship_enabled);
       const { data: t } = await sb
         .from("tournaments")
-        .select("id,name,starts_at,status,current_stage,next_stage_at,team_ids,champion_team_id")
+        .select("id,name,starts_at,status,current_stage,next_stage_at,team_ids,champion_team_id,booking_closes_at,stage_live_ends_at")
         .eq("kind", "championship_virtual")
-        .in("status", ["scheduled", "live", "completed"])
+        .in("status", ["scheduled", "booking", "live", "completed"])
         .order("starts_at", { ascending: false })
         .limit(1)
         .maybeSingle();
       setActive((t ?? null) as Tournament | null);
     };
     load();
-    const t = setInterval(load, 5_000);
+    const t = setInterval(load, 3_000);
     const tick = setInterval(() => setNow(Date.now()), 1000);
     return () => { clearInterval(t); clearInterval(tick); };
   }, []);
 
-  const targetAt = active?.status === "live"
-    ? (active?.next_stage_at ? new Date(active.next_stage_at).getTime() : null)
-    : (active?.starts_at ? new Date(active.starts_at).getTime() : null);
+  const { targetAt, label } = pickTarget(active);
   const cd = targetAt ? Math.max(0, Math.floor((targetAt - now) / 1000)) : null;
   const mm = cd != null ? String(Math.floor(cd / 60)).padStart(2, "0") : "--";
   const ss = cd != null ? String(cd % 60).padStart(2, "0") : "--";
@@ -113,18 +112,20 @@ function ChampionshipPage() {
                 </div>
                 <div className="font-display text-2xl font-black">{active.name}</div>
               </div>
+              <ChampionshipLiveFeed tournamentId={active.id} sport="generic" currentStage={active.current_stage} />
               <BracketBoard tournamentId={active.id} currentStage={active.current_stage} />
-              <ChampionshipLiveFeed tournamentId={active.id} sport="generic" />
             </Card>
           ) : (
             <Card className="glass p-6 border-primary/30 space-y-4">
               <div className="flex items-center justify-between gap-3 flex-wrap">
-                <div className="flex items-center gap-2 text-destructive">
-                  <Radio className="h-5 w-5 animate-pulse" />
-                  <span className="font-black uppercase tracking-widest text-sm">Tournament live</span>
+                <div className={`flex items-center gap-2 ${active.status === "booking" ? "text-amber-300" : "text-destructive"}`}>
+                  <Radio className={`h-5 w-5 ${active.status === "live" ? "animate-pulse" : ""}`} />
+                  <span className="font-black uppercase tracking-widest text-sm">
+                    {active.status === "booking" ? "Booking open" : "Tournament live"}
+                  </span>
                 </div>
                 <div className="text-right">
-                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Next stage in</div>
+                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</div>
                   <div className="text-3xl font-black tabular-nums gradient-gold-text leading-none">{mm}:{ss}</div>
                 </div>
               </div>
@@ -132,20 +133,38 @@ function ChampionshipPage() {
                 <div className="font-display text-2xl font-black">{active.name ?? "Championship"}</div>
                 <p className="text-xs text-muted-foreground mt-1">Current stage: {active.current_stage ?? "R16"}</p>
               </div>
+              <ChampionshipLiveFeed tournamentId={active.id} sport="generic" currentStage={active.current_stage} />
               <BracketBoard tournamentId={active.id} currentStage={active.current_stage} />
-              <ChampionshipLiveFeed tournamentId={active.id} sport="generic" />
             </Card>
           )}
 
-          {active && (active.status === "live" || active.status === "scheduled") && (active.team_ids?.length ?? 0) > 0 && (
+          {active && active.status === "booking" && (active.team_ids?.length ?? 0) > 0 && (
             <ChampionshipBetPanel
               tournamentId={active.id}
               teamIds={active.team_ids ?? []}
               currentStage={active.current_stage}
+              status={active.status}
             />
           )}
         </div>
       </PageShell>
     </Layout>
   );
+}
+
+function pickTarget(active: Tournament | null): { targetAt: number | null; label: string } {
+  if (!active) return { targetAt: null, label: "" };
+  if (active.status === "booking" && active.booking_closes_at) {
+    return { targetAt: new Date(active.booking_closes_at).getTime(), label: "Booking closes in" };
+  }
+  if (active.status === "live" && active.stage_live_ends_at) {
+    return { targetAt: new Date(active.stage_live_ends_at).getTime(), label: "Stage ends in" };
+  }
+  if (active.status === "live" && active.next_stage_at) {
+    return { targetAt: new Date(active.next_stage_at).getTime(), label: "Next stage in" };
+  }
+  if (active.starts_at) {
+    return { targetAt: new Date(active.starts_at).getTime(), label: "Starts in" };
+  }
+  return { targetAt: null, label: "" };
 }

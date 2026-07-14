@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Target, X, Swords } from "lucide-react";
+import { Trophy, Target, X, Swords, Lock, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
 type Kind = "outright" | "reach_final" | "reach_semi" | "reach_quarter" | "eliminated_at" | "match_winner";
@@ -22,10 +22,12 @@ export function ChampionshipBetPanel({
   tournamentId,
   teamIds,
   currentStage,
+  status,
 }: {
   tournamentId: string;
   teamIds: string[];
   currentStage: string | null;
+  status?: string | null;
 }) {
   const { user } = useAuth();
   const [teams, setTeams] = useState<Record<string, Team>>({});
@@ -33,6 +35,21 @@ export function ChampionshipBetPanel({
   const [stake, setStake] = useState(100);
   const [busy, setBusy] = useState(false);
   const [liveMatches, setLiveMatches] = useState<TMatch[]>([]);
+  const [existing, setExisting] = useState<{ id: string; kind: string; stake: number; odds: number } | null>(null);
+
+  const canBook = status === "booking" && !existing;
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await (supabase as any)
+        .from("championship_bets")
+        .select("id,kind,stake,odds")
+        .eq("user_id", user.id).eq("tournament_id", tournamentId)
+        .maybeSingle();
+      setExisting((data ?? null) as any);
+    })();
+  }, [user?.id, tournamentId]);
 
   useEffect(() => {
     if (!teamIds.length) return;
@@ -60,6 +77,7 @@ export function ChampionshipBetPanel({
 
   const place = async (params: { kind: Kind; team_id?: string; stage?: string; match_id?: string }) => {
     if (!user) return toast.error("Sign in to bet");
+    if (!canBook) return toast.error("Booking is closed for this championship");
     if (stake <= 0) return toast.error("Enter a stake");
     setBusy(true);
     const { error } = await (supabase as any).rpc("place_championship_bet", {
@@ -73,15 +91,38 @@ export function ChampionshipBetPanel({
     });
     setBusy(false);
     if (error) return toast.error(error.message);
-    toast.success(`Bet placed · potential ${(stake * ODDS[params.kind]).toFixed(0)} LSL`);
+    toast.success(`Bet staked · potential ${(stake * ODDS[params.kind]).toFixed(0)} LSL`);
+    setExisting({ id: "new", kind: params.kind, stake, odds: ODDS[params.kind] });
   };
 
   const teamList = useMemo(() => teamIds.map((id) => teams[id]).filter(Boolean) as Team[], [teamIds, teams]);
 
+  if (existing) {
+    return (
+      <Card className="glass p-4 border-emerald-500/40 space-y-2">
+        <div className="flex items-center gap-2 text-emerald-300 font-black">
+          <CheckCircle2 className="h-4 w-4" /> Your championship pick is locked in
+        </div>
+        <div className="text-xs text-muted-foreground">
+          One bet per championship — potential payout <span className="text-amber-300 font-bold">{(existing.stake * existing.odds).toFixed(0)} LSL</span> if it lands.
+        </div>
+      </Card>
+    );
+  }
+
+  if (status !== "booking") {
+    return (
+      <Card className="glass p-4 border-muted/40 text-center text-muted-foreground text-sm space-y-1">
+        <Lock className="h-5 w-5 mx-auto opacity-60" />
+        Booking is closed — the tournament is live. Wait for the next championship to open booking.
+      </Card>
+    );
+  }
+
   return (
     <Card className="glass p-4 border-primary/30 space-y-3">
       <div className="flex items-center justify-between gap-3">
-        <div className="font-black flex items-center gap-2"><Trophy className="h-4 w-4 text-primary" /> Championship Markets</div>
+        <div className="font-black flex items-center gap-2"><Trophy className="h-4 w-4 text-primary" /> Championship Markets <span className="text-[10px] text-amber-300 font-bold uppercase tracking-widest">· One bet per tournament</span></div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">Stake</span>
           <Input type="number" min={1} value={stake} onChange={(e) => setStake(Number(e.target.value) || 0)} className="h-8 w-24" />

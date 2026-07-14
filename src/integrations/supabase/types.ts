@@ -77,6 +77,9 @@ export type Database = {
           allow_rebet: boolean
           auth_hero_image_url: string | null
           challenge_reward_multiplier: number
+          championship_booking_seconds: number
+          championship_stage_gap_seconds: number
+          championship_stage_live_seconds: number
           closed_image: string | null
           closed_message: string
           closed_mode: boolean
@@ -211,6 +214,9 @@ export type Database = {
           allow_rebet?: boolean
           auth_hero_image_url?: string | null
           challenge_reward_multiplier?: number
+          championship_booking_seconds?: number
+          championship_stage_gap_seconds?: number
+          championship_stage_live_seconds?: number
           closed_image?: string | null
           closed_message?: string
           closed_mode?: boolean
@@ -345,6 +351,9 @@ export type Database = {
           allow_rebet?: boolean
           auth_hero_image_url?: string | null
           challenge_reward_multiplier?: number
+          championship_booking_seconds?: number
+          championship_stage_gap_seconds?: number
+          championship_stage_live_seconds?: number
           closed_image?: string | null
           closed_message?: string
           closed_mode?: boolean
@@ -2937,6 +2946,8 @@ export type Database = {
           created_at: string
           id: string
           label: string | null
+          live_events: Json
+          live_started_at: string | null
           match_id: string | null
           next_match_id: string | null
           next_slot: string | null
@@ -2958,6 +2969,8 @@ export type Database = {
           created_at?: string
           id?: string
           label?: string | null
+          live_events?: Json
+          live_started_at?: string | null
           match_id?: string | null
           next_match_id?: string | null
           next_slot?: string | null
@@ -2979,6 +2992,8 @@ export type Database = {
           created_at?: string
           id?: string
           label?: string | null
+          live_events?: Json
+          live_started_at?: string | null
           match_id?: string | null
           next_match_id?: string | null
           next_slot?: string | null
@@ -3076,6 +3091,7 @@ export type Database = {
       }
       tournaments: {
         Row: {
+          booking_closes_at: string | null
           bracket: Json | null
           bracket_size: number
           champion_id: string | null
@@ -3092,6 +3108,8 @@ export type Database = {
           next_stage_at: string | null
           runner_up_team_id: string | null
           stage_gap_seconds: number
+          stage_live_ends_at: string | null
+          stage_live_seconds: number
           starts_at: string | null
           status: string
           tagline: string | null
@@ -3099,6 +3117,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          booking_closes_at?: string | null
           bracket?: Json | null
           bracket_size?: number
           champion_id?: string | null
@@ -3115,6 +3134,8 @@ export type Database = {
           next_stage_at?: string | null
           runner_up_team_id?: string | null
           stage_gap_seconds?: number
+          stage_live_ends_at?: string | null
+          stage_live_seconds?: number
           starts_at?: string | null
           status?: string
           tagline?: string | null
@@ -3122,6 +3143,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          booking_closes_at?: string | null
           bracket?: Json | null
           bracket_size?: number
           champion_id?: string | null
@@ -3138,6 +3160,8 @@ export type Database = {
           next_stage_at?: string | null
           runner_up_team_id?: string | null
           stage_gap_seconds?: number
+          stage_live_ends_at?: string | null
+          stage_live_seconds?: number
           starts_at?: string | null
           status?: string
           tagline?: string | null
@@ -4070,6 +4094,10 @@ export type Database = {
       auto_draw_due_lotteries: { Args: never; Returns: number }
       auto_resolve_virtual_round: { Args: { _match_id: string }; Returns: Json }
       can_use_gang_chat: { Args: { _user_id: string }; Returns: boolean }
+      champ_gen_event: {
+        Args: { p_match_id: string; p_minute: number; p_sport: string }
+        Returns: undefined
+      }
       championship_autostart: {
         Args: { p_tournament: string }
         Returns: undefined

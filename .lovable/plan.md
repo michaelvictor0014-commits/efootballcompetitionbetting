@@ -1,101 +1,80 @@
-## Scope (from your answers)
+## Championship Flow Rework — Booking Window + Live Play-by-Play
 
-1. **Two new football variants** — full duplicates of existing Instant + Championship, drawing only from football teams.
-2. **Instant Virtual behavior** — remove global countdown; shootout starts per-user immediately on Place Bet.
-3. **Championship auto-restart** — on completion, immediately reshuffle 16 random teams and start again.
-4. **Top-right logo** — new admin control for a corner logo (near bell/avatar).
-5. Fix 404 on Virtual page.
-6. Fix Championship "invalid input value for enum app_role: super_admin" start error.
-7. Fix team delete timeout.
-8. Admin control for the create-account left-side hero image.
-9. Auto validation + resizing on logo/OG uploads with clear errors.
+### 1. Database (single migration)
 
----
+**`app_settings` — new championship timing knobs**
+- `championship_booking_seconds` (int, default 120) — pre-tournament selection window
+- `championship_stage_gap_seconds` (int, default 20) — pause between stages (already exists per-tournament, promote to global default)
+- `championship_stage_live_seconds` (int, default 30) — how long each stage's "live play" runs before results resolve
 
-## 1. Database migration (single file)
+**`tournaments` — new columns**
+- `booking_closes_at timestamptz` — when booking window ends
+- `stage_live_seconds int` — inherited from settings at draw time
+- `current_stage_live_ends_at timestamptz` — when the currently-live stage finishes play
 
-**Fix `app_role` in RPC** — `championship_start` currently checks `'super_admin'::app_role`, but the enum has no such value. Rewrite the guard to admin-only (or add a `moderator` fallback — enum has `admin`, `moderator`). Also add `championship_tick` to auto-restart when a tournament completes and the arena is open.
+**`tournament_matches` — new columns**
+- `live_started_at timestamptz`
+- `live_events jsonb default '[]'` — array of `{ at, minute, type, text }` for football commentary (goal, chance, save, card, kick-off, HT, FT); virtual variant uses generic phrasing
 
-**Add football sport tag**
-- `teams.sport text default 'generic'` (`'generic' | 'football'`)
-- Backfill: mark existing teams as `generic`. Admin flags football teams in Clans panel.
+**`championship_start` RPC** — schedule-only:
+- If called on `status='scheduled'` and `starts_at` is future → set `status='booking'`, `booking_closes_at = starts_at`, draw R16 pairings (so users see the bracket to bet on) but leave `status='booking'` until `booking_closes_at`
+- If already past `starts_at` → skip booking, go straight to live
 
-**Championship variants** — `tournaments.kind` already text; add two new kinds:
-- `championship_football` (parallel to `championship_virtual`)
-- Instant matches already keyed by `is_virtual`; add `matches.sport text default 'generic'` so football-instant rounds can be filtered.
+**New RPC `championship_tick(p_tournament uuid)`** replaces current tick:
+1. `booking` → when `now() >= booking_closes_at`: set `status='live'`, `current_stage='R16'`, for each R16 match set `live_started_at = now()`, `current_stage_live_ends_at = now() + stage_live_seconds`, emit "Kick-off" events per match.
+2. `live` + stage still playing (`now() < current_stage_live_ends_at`) → append random football/virtual commentary events (goal/chance/save/card) to each unfinished match's `live_events`, adjust scores on goals.
+3. `live` + stage ended → finalize scores, set `winner_id`, status='completed' for each stage match, emit "Full time" event, then wait `stage_gap_seconds`: schedule `next_stage_starts_at`. When gap elapses, draw next round pairings, emit "Next round line-up" event to `broadcasts`/`live_events` on new matches, set new `current_stage_live_ends_at`.
+4. Final completed → mark tournament completed; auto-restart honors existing flag.
 
-**App settings additions**
-- `virtual_cycle_running_football boolean` (per-user instant is trigger-based, but keep an admin open/closed flag)
-- `virtual_championship_football_enabled boolean`
-- `virtual_championship_auto_restart boolean default true`
-- `platform_logo_corner_url text` (top-right logo)
-- `auth_hero_image_url text` (login/register left-side hero)
+**`bets` guard** — DB trigger rejects championship bets when tournament `status != 'booking'`; enforces "once per championship" via unique index on `(user_id, tournament_id)` in `championship_bets` (or add `tournament_id` if missing and unique-index it).
 
-**Team delete performance** — add `SECURITY DEFINER` RPC `delete_teams_bulk(uuid[])` that:
-- Deletes dependent `bet_selections`, `bets`, `odds`, `tournament_matches`, `matches`, `players` in one statement each with `WHERE team_id = ANY(...)`, then `teams`.
-- Runs with a raised local statement_timeout.
-- Admin-only guard via `has_role(auth.uid(), 'admin')`.
-Wire admin panels to call this RPC instead of `.delete().in('id', ids)`.
+### 2. Server tick loop
 
-**Championship auto-restart trigger** — extend `championship_tick` so when a `championship_virtual` or `championship_football` tournament flips to `completed`, if `virtual_championship_auto_restart` is on and the arena is open, insert a fresh `scheduled` tournament with a 30s delay and immediately draft 16 random teams from the matching sport pool.
+The existing `/api/public/virtual-tick` route (or equivalent) already calls per-tournament tick. Extend to:
+- Fetch all tournaments in `booking` or `live` status
+- Call `championship_tick` for each every 2s
 
-## 2. Frontend
+### 3. Frontend — `virtual.championship.tsx` + `virtual.football-championship.tsx`
 
-**Virtual hub (`/virtual/`)** — grid becomes 4 cards:
-- Instant Virtual (existing)
-- Championship Virtual (existing)
-- Instant E-Football (new — football pool)
-- Championship E-Football (new — football pool)
+Reorder page:
+1. Header + status pill (BOOKING / LIVE stage / GAP)
+2. **Countdown**:
+   - `booking` → "Booking closes in mm:ss" (uses `booking_closes_at`)
+   - `live` → "Stage ends in mm:ss" (uses `current_stage_live_ends_at`)
+   - gap → "Next stage in mm:ss"
+3. **Live feed** (moved up) — realtime stream of `live_events` for currently-live matches, plus "Next round line-up" cards when a stage completes showing the drawn matchups for the upcoming stage.
+4. **Bracket** — standard bracket underneath the feed (existing component).
+5. **Championship Markets** — disabled unless `status='booking'`; shows "Booking closed" message otherwise. Enforces one bet per tournament client-side (query existing bet, hide slip).
 
-**404 fix** — the 404 at `/virtual/championship` is the missing `championship_start` execute path (RPC crashes on super_admin enum). Once migration lands, page loads normally. Also add `errorComponent`/`notFoundComponent` to both new routes.
+Rename BetSlip CTA from "Place bet" → "Stake bet" (already noted earlier).
 
-**Instant Virtual rework** — remove the global round countdown UI. Replace with a "Ready to shoot" state. On Place Bet click, call a new server function `start_user_shootout(bet_id)` (or extend existing `user_virtual_rounds` insert) that:
-- Creates a private round for that user only
-- Runs the animation client-side (existing shootout animation) from the returned seed
-- No other user's timing is affected.
-Global cycle worker is untouched — it just no longer drives the instant page.
+### 4. `ChampionshipLiveFeed` rewrite
 
-**New routes**
-- `src/routes/virtual.football.tsx` (instant football, near-identical to `virtual.instant.tsx`, filters teams by `sport='football'`)
-- `src/routes/virtual.football-championship.tsx` (mirror of `virtual.championship.tsx` with `kind='championship_football'`)
+Subscribe to `tournament_matches` changes filtered by `tournament_id`. Render:
+- **Live now** section — currently-live matches with running score + last 3 events (goal 27', save 33', etc.)
+- **Just settled** — completed matches from the last stage with final score
+- **Next up** — when in gap, list the drawn pairings for the next stage
+Football variant uses soccer-flavoured event text; virtual variant uses generic ("SOLITUDE strikes!").
 
-**Register/Login hero** — read `auth_hero_image_url` from `app_settings`; render on left half. Fall back to bundled `auth-gangster.jpg`.
+### 5. Admin — `ChampionshipAdminPanel`
 
-**Top-right logo** — Layout header adds a small logo near the bell/avatar area, sourced from `platform_logo_corner_url`.
+Add three inputs (globally applied via `app_settings`):
+- Booking window (seconds) — default 120
+- Stage live duration (seconds) — default 30
+- Stage gap (seconds) — existing, keep
 
-**Image upload validation** — new `validateAndResizeImage()` util used by `ImageSettingControl`:
-- Rejects non-image MIME types.
-- For logos: enforces max 2MB, min 128×128, resizes to 512×512 fit-contain.
-- For OG images: enforces 1200×630 (or close aspect), resizes/pads to exact 1200×630.
-- Shows toast with specific error ("File too small — must be at least 128×128", etc.)
-- Uses `canvas` in-browser resize; no server involvement.
+Show these fields both in global settings block and as overrides when scheduling a specific tournament.
 
-## 3. Admin
+### 6. Bet Slip
 
-**Categorized within existing admin page** (no new page) — Virtual admin panel splits into tabs:
-- Instant (generic)
-- Instant (football)
-- Championship (generic) — with **Auto-restart** switch
-- Championship (football) — with **Auto-restart** switch
+Change primary CTA label from "Place bet" to "Stake bet" across `BetSlip.tsx` and `ChampionshipBetPanel.tsx` (already partly noted in prior turns).
 
-**Clans admin** — team edit dialog gets a "Sport" selector (`generic` / `football`) so admin can tag existing teams as football teams for the football pool. Bulk-tag button in Teams tab.
+### Technical notes / risks
+- Adding `tournament_id` unique to `championship_bets` may conflict with existing rows if a tournament already has multiple bets per user — migration will `DELETE` duplicates keeping earliest (destructive; acceptable since test data).
+- Commentary generation lives inside `championship_tick` SQL (uses `random()` weighted picks). Keeps engine fully server-driven.
+- Existing `stage_gap_seconds` column stays; new fields are additive so existing tournaments keep working.
 
-**Branding admin** — add two new slots:
-- Corner logo (top-right)
-- Auth-page hero image (left half of login/register)
-Both use the new validated `ImageSettingControl`.
-
-## 4. Technical notes
-
-- Migration order: enum guard fix (`admin` only), then columns, then bulk-delete RPC, then auto-restart tick.
-- `championship_tick` becomes the single scheduler heartbeat for both `_virtual` and `_football` kinds.
-- Instant-shootout per-user uses existing `user_virtual_rounds` table (already there per schema).
-- Bulk delete RPC runs `SET LOCAL statement_timeout = '60s'` and deletes in FK-safe order.
-- Image validation is pure browser; server just stores the resulting URL as before.
-
-## Out of scope
-- New bet market types for football (using existing markets).
-- Redesigning the admin sidebar again.
-- Rewriting the global virtual cycle worker (still exists for background matches page).
-
-Say go and I'll ship it in one pass.
+### Out of scope
+- Real match physics/AI — commentary is randomized flavour text with scoreline drift.
+- Per-user booking windows — booking is global per tournament.
+- Redesign of Championship Markets tabs.

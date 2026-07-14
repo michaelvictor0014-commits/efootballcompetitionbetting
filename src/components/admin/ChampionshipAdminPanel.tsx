@@ -37,12 +37,15 @@ export function ChampionshipAdminPanel() {
   const [saving, setSaving] = useState(false);
   const [footballTeamCount, setFootballTeamCount] = useState<number>(0);
   const [genericTeamCount, setGenericTeamCount] = useState<number>(0);
+  const [bookingSecs, setBookingSecs] = useState(120);
+  const [liveSecs, setLiveSecs] = useState(30);
+  const [savingTimings, setSavingTimings] = useState(false);
 
   const sb = supabase as any;
 
   async function load() {
     const [{ data: s }, { data: ts }, { count: fbCount }, { count: gnCount }] = await Promise.all([
-      sb.from("app_settings").select("virtual_championship_enabled,virtual_championship_football_enabled,virtual_championship_auto_restart,virtual_football_instant_enabled").eq("id", 1).maybeSingle(),
+      sb.from("app_settings").select("virtual_championship_enabled,virtual_championship_football_enabled,virtual_championship_auto_restart,virtual_football_instant_enabled,championship_booking_seconds,championship_stage_live_seconds,championship_stage_gap_seconds").eq("id", 1).maybeSingle(),
       sb
         .from("tournaments")
         .select("id,name,starts_at,status,current_stage,stage_gap_seconds,bracket_size")
@@ -56,9 +59,24 @@ export function ChampionshipAdminPanel() {
     setFootballEnabled(!!s?.virtual_championship_football_enabled);
     setFootballInstantEnabled(!!s?.virtual_football_instant_enabled);
     setAutoRestart(s?.virtual_championship_auto_restart ?? true);
+    setBookingSecs(s?.championship_booking_seconds ?? 120);
+    setLiveSecs(s?.championship_stage_live_seconds ?? 30);
+    if (s?.championship_stage_gap_seconds) setGap(s.championship_stage_gap_seconds);
     setTournaments((ts ?? []) as Tournament[]);
     setFootballTeamCount(fbCount ?? 0);
     setGenericTeamCount(gnCount ?? 0);
+  }
+
+  async function saveTimings() {
+    setSavingTimings(true);
+    const { error } = await sb.from("app_settings").update({
+      championship_booking_seconds: Math.max(15, bookingSecs),
+      championship_stage_live_seconds: Math.max(10, liveSecs),
+      championship_stage_gap_seconds: Math.max(5, gap),
+    }).eq("id", 1);
+    setSavingTimings(false);
+    if (error) return toast.error(error.message);
+    toast.success("Championship timings saved");
   }
 
   useEffect(() => { load(); }, []);
@@ -163,6 +181,33 @@ export function ChampionshipAdminPanel() {
             <div className="text-xs text-muted-foreground">When a tournament ends, immediately reshuffle 16 random teams from the same sport pool and start a new one.</div>
           </div>
           <Switch checked={autoRestart} onCheckedChange={(v) => toggleFlag("virtual_championship_auto_restart", v, setAutoRestart, "Auto-restart")} />
+        </div>
+
+        <div className="mt-3 p-3 rounded-lg border border-primary/30 bg-background/40 space-y-3">
+          <div>
+            <div className="font-black text-sm">Championship timings</div>
+            <div className="text-xs text-muted-foreground">Applied to every championship (virtual + football). Booking is the window before a tournament goes live where users can lock in their one championship bet.</div>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div>
+              <Label>Booking window (seconds)</Label>
+              <Input type="number" min={15} max={3600} value={bookingSecs} onChange={(e) => setBookingSecs(Number(e.target.value) || 120)} />
+              <div className="text-[10px] text-muted-foreground mt-1">e.g. 120 = 2 min booking</div>
+            </div>
+            <div>
+              <Label>Stage live duration (seconds)</Label>
+              <Input type="number" min={10} max={600} value={liveSecs} onChange={(e) => setLiveSecs(Number(e.target.value) || 30)} />
+              <div className="text-[10px] text-muted-foreground mt-1">How long each stage plays out</div>
+            </div>
+            <div>
+              <Label>Gap between stages (seconds)</Label>
+              <Input type="number" min={5} max={300} value={gap} onChange={(e) => setGap(Number(e.target.value) || 20)} />
+              <div className="text-[10px] text-muted-foreground mt-1">Pause after live ends before next stage kicks off</div>
+            </div>
+          </div>
+          <Button size="sm" variant="outline" onClick={saveTimings} disabled={savingTimings}>
+            {savingTimings ? "Saving…" : "Save timings"}
+          </Button>
         </div>
         <div className="mt-3 flex items-center justify-between gap-3 flex-wrap p-3 rounded-lg border border-emerald-500/30 bg-emerald-500/5">
           <div>
