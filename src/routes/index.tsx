@@ -337,7 +337,7 @@ function FeaturedGoldenMatches({ matches, bgImage, bgFit, bgPos }: { matches: Ma
   const { selections, add, remove, setOpen } = useBetSlip();
   if (matches.length === 0) return null;
   return (
-    <div className={`seasonal-golden relative overflow-hidden rounded-3xl px-4 py-4 md:px-6 md:py-5 space-y-3 ${bgImage ? "min-h-[280px] md:min-h-[340px]" : ""}`}>
+    <div className="seasonal-golden relative overflow-hidden rounded-3xl px-3 py-3 md:px-5 md:py-4 space-y-2">
       {bgImage && (
         <>
           <img
@@ -400,14 +400,14 @@ function FeaturedGoldenMatches({ matches, bgImage, bgFit, bgPos }: { matches: Ma
                         add({ match_id: m.id, match_name: m.name, market_id: market!.id, market_name: market!.name, odd_id: o.id, selection_label: o.label, odds: Number(o.value) });
                         setOpen(true);
                       }}
-                      className={`flex flex-col items-center justify-center gap-0.5 rounded-lg py-2 px-2 min-h-[44px] backdrop-blur-md transition shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_6px_18px_-8px_rgba(0,0,0,0.7)] disabled:opacity-40 ${
+                      className={`flex flex-col items-center justify-center gap-0.5 rounded-md py-1.5 px-1.5 min-h-[36px] backdrop-blur-md transition shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_12px_-8px_rgba(0,0,0,0.7)] disabled:opacity-40 ${
                         selected
                           ? "bg-emerald-500/30 border-2 border-emerald-300 ring-2 ring-emerald-300/60 text-emerald-50"
                           : "bg-emerald-950/70 border-2 border-emerald-600/60 hover:bg-emerald-800/70 hover:border-emerald-400/80 text-emerald-50"
                       }`}
                     >
-                      <span className="text-[9px] uppercase tracking-widest font-bold text-emerald-100/80 truncate max-w-full">{o.label}</span>
-                      <span className="font-mono font-black text-sm text-emerald-50 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">{Number(o.value).toFixed(2)}</span>
+                      <span className="text-[8px] uppercase tracking-wider font-bold text-emerald-100/80 truncate max-w-full leading-none">{o.label}</span>
+                      <span className="font-mono font-black text-xs text-emerald-50 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] leading-none">{Number(o.value).toFixed(2)}</span>
                     </button>
                   );
                 })}

@@ -104,13 +104,43 @@ function ShootoutMini({ scoreA, scoreB, nameA, nameB, seed }: { scoreA: number; 
 function PitchMini({ scoreA, scoreB, nameA, nameB, seed, football }: { scoreA: number; scoreB: number; nameA: string; nameB: string; seed: string; football: boolean }) {
   const [tick, setTick] = useState(0);
   useEffect(() => {
-    const iv = setInterval(() => setTick((t) => (t + 1) % 240), 120);
+    const iv = setInterval(() => setTick((t) => (t + 1) % 6000), 80);
     return () => clearInterval(iv);
   }, []);
-  // deterministic seeded offsets per match, animated by tick
+  // deterministic seeded per-match noise
   const h = Array.from(seed).reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
-  const bx = 20 + ((tick * 4 + (h % 60)) % 260);
-  const by = 22 + Math.abs(Math.sin((tick + h) * 0.15)) * 60;
+  // 4-3-3-ish formations, 11 per side (GK + 4 DEF + 3 MID + 3 FWD).
+  const formA: Array<[number, number]> = [
+    [8, 50],
+    [30, 20], [30, 40], [30, 60], [30, 80],
+    [70, 28], [70, 50], [70, 72],
+    [115, 30], [120, 50], [115, 70],
+  ];
+  const formB: Array<[number, number]> = [
+    [292, 50],
+    [270, 20], [270, 40], [270, 60], [270, 80],
+    [230, 28], [230, 50], [230, 72],
+    [185, 30], [180, 50], [185, 70],
+  ];
+  const jitter = (i: number, axis: number) =>
+    Math.sin((tick + h * 0.017 + i * 1.7 + axis * 3.1) * 0.09) * 6 +
+    Math.cos((tick + h * 0.023 + i * 2.3 + axis * 1.9) * 0.13) * 4;
+  const posA = formA.map(([x, y], i) => [x + jitter(i, 0), y + jitter(i, 1)] as const);
+  const posB = formB.map(([x, y], i) => [x + jitter(i + 20, 0), y + jitter(i + 20, 1)] as const);
+  // Ball is carried by rotating players; switch carrier every ~11 ticks.
+  const phase = Math.floor(tick / 11);
+  const attackA = phase % 2 === 0;
+  const carrierIdx = (h + phase * 7) % 11;
+  const nextIdx = (h + (phase + 1) * 7) % 11;
+  const from = attackA ? posA[carrierIdx] : posB[carrierIdx];
+  const to = attackA ? posA[nextIdx] : posB[nextIdx];
+  // Shots roughly every 6 phases: ball rockets to the opposing goal mouth.
+  const isShot = phase % 6 === 5;
+  const shotTarget: readonly [number, number] = attackA ? [296, 50] : [4, 50];
+  const dest = isShot ? shotTarget : to;
+  const lerp = ((tick % 11) / 11);
+  const bx = from[0] + (dest[0] - from[0]) * lerp;
+  const by = from[1] + (dest[1] - from[1]) * lerp - Math.sin(lerp * Math.PI) * (isShot ? 8 : 4);
   return (
     <div className="relative w-full rounded-md overflow-hidden border border-emerald-500/30" style={{ aspectRatio: "3 / 1" }}>
       <svg viewBox="0 0 300 100" className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
@@ -135,15 +165,15 @@ function PitchMini({ scoreA, scoreB, nameA, nameB, seed, football }: { scoreA: n
         {/* penalty boxes */}
         <rect x="0" y="20" width="40" height="60" fill="none" stroke="rgba(255,255,255,0.25)" />
         <rect x="260" y="20" width="40" height="60" fill="none" stroke="rgba(255,255,255,0.25)" />
+        {/* players — 11 v 11 */}
+        {posA.map(([x, y], i) => (
+          <circle key={`a${i}`} cx={x} cy={y} r={i === 0 ? 2.8 : 2.4} fill={i === 0 ? "#fbbf24" : "#ef4444"} stroke="rgba(0,0,0,0.5)" strokeWidth="0.4" />
+        ))}
+        {posB.map(([x, y], i) => (
+          <circle key={`b${i}`} cx={x} cy={y} r={i === 0 ? 2.8 : 2.4} fill={i === 0 ? "#fbbf24" : "#38bdf8"} stroke="rgba(0,0,0,0.5)" strokeWidth="0.4" />
+        ))}
         {/* ball */}
-        <circle cx={bx} cy={by} r="3.5" fill="#fef3c7" stroke="#0f172a" strokeWidth="0.6" />
-        {/* players (dots) */}
-        {[20, 70, 120, 180].map((x, i) => (
-          <circle key={`a${i}`} cx={x} cy={30 + ((h >> i) % 40)} r="2.6" fill="#ef4444" />
-        ))}
-        {[110, 170, 220, 270].map((x, i) => (
-          <circle key={`b${i}`} cx={x} cy={30 + ((h >> (i + 2)) % 40)} r="2.6" fill="#38bdf8" />
-        ))}
+        <circle cx={bx} cy={by} r="2.6" fill="#fef3c7" stroke="#0f172a" strokeWidth="0.6" />
       </svg>
       <div className="absolute inset-0 flex items-center justify-between px-2 text-[10px] font-black">
         <span className="truncate max-w-[35%] text-red-200 drop-shadow">{nameA}</span>
