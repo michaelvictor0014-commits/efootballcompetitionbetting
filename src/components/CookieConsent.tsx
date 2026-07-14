@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Cookie, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { trackEvent, trackPageView } from "@/lib/analytics";
 
 const KEY = "lsl-cookie-consent-v1";
 
@@ -21,6 +22,10 @@ export function CookieConsent() {
       localStorage.setItem(KEY, JSON.stringify({ value, at: new Date().toISOString() }));
       document.cookie = `lsl_cookie_consent=${value}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
     } catch {}
+    if (value === "accepted") {
+      void trackEvent("cookie_consent", { value });
+      trackPageView();
+    }
     setShow(false);
   };
 
