@@ -10,6 +10,7 @@ import { ArrowLeft, Trophy, Clock, Radio, Sparkles } from "lucide-react";
 import { BracketBoard } from "@/components/BracketBoard";
 import { ChampionshipBetPanel } from "@/components/ChampionshipBetPanel";
 import { ChampionshipLiveFeed } from "@/components/ChampionshipLiveFeed";
+import { ArenaHeader } from "./virtual.championship";
 
 // Football Championship — same engine as virtual.championship but filters
 // tournaments by kind='championship_football'. Auto-restart is honored by
@@ -70,22 +71,20 @@ function FootballChampPage() {
     <Layout>
       <PageShell tone="default">
         <div className="container py-6 sm:py-10 space-y-6 max-w-6xl">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-start">
             <Link to="/virtual"><Button variant="ghost" size="sm"><ArrowLeft className="h-4 w-4 mr-1" />Back</Button></Link>
-            <Badge variant="outline" className="border-emerald-500/50 bg-emerald-500/10 text-emerald-300 uppercase tracking-widest text-[10px]">
-              <Trophy className="h-3 w-3 mr-1" /> Championship E-Football
-            </Badge>
-            <div className="w-12" />
           </div>
 
-          <header className="text-center max-w-2xl mx-auto">
-            <h1 className="font-display text-3xl sm:text-5xl font-black gradient-gold-text leading-tight">
-              Football Knockout Cup
-            </h1>
-            <p className="text-muted-foreground mt-2 text-sm">
-              16 football teams. Round of 16 → Quarters → Semis → Final. Auto-restarts when a champion is crowned.
-            </p>
-          </header>
+          <ArenaHeader
+            tag="Championship E-Football"
+            title="Football Knockout Cup"
+            description="16 football teams. Round of 16 → Quarters → Semis → Final. Auto-restarts a new cup as soon as one crowns its champion."
+            accent="from-emerald-500/40 via-teal-600/10"
+            statusLabel={!enabled ? "Closed by admin" : !active ? "Waiting" : active.status === "scheduled" ? "Scheduled" : active.status === "booking" ? "Booking open" : active.status === "live" ? "Live" : "Completed"}
+            statusTone={!enabled ? "closed" : active?.status === "live" ? "live" : active?.status === "completed" ? "done" : "open"}
+            nextAt={active?.starts_at ?? null}
+            countdown={active && active.status !== "scheduled" ? { mm, ss, label } : null}
+          />
 
           {!enabled ? (
             <Card className="glass p-10 text-center text-muted-foreground border-primary/30">
@@ -120,18 +119,6 @@ function FootballChampPage() {
             </Card>
           ) : (
             <Card className="glass p-6 border-primary/30 space-y-4">
-              <div className="flex items-center justify-between gap-3 flex-wrap">
-                <div className={`flex items-center gap-2 ${active.status === "booking" ? "text-amber-300" : "text-destructive"}`}>
-                  <Radio className={`h-5 w-5 ${active.status === "live" ? "animate-pulse" : ""}`} />
-                  <span className="font-black uppercase tracking-widest text-sm">
-                    {active.status === "booking" ? "Booking open" : "Cup live"}
-                  </span>
-                </div>
-                <div className="text-right">
-                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</div>
-                  <div className="text-3xl font-black tabular-nums gradient-gold-text leading-none">{mm}:{ss}</div>
-                </div>
-              </div>
               <div className="text-center">
                 <div className="font-display text-2xl font-black">{active.name ?? "Football Cup"}</div>
                 <p className="text-xs text-muted-foreground mt-1">Current stage: {active.current_stage ?? "R16"}</p>

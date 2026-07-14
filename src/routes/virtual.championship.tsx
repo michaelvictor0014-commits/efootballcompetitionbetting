@@ -65,22 +65,20 @@ function ChampionshipPage() {
     <Layout>
       <PageShell tone="default">
         <div className="container py-6 sm:py-10 space-y-6 max-w-6xl">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-start">
             <Link to="/virtual"><Button variant="ghost" size="sm"><ArrowLeft className="h-4 w-4 mr-1" />Back</Button></Link>
-            <Badge variant="outline" className="border-amber-500/50 bg-amber-500/10 text-amber-300 uppercase tracking-widest text-[10px]">
-              <Trophy className="h-3 w-3 mr-1" /> Championship Virtual
-            </Badge>
-            <div className="w-12" />
           </div>
 
-          <header className="text-center max-w-2xl mx-auto">
-            <h1 className="font-display text-3xl sm:text-5xl font-black gradient-gold-text leading-tight">
-              16-Team Knockout
-            </h1>
-            <p className="text-muted-foreground mt-2 text-sm">
-              Round of 16 → Quarters → Semis → Final. Bracket auto-advances between stages.
-            </p>
-          </header>
+          <ArenaHeader
+            tag="Championship Virtual"
+            title="Knockout Tournament"
+            description="16 gangs. 4 knockout rounds. Bet on champions, quarter/semi/final reachers, per-match winners, and specific stage eliminations. Auto-scheduled by the house."
+            accent="from-amber-500/40 via-amber-600/10"
+            statusLabel={statusBadge(enabled, active)}
+            statusTone={statusTone(enabled, active)}
+            nextAt={active?.starts_at ?? null}
+            countdown={active && active.status !== "scheduled" ? { mm, ss, label } : null}
+          />
 
           {!enabled ? (
             <Card className="glass p-10 text-center text-muted-foreground border-primary/30">
@@ -117,18 +115,6 @@ function ChampionshipPage() {
             </Card>
           ) : (
             <Card className="glass p-6 border-primary/30 space-y-4">
-              <div className="flex items-center justify-between gap-3 flex-wrap">
-                <div className={`flex items-center gap-2 ${active.status === "booking" ? "text-amber-300" : "text-destructive"}`}>
-                  <Radio className={`h-5 w-5 ${active.status === "live" ? "animate-pulse" : ""}`} />
-                  <span className="font-black uppercase tracking-widest text-sm">
-                    {active.status === "booking" ? "Booking open" : "Tournament live"}
-                  </span>
-                </div>
-                <div className="text-right">
-                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</div>
-                  <div className="text-3xl font-black tabular-nums gradient-gold-text leading-none">{mm}:{ss}</div>
-                </div>
-              </div>
               <div className="text-center">
                 <div className="font-display text-2xl font-black">{active.name ?? "Championship"}</div>
                 <p className="text-xs text-muted-foreground mt-1">Current stage: {active.current_stage ?? "R16"}</p>
@@ -149,6 +135,69 @@ function ChampionshipPage() {
         </div>
       </PageShell>
     </Layout>
+  );
+}
+
+function statusBadge(enabled: boolean, active: Tournament | null): string {
+  if (!enabled) return "Closed by admin";
+  if (!active) return "Waiting";
+  if (active.status === "scheduled") return "Scheduled";
+  if (active.status === "booking") return "Booking open";
+  if (active.status === "live") return "Live";
+  if (active.status === "completed") return "Completed";
+  return "Waiting";
+}
+function statusTone(enabled: boolean, active: Tournament | null): "closed" | "open" | "live" | "done" {
+  if (!enabled) return "closed";
+  if (active?.status === "live") return "live";
+  if (active?.status === "completed") return "done";
+  return "open";
+}
+
+export function ArenaHeader({
+  tag, title, description, accent, statusLabel, statusTone, nextAt, countdown,
+}: {
+  tag: string; title: string; description: string; accent: string;
+  statusLabel: string; statusTone: "closed" | "open" | "live" | "done";
+  nextAt: string | null; countdown: { mm: string; ss: string; label: string } | null;
+}) {
+  const badgeCls =
+    statusTone === "live"
+      ? "border-red-500/50 text-red-300 bg-red-500/15"
+      : statusTone === "closed"
+        ? "border-muted/50 text-muted-foreground bg-muted/20"
+        : statusTone === "done"
+          ? "border-emerald-500/40 text-emerald-300 bg-emerald-500/10"
+          : "border-amber-500/40 text-amber-300 bg-amber-500/10";
+  return (
+    <Card className="relative overflow-hidden glass border-primary/30 p-7">
+      <div className={`pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-gradient-to-br ${accent} to-transparent blur-3xl opacity-70`} />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-gold opacity-70" />
+      <div className="relative flex items-start justify-between gap-3">
+        <div className="h-14 w-14 rounded-2xl bg-background/40 border border-primary/30 backdrop-blur-xl grid place-items-center text-primary shadow-inner">
+          <Trophy className="h-8 w-8" />
+        </div>
+        <Badge variant="outline" className={`uppercase tracking-widest text-[10px] flex items-center gap-1 ${badgeCls}`}>
+          {statusTone === "live" && <Radio className="h-3 w-3 animate-pulse" />}
+          {statusLabel}
+        </Badge>
+      </div>
+      <div className="relative mt-6 space-y-2">
+        <div className="text-[10px] uppercase tracking-[0.35em] text-primary/80 font-black">{tag}</div>
+        <h1 className="font-display text-3xl sm:text-4xl font-black leading-tight">{title}</h1>
+        <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
+        {countdown ? (
+          <div className="pt-2 flex items-center gap-3 flex-wrap">
+            <span className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">{countdown.label}</span>
+            <span className="text-2xl font-black tabular-nums gradient-gold-text leading-none">{countdown.mm}:{countdown.ss}</span>
+          </div>
+        ) : nextAt ? (
+          <div className="pt-1 text-[11px] uppercase tracking-[0.25em] text-amber-300 flex items-center gap-1">
+            <Clock className="h-3 w-3" /> Next: {new Date(nextAt).toLocaleString(undefined, { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+          </div>
+        ) : null}
+      </div>
+    </Card>
   );
 }
 
