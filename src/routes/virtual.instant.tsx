@@ -696,6 +696,19 @@ const KILL_LINES = [
   "🔪 Close-quarters knife kill!",
 ];
 
+const GOAL_LINES = [
+  "⚽ Screamer into the top corner!",
+  "⚽ Cool finish one-on-one!",
+  "⚽ Header from the corner — buries it!",
+  "⚽ Curler bends into the far post!",
+  "⚽ Tap-in at the back post!",
+  "⚽ Volley on the swivel — buries it!",
+  "⚽ Counter-attack finish!",
+  "⚽ Long-range rocket, keeper flat-footed!",
+  "⚽ Penalty tucked into the corner!",
+  "⚽ Bicycle kick — outrageous!",
+];
+
 function seedRand(seed: string, i: number) {
   const s = `${seed}:${i}`;
   let h = 0;
@@ -725,7 +738,8 @@ type Fighter = { x: number; y: number; side: "h" | "a"; alive: boolean; flash: n
 type Tracer = { x1: number; y1: number; x2: number; y2: number; side: "h" | "a"; born: number };
 type Blast = { x: number; y: number; born: number; size: number };
 
-function LiveMatchTicker({ match, animSec }: { match: VirtualMatch; animSec: number }) {
+function LiveMatchTicker({ match, animSec, sport = "gang" }: { match: VirtualMatch; animSec: number; sport?: Sport }) {
+  const isFoot = sport === "football";
   const lockMs = match.locked_at
     ? new Date(match.locked_at).getTime()
     : match.lock_time
