@@ -36,6 +36,7 @@ export function PushBroadcastPanel() {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [link, setLink] = useState("");
+  const [image, setImage] = useState("");
   const [busy, setBusy] = useState(false);
   const [count, setCount] = useState<number | null>(null);
   const [role, setRole] = useState("any");
@@ -116,14 +117,14 @@ export function PushBroadcastPanel() {
     }
     setBusy(true);
     try {
-      const res: any = await send({ data: { title: title.trim(), body: body.trim(), link: link.trim(), ...filters, scheduledFor: scheduledIso } });
+      const res: any = await send({ data: { title: title.trim(), body: body.trim(), link: link.trim(), image: image.trim(), ...filters, scheduledFor: scheduledIso } });
       if (res?.ok && res?.scheduled) {
         toast.success(`Push scheduled for ${fmt(res.scheduledFor)}.`);
-        setTitle(""); setBody(""); setLink(""); setScheduledFor("");
+        setTitle(""); setBody(""); setLink(""); setImage(""); setScheduledFor("");
         loadScheduled();
       } else if (res?.ok) {
         toast.success(`Push sent to ${res.sent} of ${res.total} targeted device${res.total === 1 ? "" : "s"}.`);
-        setTitle(""); setBody(""); setLink("");
+        setTitle(""); setBody(""); setLink(""); setImage("");
         loadCount();
       } else {
         toast.error(res?.error || "Failed to send push.");
@@ -244,6 +245,14 @@ export function PushBroadcastPanel() {
         <div className="space-y-1">
           <label className="text-[10px] uppercase text-muted-foreground">Link (optional)</label>
           <Input value={link} onChange={(e) => setLink(e.target.value)} placeholder="/matches" />
+        </div>
+        <div className="space-y-1">
+          <label className="text-[10px] uppercase text-muted-foreground">Image URL (optional)</label>
+          <Input value={image} onChange={(e) => setImage(e.target.value)} placeholder="https://.../banner.jpg" />
+          <p className="text-[10px] text-muted-foreground">Shown as a large picture inside the device notification (Android/Chrome/desktop).</p>
+          {image && (
+            <img src={image} alt="preview" className="mt-1 rounded-md max-h-32 object-cover border border-border/50" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+          )}
         </div>
 
         <div className="space-y-2 rounded-lg border border-border/60 p-3">
