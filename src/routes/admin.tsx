@@ -4120,6 +4120,7 @@ function BetTrackerPanel() {
   const [bets, setBets] = useState<any[]>([]);
   const [filter, setFilter] = useState<string>("all");
   const [q, setQ] = useState("");
+  const [selectedBets, setSelectedBets] = useState<Set<string>>(new Set());
 
   async function load() {
     let qb = supabase.from("bets")
@@ -4128,6 +4129,7 @@ function BetTrackerPanel() {
     if (filter !== "all") qb = qb.eq("status", filter as any);
     const { data } = await qb;
     setBets(data ?? []);
+    setSelectedBets(new Set());
   }
   useEffect(() => { load(); }, [filter]);
   useEffect(() => {
