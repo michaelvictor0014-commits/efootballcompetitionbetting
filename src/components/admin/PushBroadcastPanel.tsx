@@ -47,6 +47,8 @@ export function PushBroadcastPanel() {
   const [scheduled, setScheduled] = useState<any[]>([]);
   const [totalRaw, setTotalRaw] = useState<number | null>(null);
   const [pruning, setPruning] = useState(false);
+  const [subs, setSubs] = useState<Array<{ user_id: string; name: string; last: string | null; enabled: boolean }>>([]);
+  const [showSubs, setShowSubs] = useState(false);
 
   const filters = {
     role: role === "any" ? "any" : role,
@@ -61,11 +63,34 @@ export function PushBroadcastPanel() {
     const { count: c } = await (supabase as any).from("push_subscriptions").select("id", { count: "exact", head: true });
     setTotalRaw(typeof c === "number" ? c : null);
   };
+  const loadSubs = async () => {
+    const { data } = await (supabase as any)
+      .from("push_subscriptions")
+      .select("user_id,last_seen_at,enabled")
+      .eq("enabled", true)
+      .order("last_seen_at", { ascending: false })
+      .limit(500);
+    const rows = (data ?? []) as any[];
+    const ids = Array.from(new Set(rows.map((r) => r.user_id)));
+    if (ids.length === 0) { setSubs([]); return; }
+    const { data: profs } = await (supabase as any)
+      .from("profiles").select("id,full_name,username").in("id", ids);
+    const map = new Map((profs ?? []).map((p: any) => [p.id, p.full_name || p.username || p.id.slice(0, 8)]));
+    const seen = new Set<string>();
+    const out: Array<{ user_id: string; name: string; last: string | null; enabled: boolean }> = [];
+    for (const r of rows) {
+      if (seen.has(r.user_id)) continue;
+      seen.add(r.user_id);
+      out.push({ user_id: r.user_id, name: (map.get(r.user_id) as string) ?? r.user_id.slice(0, 8), last: r.last_seen_at, enabled: r.enabled });
+    }
+    setSubs(out);
+  };
   const loadScheduled = () => {
     readScheduled().then((r: any) => setScheduled(r?.items ?? [])).catch(() => setScheduled([]));
   };
   useEffect(() => { loadCount(); }, [role, locale, lastActiveDays]);
   useEffect(() => { loadScheduled(); loadTotal(); }, []);
+  useEffect(() => { if (showSubs) loadSubs(); }, [showSubs]);
 
   const pruneDead = async () => {
     if (!window.confirm("Remove push subscriptions that are disabled, unseen for 60+ days, or have failed 10+ times? This tightens the subscriber count to reachable devices only.")) return;
@@ -153,7 +178,24 @@ export function PushBroadcastPanel() {
               <span className="tabular-nums">{totalRaw}</span> total rows in DB
             </div>
           )}
+          <Button size="sm" variant="ghost" className="h-6 text-[11px] ml-auto" onClick={() => setShowSubs((v) => !v)}>
+            {showSubs ? "Hide subscribers" : "View subscribers"}
+          </Button>
         </div>
+        {showSubs && (
+          <div className="mt-2 rounded-md border border-border bg-background/40 max-h-64 overflow-y-auto divide-y divide-border/50">
+            {subs.length === 0 ? (
+              <div className="p-3 text-[11px] text-muted-foreground">No active subscribers yet.</div>
+            ) : subs.map((s) => (
+              <div key={s.user_id} className="flex items-center justify-between gap-2 px-3 py-1.5 text-[11px]">
+                <span className="font-semibold truncate">{s.name}</span>
+                <span className="text-muted-foreground tabular-nums shrink-0">
+                  {s.last ? new Date(s.last).toLocaleDateString() : "—"}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </Card>
 
       <Card className="p-4 space-y-3">
