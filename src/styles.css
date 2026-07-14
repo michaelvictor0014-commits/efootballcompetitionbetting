@@ -222,19 +222,24 @@
 @layer utilities {
   .voucher-bg {
     background:
+      radial-gradient(ellipse at top left, oklch(0.28 0.09 158 / 0.95), transparent 55%),
+      radial-gradient(ellipse at bottom right, oklch(0.30 0.14 88 / 0.85), transparent 60%),
       linear-gradient(160deg,
-        oklch(0.20 0.03 158 / 0.55) 0%,
-        oklch(0.17 0.02 150 / 0.50) 50%,
-        oklch(0.18 0.03 90 / 0.52) 100%);
-    backdrop-filter: blur(26px) saturate(120%);
+        oklch(0.14 0.05 158) 0%,
+        oklch(0.11 0.04 150) 45%,
+        oklch(0.17 0.09 85) 100%);
   }
   .voucher-frame {
     border-radius: 32px;
     box-shadow:
-      0 0 0 1px oklch(0.85 0.10 120 / 0.30),
-      0 20px 40px -14px oklch(0 0 0 / 0.60),
-      0 40px 80px -30px oklch(0 0 0 / 0.45),
-      inset 0 1px 0 oklch(1 0 0 / 0.08);
+      0 0 0 1px oklch(0.85 0.22 152 / 0.55),
+      0 0 0 3px oklch(0.10 0.05 158 / 0.98),
+      0 0 0 4px oklch(0.72 0.18 88 / 0.55),
+      0 24px 60px -18px oklch(0 0 0 / 0.85),
+      0 60px 120px -40px oklch(0 0 0 / 0.75),
+      0 0 60px -12px oklch(0.72 0.18 88 / 0.35),
+      inset 0 2px 0 oklch(1 0 0 / 0.14),
+      inset 0 -2px 0 oklch(0 0 0 / 0.55);
     transition: transform .4s ease, box-shadow .4s ease;
   }
   .voucher-circuit {
@@ -307,11 +312,14 @@
     box-shadow: 0 0 0 1px oklch(0.85 0.22 152 / 0.40);
   }
   .voucher-row {
-    background: oklch(0.22 0.02 158 / 0.35);
-    border: 1px solid oklch(0.80 0.04 120 / 0.16);
+    background:
+      linear-gradient(180deg, oklch(0.20 0.06 158 / 0.98), oklch(0.13 0.05 158 / 0.98));
+    border: 1px solid oklch(0.72 0.18 88 / 0.35);
     border-radius: 18px;
-    backdrop-filter: blur(14px) saturate(115%);
-    box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.06);
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.10),
+      inset 0 -1px 0 oklch(0 0 0 / 0.45),
+      0 6px 16px -8px oklch(0 0 0 / 0.60);
   }
   .voucher-dashed {
     background-image: linear-gradient(90deg, oklch(0.85 0.22 152 / 0.7) 50%, transparent 50%);
