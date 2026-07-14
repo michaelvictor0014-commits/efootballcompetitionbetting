@@ -206,10 +206,6 @@ function BrandingSync() {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  // Service workers / push disabled in this build — unregister any lingering ones.
-  if (typeof window !== "undefined" && "serviceWorker" in navigator) {
-    navigator.serviceWorker.getRegistrations().then((rs) => rs.forEach((r) => r.unregister())).catch(() => {});
-  }
 
   return (
     <QueryClientProvider client={queryClient}>
