@@ -822,6 +822,69 @@ export type Database = {
         }
         Relationships: []
       }
+      championship_bets: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          odds: number
+          payout: number
+          settled_at: string | null
+          stage: string | null
+          stake: number
+          status: string
+          team_id: string | null
+          tournament_id: string
+          tournament_match_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          odds: number
+          payout?: number
+          settled_at?: string | null
+          stage?: string | null
+          stake: number
+          status?: string
+          team_id?: string | null
+          tournament_id: string
+          tournament_match_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          odds?: number
+          payout?: number
+          settled_at?: string | null
+          stage?: string | null
+          stake?: number
+          status?: string
+          team_id?: string | null
+          tournament_id?: string
+          tournament_match_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "championship_bets_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "championship_bets_tournament_match_id_fkey"
+            columns: ["tournament_match_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_message_reactions: {
         Row: {
           created_at: string
@@ -2992,8 +3055,10 @@ export type Database = {
       }
       tournaments: {
         Row: {
+          bracket: Json | null
           bracket_size: number
           champion_id: string | null
+          champion_team_id: string | null
           created_at: string
           created_by: string | null
           current_stage: string | null
@@ -3003,15 +3068,20 @@ export type Database = {
           is_featured: boolean
           kind: string
           name: string
+          next_stage_at: string | null
+          runner_up_team_id: string | null
           stage_gap_seconds: number
           starts_at: string | null
           status: string
           tagline: string | null
+          team_ids: string[] | null
           updated_at: string
         }
         Insert: {
+          bracket?: Json | null
           bracket_size?: number
           champion_id?: string | null
+          champion_team_id?: string | null
           created_at?: string
           created_by?: string | null
           current_stage?: string | null
@@ -3021,15 +3091,20 @@ export type Database = {
           is_featured?: boolean
           kind?: string
           name: string
+          next_stage_at?: string | null
+          runner_up_team_id?: string | null
           stage_gap_seconds?: number
           starts_at?: string | null
           status?: string
           tagline?: string | null
+          team_ids?: string[] | null
           updated_at?: string
         }
         Update: {
+          bracket?: Json | null
           bracket_size?: number
           champion_id?: string | null
+          champion_team_id?: string | null
           created_at?: string
           created_by?: string | null
           current_stage?: string | null
@@ -3039,10 +3114,13 @@ export type Database = {
           is_featured?: boolean
           kind?: string
           name?: string
+          next_stage_at?: string | null
+          runner_up_team_id?: string | null
           stage_gap_seconds?: number
           starts_at?: string | null
           status?: string
           tagline?: string | null
+          team_ids?: string[] | null
           updated_at?: string
         }
         Relationships: [
@@ -3378,6 +3456,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_virtual_rounds: {
+        Row: {
+          away_kicks: boolean[]
+          away_score: number
+          created_at: string
+          home_kicks: boolean[]
+          home_score: number
+          id: string
+          match_label: string
+          odds: number
+          payout: number
+          result: string
+          side: string
+          stake: number
+          user_id: string
+        }
+        Insert: {
+          away_kicks: boolean[]
+          away_score: number
+          created_at?: string
+          home_kicks: boolean[]
+          home_score: number
+          id?: string
+          match_label: string
+          odds?: number
+          payout?: number
+          result: string
+          side: string
+          stake: number
+          user_id: string
+        }
+        Update: {
+          away_kicks?: boolean[]
+          away_score?: number
+          created_at?: string
+          home_kicks?: boolean[]
+          home_score?: number
+          id?: string
+          match_label?: string
+          odds?: number
+          payout?: number
+          result?: string
+          side?: string
+          stake?: number
+          user_id?: string
+        }
+        Relationships: []
       }
       virtual_house_transactions: {
         Row: {
@@ -3923,6 +4049,8 @@ export type Database = {
       auto_draw_due_lotteries: { Args: never; Returns: number }
       auto_resolve_virtual_round: { Args: { _match_id: string }; Returns: Json }
       can_use_gang_chat: { Args: { _user_id: string }; Returns: boolean }
+      championship_start: { Args: { p_tournament: string }; Returns: Json }
+      championship_tick: { Args: never; Returns: Json }
       claim_challenge: { Args: { _progress_id: string }; Returns: Json }
       claim_daily_login: { Args: never; Returns: Json }
       claim_gift: { Args: { _gift_id: string }; Returns: Json }
@@ -3936,6 +4064,10 @@ export type Database = {
           _ticket?: string
         }
         Returns: string
+      }
+      credit_championship_payouts: {
+        Args: { p_tournament: string }
+        Returns: undefined
       }
       decline_promo_request: {
         Args: { _id: string; _note?: string }
@@ -3981,6 +4113,18 @@ export type Database = {
       notify_admins: {
         Args: { _body: string; _link: string; _title: string }
         Returns: undefined
+      }
+      place_championship_bet: {
+        Args: {
+          p_kind: string
+          p_match: string
+          p_odds: number
+          p_stage: string
+          p_stake: number
+          p_team: string
+          p_tournament: string
+        }
+        Returns: string
       }
       place_lottery_ticket: {
         Args: { _draw_id: string; _number: number; _stake: number }
@@ -4070,6 +4214,15 @@ export type Database = {
       }
       settle_pay_winning_bet: { Args: { _bet_id: string }; Returns: Json }
       spin_wheel: { Args: never; Returns: Json }
+      start_user_virtual_round: {
+        Args: {
+          p_away: string
+          p_home: string
+          p_side: string
+          p_stake: number
+        }
+        Returns: Json
+      }
       submit_survey: {
         Args: { _answers: Json; _survey_id: string }
         Returns: Json
