@@ -337,7 +337,7 @@ function FeaturedGoldenMatches({ matches, bgImage, bgFit, bgPos }: { matches: Ma
   const { selections, add, remove, setOpen } = useBetSlip();
   if (matches.length === 0) return null;
   return (
-    <div className={`seasonal-golden relative overflow-hidden rounded-3xl px-4 py-4 md:px-6 md:py-5 space-y-3 ${bgImage ? "min-h-[420px] md:min-h-[500px]" : ""}`}>
+    <div className={`seasonal-golden relative overflow-hidden rounded-3xl px-4 py-4 md:px-6 md:py-5 space-y-3 ${bgImage ? "min-h-[280px] md:min-h-[340px]" : ""}`}>
       {bgImage && (
         <>
           <img
@@ -400,14 +400,14 @@ function FeaturedGoldenMatches({ matches, bgImage, bgFit, bgPos }: { matches: Ma
                         add({ match_id: m.id, match_name: m.name, market_id: market!.id, market_name: market!.name, odd_id: o.id, selection_label: o.label, odds: Number(o.value) });
                         setOpen(true);
                       }}
-                      className={`flex flex-col items-center justify-center gap-1 rounded-xl py-3.5 px-2 min-h-[64px] backdrop-blur-md transition shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_6px_18px_-8px_rgba(0,0,0,0.7)] disabled:opacity-40 ${
+                      className={`flex flex-col items-center justify-center gap-0.5 rounded-lg py-2 px-2 min-h-[44px] backdrop-blur-md transition shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_6px_18px_-8px_rgba(0,0,0,0.7)] disabled:opacity-40 ${
                         selected
                           ? "bg-emerald-500/30 border-2 border-emerald-300 ring-2 ring-emerald-300/60 text-emerald-50"
                           : "bg-emerald-950/70 border-2 border-emerald-600/60 hover:bg-emerald-800/70 hover:border-emerald-400/80 text-emerald-50"
                       }`}
                     >
-                      <span className="text-[10px] uppercase tracking-widest font-bold text-emerald-100/80 truncate max-w-full">{o.label}</span>
-                      <span className="font-mono font-black text-lg text-emerald-50 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">{Number(o.value).toFixed(2)}</span>
+                      <span className="text-[9px] uppercase tracking-widest font-bold text-emerald-100/80 truncate max-w-full">{o.label}</span>
+                      <span className="font-mono font-black text-sm text-emerald-50 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">{Number(o.value).toFixed(2)}</span>
                     </button>
                   );
                 })}
@@ -563,10 +563,18 @@ function BookingCodeFab() {
 
 function SectionHeader({ icon: Icon, title, subtitle }: { icon: any; title: string; subtitle: string }) {
   return (
-    <div className="flex items-end justify-between border-b border-border pb-2">
-      <div>
-        <h2 className="text-2xl font-bold flex items-center gap-2"><Icon className="h-5 w-5 text-primary" />{title}</h2>
-        <p className="text-xs text-muted-foreground">{subtitle}</p>
+    <div className="relative overflow-hidden rounded-2xl border-2 border-primary/50 bg-gradient-to-r from-emerald-950/80 via-background/80 to-emerald-950/80 px-4 py-3 shadow-[0_8px_30px_-12px_rgba(212,175,55,0.5)]">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-gold opacity-80" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-gold opacity-60" />
+      <div className="pointer-events-none absolute -left-10 -top-10 h-24 w-24 rounded-full bg-primary/20 blur-2xl" />
+      <div className="relative flex items-center gap-3">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-primary/50 bg-background/70 text-primary shadow-inner">
+          <Icon className="h-5 w-5" />
+        </span>
+        <div className="min-w-0">
+          <h2 className="text-lg sm:text-2xl font-black uppercase tracking-wide gradient-gold-text truncate">{title}</h2>
+          <p className="text-[11px] sm:text-xs text-muted-foreground truncate">{subtitle}</p>
+        </div>
       </div>
     </div>
   );
