@@ -3019,31 +3019,10 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "tournament_matches_participant_a_id_fkey"
-            columns: ["participant_a_id"]
-            isOneToOne: false
-            referencedRelation: "tournament_participants"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "tournament_matches_participant_b_id_fkey"
-            columns: ["participant_b_id"]
-            isOneToOne: false
-            referencedRelation: "tournament_participants"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "tournament_matches_tournament_id_fkey"
             columns: ["tournament_id"]
             isOneToOne: false
             referencedRelation: "tournaments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "tournament_matches_winner_id_fkey"
-            columns: ["winner_id"]
-            isOneToOne: false
-            referencedRelation: "tournament_participants"
             referencedColumns: ["id"]
           },
         ]
