@@ -58,6 +58,16 @@ const matchSelect = `
 `;
 
 export function VirtualPage({ title = "ECB Virtual Gang League" }: { title?: string } = {}) {
+  return <VirtualPageInner title={title} sport="gang" />;
+}
+
+export function VirtualFootballPage({ title = "ECB Virtual E-Football League" }: { title?: string } = {}) {
+  return <VirtualPageInner title={title} sport="football" />;
+}
+
+type Sport = "gang" | "football";
+
+function VirtualPageInner({ title, sport }: { title: string; sport: Sport }) {
   const [round, setRound] = useState<VirtualMatch[]>([]);
   const [phase, setPhase] = useState<Phase>("idle");
   const [recent, setRecent] = useState<VirtualMatch[]>([]);
@@ -163,7 +173,7 @@ export function VirtualPage({ title = "ECB Virtual Gang League" }: { title?: str
           <Card className="virtual-panel px-3 py-2 flex items-center gap-2 text-[11px]">
             <Radio className="h-3.5 w-3.5 text-emerald-400 animate-pulse" />
             <span className="font-black uppercase tracking-widest text-emerald-300">Play as you stake</span>
-            <span className="text-muted-foreground">— your shootout goes live automatically the moment your bet is placed. No countdown, no waiting.</span>
+            <span className="text-muted-foreground">— your {sport === "football" ? "match kicks off" : "shootout goes live"} automatically the moment your bet is placed. No countdown, no waiting.</span>
           </Card>
 
           {!featured ? (
@@ -178,7 +188,7 @@ export function VirtualPage({ title = "ECB Virtual Gang League" }: { title?: str
             </Card>
           ) : (
             <>
-              <ShootoutStage featured={featured} phase={phase} animSec={cycle.animSec} recent={recent} />
+              <ShootoutStage featured={featured} phase={phase} animSec={cycle.animSec} recent={recent} sport={sport} />
               <ScoresTable matches={round} phase={phase} />
               <MarketBoard matches={round} phase={phase} />
             </>
