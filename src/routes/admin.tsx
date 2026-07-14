@@ -1278,18 +1278,19 @@ function MatchesPanel() {
   }
 
   async function clearEnded() {
-    const endedCount = matches.filter((m) => m.status === "ended").length;
-    if (endedCount === 0) { toast.info("No ended matches to clear."); return; }
+    const clearable = matches.filter((m) => m.status === "ended" || m.status === "cancelled");
+    const endedCount = clearable.length;
+    if (endedCount === 0) { toast.info("No ended or cancelled matches to clear."); return; }
     if (!await confirm({
-      title: `Clear ${endedCount} ended match${endedCount === 1 ? "" : "es"}?`,
-      description: "All matches with status 'ended' will be archived from the panel so you can create new ones. User bet vouchers and history stay intact — only the match listing here is cleared.",
-      tone: "danger", confirmText: "Clear ended matches",
+      title: `Clear ${endedCount} match${endedCount === 1 ? "" : "es"}?`,
+      description: "All matches with status 'ended' or 'cancelled' will be archived from the panel so you can create new ones. User bet vouchers and history stay intact — only the match listing here is cleared.",
+      tone: "danger", confirmText: "Clear ended & cancelled",
     })) return;
     const { data: archived, error } = await supabase
-      .from("matches").update({ is_archived: true }).eq("is_archived", false).eq("status", "ended").select("id");
+      .from("matches").update({ is_archived: true }).eq("is_archived", false).in("status", ["ended", "cancelled"]).select("id");
     if (error) { toast.error(error.message); return; }
     await logAudit("matches_bulk_archive_ended", "matches", undefined, { count: archived?.length ?? 0, match_ids: (archived ?? []).map((m: any) => m.id) });
-    toast.success(`Archived ${archived?.length ?? 0} ended match${archived?.length === 1 ? "" : "es"}`);
+    toast.success(`Archived ${archived?.length ?? 0} match${archived?.length === 1 ? "" : "es"} (ended + cancelled)`);
     load();
   }
 
