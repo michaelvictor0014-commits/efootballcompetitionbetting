@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { RiskPanel, PnLPanel, ReferralsAdminPanel, EmblemModerationPanel, VipAdminPanel, StreakAndPushPanel, TokenRulesPanel, BroadcastPanel, ActivityPanel, ReportsPanel, AdminAILivePanel } from "@/components/admin/AdminExtensions";
+import { UserExperiencePanel } from "@/components/admin/UserExperiencePanel";
 import { VirtualAdminPanel } from "@/components/admin/VirtualAdminPanel";
 import { ChampionshipAdminPanel } from "@/components/admin/ChampionshipAdminPanel";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -248,6 +249,7 @@ export function AdminPage() {
             <TabsContent value="tournaments" className="mt-4"><TournamentAdminPanel /></TabsContent>
             <TabsContent value="attendance" className="mt-4"><AttendancePanel /></TabsContent>
             <TabsContent value="branding" className="mt-4"><BrandingAdminPanel /></TabsContent>
+            <TabsContent value="ux" className="mt-4"><UserExperiencePanel /></TabsContent>
           </Tabs>
         </div>
         <ActionConfirmDialog />
@@ -3365,6 +3367,7 @@ function setActiveTabFromAnalytics(_nav: any, _tab: string) {
 
 const QUICK_ACTIONS: { i: any; l: string; t: string }[] = [
   { i: BarChart3, l: "Analytics", t: "analytics" },
+  { i: Eye, l: "User Experience", t: "ux" },
   { i: Users, l: "Users", t: "users" },
   { i: Shield, l: "Banned", t: "bannedusers" },
   { i: Sparkles, l: "Admin AI", t: "adminai" },
