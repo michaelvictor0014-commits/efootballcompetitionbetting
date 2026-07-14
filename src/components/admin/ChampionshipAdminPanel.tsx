@@ -185,9 +185,9 @@ export function ChampionshipAdminPanel() {
         )}
       </Card>
 
-      <Card className="glass p-4 border-amber-500/30 text-xs text-muted-foreground">
-        <div className="font-bold text-amber-300 mb-1">Coming next build</div>
-        Bracket assignment (drag 16 teams into slots), live shootout engine for each knockout match, per-round bracket board reveal during the {gap}s inter-stage gap, and Championship-specific betting markets (Outright winner, Reach stage, Eliminated at stage, Per-match winner).
+      <Card className="glass p-4 border-primary/30 text-xs text-muted-foreground">
+        <div className="font-bold text-primary mb-1">How it works</div>
+        "Start now" auto-drafts 16 random teams into R16 and moves the tournament live. The engine then advances rounds every {gap}s: R16 → QF → SF → Final. Users can bet on outright champion, reach-stage (F/SF/QF), eliminated-at-stage, and per-match winners while stages are open.
       </Card>
     </div>
   );
