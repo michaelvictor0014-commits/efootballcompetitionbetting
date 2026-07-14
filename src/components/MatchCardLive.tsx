@@ -151,7 +151,7 @@ export function MatchCardLive({ match, variant = "card" }: { match: MatchRow; va
     const oddsList = market?.odds.slice(0, 3) ?? [];
     const labels = shortLabels(oddsList.length);
     return (
-      <Card className="glass px-3 py-1.5 pl-4 hover:border-primary/60 hover:-translate-y-0.5 transition-all relative overflow-hidden">
+      <Card className="glass bg-background/20 backdrop-blur-[2px] px-3 py-1 pl-4 hover:border-primary/60 hover:-translate-y-0.5 transition-all relative overflow-hidden">
         <span className={`absolute left-0 top-0 h-full w-1 ${match.status === "live" ? "bg-destructive" : match.status === "ended" ? "bg-muted-foreground/40" : "bg-emerald-500/70"}`} />
         <div className="flex items-stretch gap-2 sm:gap-3">
           <Link to="/matches/$matchId" params={{ matchId: match.id }} className="min-w-0 flex-1 flex flex-col justify-center">
@@ -187,9 +187,9 @@ export function MatchCardLive({ match, variant = "card" }: { match: MatchRow; va
                   disabled={locked}
                   onClick={() => addOdd(o, market!.id, market!.name)}
                   className={`w-11 sm:w-12 rounded-md flex flex-col items-center justify-center gap-0.5 py-1 transition-all border ${
-                    locked ? "bg-secondary/30 text-muted-foreground cursor-not-allowed border-transparent"
+                    locked ? "bg-secondary/20 text-muted-foreground cursor-not-allowed border-transparent"
                     : selected ? "bg-primary text-primary-foreground border-transparent shadow-[0_0_0_1px_hsl(var(--primary))]"
-                    : "bg-emerald-500/10 border-emerald-500/25 text-emerald-100 hover:bg-emerald-500/20 hover:border-emerald-400/50"
+                    : "bg-emerald-500/[0.04] border-emerald-500/15 text-emerald-100 hover:bg-emerald-500/10 hover:border-emerald-400/40"
                   }`}
                   title={o.label}
                 >
@@ -198,9 +198,19 @@ export function MatchCardLive({ match, variant = "card" }: { match: MatchRow; va
                 </button>
               );
             })}
+            {csMarket && csMarket.odds.length > 0 && (
+              <button
+                type="button"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCsOpen(true); }}
+                className="w-11 sm:w-12 rounded-md flex flex-col items-center justify-center gap-0.5 py-1 transition-all border border-[var(--gold)]/60 bg-[var(--gold)]/15 text-[var(--gold)] hover:bg-[var(--gold)]/25"
+                title={`Correct Score · ${csMarket.odds.length}`}
+              >
+                <Target className="h-3 w-3" />
+                <span className="text-[8px] uppercase tracking-wider font-bold leading-none">CS</span>
+              </button>
+            )}
           </div>
         </div>
-        {csButton && <div className="mt-2">{csButton}</div>}
         {csDialog}
       </Card>
     );
