@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Radio, Circle, Trophy, ArrowRight } from "lucide-react";
+import { Radio, Circle, Trophy, ArrowRight, Crosshair } from "lucide-react";
 
 type LiveEvent = { at: number; minute: number; type: string; side?: "a" | "b"; text: string };
 type Row = {
@@ -13,6 +13,92 @@ type Row = {
 type Team = { id: string; name: string; logo_url: string | null };
 
 const STAGE_LABEL: Record<string, string> = { R16: "Round of 16", QF: "Quarterfinal", SF: "Semifinal", F: "Final" };
+
+/** Mini shootout arena — muzzle flash, tracer round, and reticle. Used for the
+ *  generic (gang) championship so the live-feed vibe matches the shootout theme. */
+function ShootoutMini({ scoreA, scoreB, nameA, nameB, seed }: { scoreA: number; scoreB: number; nameA: string; nameB: string; seed: string }) {
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    const iv = setInterval(() => setTick((t) => (t + 1) % 240), 90);
+    return () => clearInterval(iv);
+  }, []);
+  const h = Array.from(seed).reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+  // Fire cycle: 0-6 charge, 7 flash, 8-14 tracer travel, 15-19 cooldown
+  const cycle = (tick + (h % 20)) % 20;
+  const flash = cycle === 7;
+  const tracing = cycle >= 8 && cycle <= 14;
+  const tracerX = 60 + ((cycle - 8) / 6) * 180; // 60 → 240
+  const dir = (h & 1) === 0 ? 1 : -1; // A shoots at B (right) or B at A (left)
+  const fromX = dir === 1 ? 60 : 240;
+  const toX = dir === 1 ? tracerX : 300 - tracerX;
+  return (
+    <div className="relative w-full rounded-md overflow-hidden border border-red-500/40" style={{ aspectRatio: "3 / 1" }}>
+      <svg viewBox="0 0 300 100" className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id={`arena-${seed}`} x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0" stopColor="#1a0a0a" />
+            <stop offset="1" stopColor="#0a0a0a" />
+          </linearGradient>
+          <radialGradient id={`spot-${seed}`} cx="0.5" cy="0" r="0.9">
+            <stop offset="0" stopColor="rgba(239,68,68,0.25)" />
+            <stop offset="1" stopColor="transparent" />
+          </radialGradient>
+        </defs>
+        <rect width="300" height="100" fill={`url(#arena-${seed})`} />
+        <rect width="300" height="100" fill={`url(#spot-${seed})`} />
+        {/* concrete floor grid */}
+        {[15, 35, 55, 75, 95].map((y) => (
+          <line key={y} x1="0" y1={y} x2="300" y2={y} stroke="rgba(239,68,68,0.06)" strokeWidth="0.5" />
+        ))}
+        {/* center reticle */}
+        <g opacity="0.65">
+          <circle cx="150" cy="50" r="14" fill="none" stroke="rgba(239,68,68,0.55)" strokeWidth="1" />
+          <line x1="130" y1="50" x2="170" y2="50" stroke="rgba(239,68,68,0.55)" strokeWidth="0.6" />
+          <line x1="150" y1="30" x2="150" y2="70" stroke="rgba(239,68,68,0.55)" strokeWidth="0.6" />
+        </g>
+        {/* Shooter A (left) */}
+        <g>
+          <circle cx="30" cy="50" r="8" fill="#7f1d1d" stroke="#ef4444" strokeWidth="1" />
+          <rect x="38" y="47" width="16" height="4" fill="#f87171" rx="1" />
+          {flash && dir === 1 && (
+            <circle cx="60" cy="49" r="6" fill="#fde68a" opacity="0.95" />
+          )}
+        </g>
+        {/* Shooter B (right) */}
+        <g>
+          <circle cx="270" cy="50" r="8" fill="#0c4a6e" stroke="#38bdf8" strokeWidth="1" />
+          <rect x="246" y="47" width="16" height="4" fill="#7dd3fc" rx="1" />
+          {flash && dir === -1 && (
+            <circle cx="240" cy="49" r="6" fill="#fde68a" opacity="0.95" />
+          )}
+        </g>
+        {/* Tracer bullet */}
+        {tracing && (
+          <>
+            <line x1={fromX} y1="49" x2={toX} y2="49" stroke="#fef08a" strokeWidth="2" opacity="0.85" />
+            <circle cx={toX} cy="49" r="2" fill="#fef3c7" />
+          </>
+        )}
+        {/* Sparks on impact */}
+        {cycle === 14 && (
+          <g>
+            {[0, 1, 2, 3].map((i) => (
+              <circle key={i} cx={dir === 1 ? 258 : 42} cy={40 + i * 5} r="1.4" fill="#fbbf24" opacity="0.8" />
+            ))}
+          </g>
+        )}
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-between px-2 text-[10px] font-black">
+        <span className="truncate max-w-[35%] text-red-200 drop-shadow">{nameA}</span>
+        <span className="text-amber-300 tabular-nums text-sm drop-shadow">{scoreA} – {scoreB}</span>
+        <span className="truncate max-w-[35%] text-sky-200 text-right drop-shadow">{nameB}</span>
+      </div>
+      <div className="absolute top-1 left-1 text-[8px] uppercase tracking-widest bg-red-500/30 text-red-100 px-1 rounded flex items-center gap-0.5">
+        <Crosshair className="h-2.5 w-2.5" /> LIVE
+      </div>
+    </div>
+  );
+}
 
 /** Mini football pitch SVG with a bouncing ball; purely decorative live-arena feel. */
 function PitchMini({ scoreA, scoreB, nameA, nameB, seed, football }: { scoreA: number; scoreB: number; nameA: string; nameB: string; seed: string; football: boolean }) {
@@ -139,14 +225,24 @@ export function ChampionshipLiveFeed({ tournamentId, sport, currentStage }: { to
               const nameB = nameOf(r.participant_b_id);
               return (
                 <div key={r.id} className="rounded-md border border-destructive/30 bg-destructive/5 p-2">
-                  <PitchMini
-                    scoreA={r.score_a ?? 0}
-                    scoreB={r.score_b ?? 0}
-                    nameA={nameA}
-                    nameB={nameB}
-                    seed={r.id}
-                    football={sport === "football"}
-                  />
+                  {sport === "football" ? (
+                    <PitchMini
+                      scoreA={r.score_a ?? 0}
+                      scoreB={r.score_b ?? 0}
+                      nameA={nameA}
+                      nameB={nameB}
+                      seed={r.id}
+                      football
+                    />
+                  ) : (
+                    <ShootoutMini
+                      scoreA={r.score_a ?? 0}
+                      scoreB={r.score_b ?? 0}
+                      nameA={nameA}
+                      nameB={nameB}
+                      seed={r.id}
+                    />
+                  )}
                   {ev.length > 0 && (
                     <ul className="mt-1.5 space-y-0.5 text-[10.5px] text-muted-foreground">
                       {ev.map((e, i) => (
