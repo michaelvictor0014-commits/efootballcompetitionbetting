@@ -162,6 +162,8 @@ import { PopupAd } from "@/components/PopupAd";
 import { CookieConsent } from "@/components/CookieConsent";
 import { BetSlipFab } from "@/components/BetSlip";
 import { RouteProgress } from "@/components/RouteProgress";
+import { PushPermissionPrompt } from "@/components/PushPermissionPrompt";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { useBranding } from "@/lib/branding";
 import { useEffect } from "react";
 import { trackPageView } from "@/lib/analytics";
@@ -224,6 +226,8 @@ function RootComponent() {
             <BetSlipFab />
             <RouteProgress />
             <CookieConsent />
+            <PushPermissionPrompt />
+            <PWAInstallPrompt />
             <Toaster />
           </ConfirmProvider>
         </BetSlipProvider>
