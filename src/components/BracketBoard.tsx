@@ -53,24 +53,84 @@ export function BracketBoard({ tournamentId, currentStage }: { tournamentId: str
     return () => { cancelled = true; (supabase as any).removeChannel(ch); };
   }, [tournamentId]);
 
+  // Slots per round: R16=8, QF=4, SF=2, F=1
+  const slotCounts = [8, 4, 2, 1];
   return (
-    <div className="grid gap-3 md:grid-cols-4">
-      {STAGES.map((s) => {
-        const rows = matches.filter((m) => m.round_name === s.name);
-        const isCurrent = currentStage === s.name;
-        return (
-          <div key={s.name} className="space-y-2">
-            <div className={`text-[10px] uppercase tracking-[0.3em] font-black text-center py-1.5 rounded-md ${isCurrent ? "bg-primary/20 text-primary" : "text-muted-foreground"}`}>
-              {s.label}
-            </div>
-            {rows.length === 0 ? (
-              <div className="h-16 rounded-md border border-dashed border-border/40 grid place-items-center text-[10px] text-muted-foreground">TBD</div>
-            ) : (
-              rows.map((m) => <BracketCard key={m.id} m={m} teams={teams} isFinal={s.name === "F"} />)
-            )}
-          </div>
-        );
-      })}
+    <div className="overflow-x-auto -mx-2 px-2">
+      <div className="min-w-[720px]">
+        {/* Column headers */}
+        <div className="grid gap-3 mb-2" style={{ gridTemplateColumns: "repeat(4, minmax(0,1fr))" }}>
+          {STAGES.map((s) => {
+            const isCurrent = currentStage === s.name;
+            return (
+              <div
+                key={s.name}
+                className={`text-[10px] uppercase tracking-[0.3em] font-black text-center py-1.5 rounded-md ${isCurrent ? "bg-primary/20 text-primary" : "text-muted-foreground"}`}
+              >
+                {s.label}
+              </div>
+            );
+          })}
+        </div>
+        {/* Tree grid — each round's matches stack vertically and draw L-shaped connectors that meet siblings at the midpoint into the next round. */}
+        <div className="grid gap-0" style={{ gridTemplateColumns: "repeat(4, minmax(0,1fr))" }}>
+          {STAGES.map((s, colIdx) => {
+            const rows = matches.filter((m) => m.round_name === s.name).sort((a, b) => a.slot - b.slot);
+            const count = slotCounts[colIdx];
+            const isLast = colIdx === STAGES.length - 1;
+            const isFirst = colIdx === 0;
+            return (
+              <div key={s.name} className="flex flex-col justify-around relative px-3">
+                {Array.from({ length: count }).map((_, idx) => {
+                  const m = rows[idx];
+                  const isFinal = s.name === "F";
+                  const isTopOfPair = idx % 2 === 0;
+                  return (
+                    <div
+                      key={m?.id ?? `${s.name}-${idx}`}
+                      className="relative flex-1 flex items-center"
+                    >
+                      {/* incoming stub from previous round */}
+                      {!isFirst && (
+                        <span
+                          aria-hidden
+                          className="pointer-events-none absolute -left-3 top-1/2 h-px w-3 bg-primary/40"
+                        />
+                      )}
+                      <div className="w-full">
+                        {m ? (
+                          <BracketCard m={m} teams={teams} isFinal={isFinal} />
+                        ) : (
+                          <div className="rounded-md border border-dashed border-border/40 h-14 grid place-items-center text-[10px] text-muted-foreground bg-card/20">
+                            TBD
+                          </div>
+                        )}
+                      </div>
+                      {/* outgoing connector to next round */}
+                      {!isLast && (
+                        <>
+                          {/* horizontal stub from card center to the vertical joiner */}
+                          <span
+                            aria-hidden
+                            className="pointer-events-none absolute -right-3 top-1/2 h-px w-3 bg-primary/40"
+                          />
+                          {/* vertical joiner: top-of-pair goes DOWN from center to bottom, bottom-of-pair goes UP from top to center */}
+                          <span
+                            aria-hidden
+                            className={`pointer-events-none absolute -right-3 w-px bg-primary/40 ${
+                              isTopOfPair ? "top-1/2 bottom-0" : "top-0 bottom-1/2"
+                            }`}
+                          />
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }

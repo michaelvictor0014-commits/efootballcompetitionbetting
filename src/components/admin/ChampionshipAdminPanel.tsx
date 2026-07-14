@@ -52,8 +52,8 @@ export function ChampionshipAdminPanel() {
         .in("kind", ["championship_virtual","championship_football"])
         .order("starts_at", { ascending: false })
         .limit(20),
-      sb.from("teams").select("id", { count: "exact", head: true }).eq("sport", "football"),
-      sb.from("teams").select("id", { count: "exact", head: true }).or("sport.eq.generic,sport.is.null"),
+      sb.from("teams").select("id", { count: "exact", head: true }).in("sport", ["football", "both"]),
+      sb.from("teams").select("id", { count: "exact", head: true }).or("sport.eq.generic,sport.eq.both,sport.is.null"),
     ]);
     setEnabled(!!s?.virtual_championship_enabled);
     setFootballEnabled(!!s?.virtual_championship_football_enabled);
@@ -93,7 +93,7 @@ export function ChampionshipAdminPanel() {
       toast.error("Need at least 16 teams total to auto-tag");
       return;
     }
-    const { data: picks } = await sb.from("teams").select("id").or("sport.eq.generic,sport.is.null").limit(16);
+    const { data: picks } = await sb.from("teams").select("id").or("sport.eq.generic,sport.eq.both,sport.is.null").limit(16);
     const ids = (picks ?? []).map((p: any) => p.id);
     if (ids.length === 0) return;
     const { error } = await sb.from("teams").update({ sport: "football" }).in("id", ids);

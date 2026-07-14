@@ -161,7 +161,7 @@ function TeamsTab() {
     if (error) return toast.error(error.message);
     toast.success(`Deleted ${ids.length} team${ids.length === 1 ? "" : "s"}`); load();
   }
-  async function bulkTagSport(sport: "generic" | "football") {
+  async function bulkTagSport(sport: "generic" | "football" | "both") {
     if (selected.size === 0) return;
     const ids = Array.from(selected);
     const { error } = await (supabase as any).from("teams").update({ sport }).in("id", ids);
@@ -180,6 +180,7 @@ function TeamsTab() {
             <>
               <Button size="sm" variant="outline" onClick={() => bulkTagSport("football")}>Tag football</Button>
               <Button size="sm" variant="outline" onClick={() => bulkTagSport("generic")}>Tag generic</Button>
+              <Button size="sm" variant="outline" onClick={() => bulkTagSport("both")}>Tag both</Button>
             <Button size="sm" variant="destructive" onClick={bulkRemove}>
               <Trash2 className="h-3 w-3 mr-1" />Delete selected ({selected.size})
             </Button>
@@ -199,7 +200,8 @@ function TeamsTab() {
               <div className="font-bold truncate">{t.name}</div>
               <div className="text-[10px] text-muted-foreground">
                 {t.gang_type === "G" ? "Gang" : t.gang_type === "F" ? "Faction" : "Team"}
-                {t.sport === "football" && <span className="ml-1 px-1 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-[9px] font-bold">FOOTBALL</span>}
+                {(t.sport === "football" || t.sport === "both") && <span className="ml-1 px-1 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-[9px] font-bold">FOOTBALL</span>}
+                {(t.sport === "generic" || t.sport === "both" || !t.sport) && <span className="ml-1 px-1 rounded bg-primary/15 text-primary border border-primary/30 text-[9px] font-bold">GENERIC</span>}
               </div>
             </div>
             <Button size="icon" variant="ghost" onClick={() => setEdit(t)}><Pencil className="h-3 w-3" /></Button>
@@ -230,9 +232,10 @@ function TeamsTab() {
                   <SelectContent>
                     <SelectItem value="generic">Generic (default virtual pool)</SelectItem>
                     <SelectItem value="football">Football (E-Football arenas)</SelectItem>
+                    <SelectItem value="both">Both (generic + football pools)</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-[10px] text-muted-foreground mt-1">Football-tagged teams show up in the E-Football variants.</p>
+                <p className="text-[10px] text-muted-foreground mt-1">Pick "Both" to let a team compete in both the generic and football variants at the same time.</p>
               </div>
             </div>
             <DialogFooter>
