@@ -18,7 +18,7 @@ import { ChampionshipLiveFeed } from "@/components/ChampionshipLiveFeed";
 export const Route = createFileRoute("/virtual/football-championship")({
   head: () => ({
     meta: [
-      { title: "Championship E-Football — 16-team Football Cup | LSL" },
+      { title: "Championship E-Football — 16-team Football Cup | ECB" },
       { name: "description", content: "16-team virtual football knockout cup. Auto-restarts a new tournament as soon as one ends." },
     ],
   }),

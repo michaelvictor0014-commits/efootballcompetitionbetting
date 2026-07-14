@@ -6,9 +6,9 @@ import { Crosshair, Shield, Coins, Users } from "lucide-react";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About — Lomita Shooters League" },
-      { name: "description", content: "What the Lomita Shooters League is, how virtual tokens work, and our community standards." },
-      { property: "og:title", content: "About LSL" },
+      { title: "About — E-Football Competition Bet" },
+      { name: "description", content: "What the E-Football Competition Bet is, how virtual tokens work, and our community standards." },
+      { property: "og:title", content: "About ECB" },
       { property: "og:description", content: "Virtual-token competitive shooting. No real money gambling." },
     ],
   }),
@@ -21,7 +21,7 @@ function AboutPage() {
       <div className="container py-10 max-w-4xl">
         <h1 className="text-4xl font-bold gradient-gold-text">About the League</h1>
         <p className="mt-4 text-lg text-muted-foreground">
-          The Lomita Shooters League (LSL) is a competitive virtual-token shooting circuit. Members form gangs, compete in scheduled and live matches, and place token-only wagers on outcomes. There is no real-money gambling.
+          The E-Football Competition Bet (ECB) is a competitive virtual-token shooting circuit. Members form gangs, compete in scheduled and live matches, and place token-only wagers on outcomes. There is no real-money gambling.
         </p>
 
         <div className="grid md:grid-cols-2 gap-4 mt-8">
@@ -42,7 +42,7 @@ function AboutPage() {
         <Card className="glass-strong mt-8 p-6 border-[var(--emerald)]/30">
           <h3 className="font-bold">A note on responsibility</h3>
           <p className="text-sm text-muted-foreground mt-2">
-            LSL is designed for entertainment. Tokens are not redeemable for cash and may not be transferred outside the platform. If wagering — even with virtual tokens — stops feeling fun, take a break.
+            ECB is designed for entertainment. Tokens are not redeemable for cash and may not be transferred outside the platform. If wagering — even with virtual tokens — stops feeling fun, take a break.
           </p>
         </Card>
       </div>

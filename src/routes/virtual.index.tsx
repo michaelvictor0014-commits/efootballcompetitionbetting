@@ -11,7 +11,7 @@ import { Crosshair, Trophy, ArrowRight, Radio, Users, History } from "lucide-rea
 export const Route = createFileRoute("/virtual/")({
   head: () => ({
     meta: [
-      { title: "Virtual Matches — Instant & Championship | LSL" },
+      { title: "Virtual Matches — Instant & Championship | ECB" },
       {
         name: "description",
         content:
@@ -84,7 +84,7 @@ function VirtualHubPage() {
         <div className="container py-8 sm:py-12 space-y-8">
           <header className="text-center max-w-2xl mx-auto">
             <Badge variant="outline" className="border-primary/40 text-primary bg-primary/10 mb-3 uppercase tracking-[0.3em] text-[10px]">
-              LSL Virtual Arenas
+              ECB Virtual Arenas
             </Badge>
             <h1 className="font-display text-4xl sm:text-5xl font-black gradient-gold-text leading-tight">
               Pick your battlefield

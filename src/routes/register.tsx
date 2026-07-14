@@ -33,9 +33,9 @@ function RegisterBrand() {
 export const Route = createFileRoute("/register")({
   head: () => ({
     meta: [
-      { title: "Join the League — Lomita Shooters League" },
-      { name: "description", content: "Create your free LSL account, pick your gang, claim starter tokens, and start betting on live shooting matches today." },
-      { property: "og:title", content: "Join the League — Lomita Shooters League" },
+      { title: "Join the League — E-Football Competition Bet" },
+      { name: "description", content: "Create your free ECB account, pick your gang, claim starter tokens, and start betting on live shooting matches today." },
+      { property: "og:title", content: "Join the League — E-Football Competition Bet" },
       { property: "og:description", content: "Create a free account, pick your gang, and start betting on live shooting matches." },
       { property: "og:url", content: "https://lslonlinebetting.lovable.app/register" },
     ],
@@ -154,7 +154,7 @@ function RegisterPage() {
               <Label>Referral code <span className="text-muted-foreground font-normal">(optional)</span></Label>
               <Input
                 maxLength={32}
-                placeholder="LSL-XXXXXX"
+                placeholder="ECB-XXXXXX"
                 value={f.referral_code}
                 onChange={(e) => set("referral_code", e.target.value.toUpperCase())}
                 className="font-mono uppercase"

@@ -13,7 +13,7 @@ import { Ticket as TicketIcon, ChevronRight, ArrowLeft, History as HistoryIcon, 
 export const Route = createFileRoute("/bet-history")({
   head: () => ({
     meta: [
-      { title: "Bet History — LSL" },
+      { title: "Bet History — ECB" },
       { name: "description", content: "All your sports bet slips, lottery tickets and arcade plays in one place." },
       { name: "robots", content: "noindex" },
     ],

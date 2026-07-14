@@ -39,7 +39,7 @@ type Phase = "idle" | "pre" | "live";
 export const Route = createFileRoute("/virtual/instant")({
   head: () => ({
     meta: [
-      { title: "Virtual Gang League — Instant Shootouts | LSL" },
+      { title: "Virtual Gang League — Instant Shootouts | ECB" },
       {
         name: "description",
         content:
@@ -220,7 +220,7 @@ function RoundHeader({ featured, phase, round }: { featured?: VirtualMatch; phas
         </Link>
         <div className="text-center">
           <div className="text-sm sm:text-base font-black tracking-wide gradient-gold-text">
-            LSL Virtual Gang League
+            ECB Virtual Gang League
           </div>
           <div className="flex items-center justify-center gap-2 mt-0.5">
             <span className="text-[11px] text-muted-foreground font-mono">

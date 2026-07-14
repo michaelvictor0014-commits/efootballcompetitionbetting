@@ -1,11 +1,11 @@
-/* LSL push service worker */
+/* ECB push service worker */
 self.addEventListener('install', (e) => self.skipWaiting());
 self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
 
 self.addEventListener('push', (event) => {
   let data = {};
-  try { data = event.data ? event.data.json() : {}; } catch { data = { title: 'LSL', body: event.data ? event.data.text() : '' }; }
-  const title = data.title || 'Lomita Shooters League';
+  try { data = event.data ? event.data.json() : {}; } catch { data = { title: 'ECB', body: event.data ? event.data.text() : '' }; }
+  const title = data.title || 'E-Football Competition Bet';
   const options = {
     body: data.body || '',
     icon: data.icon || '/icon-512.png',

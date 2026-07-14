@@ -45,7 +45,7 @@ export function BetSuccessPopout() {
     const url = `${window.location.origin}/?code=${detail!.bookingCode || ""}`;
     if (navigator.share) {
       try {
-        await navigator.share({ title: `LSL Booking ${code}`, url });
+        await navigator.share({ title: `ECB Booking ${code}`, url });
         return;
       } catch {
         /* ignore */

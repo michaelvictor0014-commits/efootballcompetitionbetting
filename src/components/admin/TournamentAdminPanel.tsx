@@ -289,7 +289,7 @@ export function TournamentAdminPanel() {
       <div className="grid lg:grid-cols-[380px_1fr] gap-4">
         <Card className="glass-strong p-4 space-y-3">
           <div className="font-bold flex items-center gap-2"><Trophy className="h-4 w-4 text-primary" />Create Tournament</div>
-          <div className="space-y-1"><Label className="text-xs text-muted-foreground">Tournament name (words, e.g. "Lomita Shooters League")</Label><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Shotgun Showdown" /></div>
+          <div className="space-y-1"><Label className="text-xs text-muted-foreground">Tournament name (words, e.g. "E-Football Competition Bet")</Label><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Shotgun Showdown" /></div>
           <div className="space-y-1"><Label className="text-xs text-muted-foreground">Tagline (short slogan)</Label><Input value={tagline} onChange={(e) => setTagline(e.target.value)} placeholder="e.g. ONE LEAGUE. NO MERCY. RESPECT THE GAME." /></div>
           <div className="space-y-1"><Label className="text-xs text-muted-foreground">Event date (calendar)</Label><Input type="date" value={eventDate} onChange={(e) => setEventDate(e.target.value)} /></div>
           <Button className="btn-luxury w-full" onClick={createTournament}><Plus className="h-4 w-4 mr-1" />Create Tournament</Button>

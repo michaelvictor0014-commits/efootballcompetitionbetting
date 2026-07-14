@@ -12,8 +12,8 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/profile")({
   head: () => ({
     meta: [
-      { title: "Your Profile — LSL" },
-      { name: "description", content: "Manage your LSL profile, contact details, avatar, and gang affiliation." },
+      { title: "Your Profile — ECB" },
+      { name: "description", content: "Manage your ECB profile, contact details, avatar, and gang affiliation." },
     ],
   }),
   component: ProfilePage,

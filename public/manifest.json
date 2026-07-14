@@ -1,7 +1,7 @@
 {
-  "name": "LOMITA SHOOTERS LEAGUE",
-  "short_name": "LSL",
-  "description": "Register and bet on your favorite gang in the Lomita Shooters League.",
+  "name": "E-FOOTBALL COMPETITION BET",
+  "short_name": "ECB",
+  "description": "Register and bet on your favorite gang in the E-Football Competition Bet.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

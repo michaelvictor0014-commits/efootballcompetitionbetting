@@ -10,10 +10,10 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/matches")({
   head: () => ({
     meta: [
-      { title: "All Matches — Lomita Shooters League" },
-      { name: "description", content: "Browse every upcoming, live, and finished LSL match with real-time odds and quick-pick wagering." },
-      { property: "og:title", content: "All Matches — Lomita Shooters League" },
-      { property: "og:description", content: "Upcoming, live, and finished LSL matches with real-time odds." },
+      { title: "All Matches — E-Football Competition Bet" },
+      { name: "description", content: "Browse every upcoming, live, and finished ECB match with real-time odds and quick-pick wagering." },
+      { property: "og:title", content: "All Matches — E-Football Competition Bet" },
+      { property: "og:description", content: "Upcoming, live, and finished ECB matches with real-time odds." },
       { property: "og:url", content: "https://lslonlinebetting.lovable.app/matches" },
     ],
     links: [{ rel: "canonical", href: "https://lslonlinebetting.lovable.app/matches" }],
@@ -22,8 +22,8 @@ export const Route = createFileRoute("/matches")({
       children: JSON.stringify({
         "@context": "https://schema.org",
         "@type": "CollectionPage",
-        name: "LSL Matches",
-        description: "All matches in the Lomita Shooters League.",
+        name: "ECB Matches",
+        description: "All matches in the E-Football Competition Bet.",
         url: "https://lslonlinebetting.lovable.app/matches",
       }),
     }],

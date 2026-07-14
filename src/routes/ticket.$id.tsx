@@ -36,7 +36,7 @@ import { toast } from "sonner";
 import lslLogo from "@/assets/lsl-logo.png";
 
 export const Route = createFileRoute("/ticket/$id")({
-  head: () => ({ meta: [{ title: "Ticket — LSL" }] }),
+  head: () => ({ meta: [{ title: "Ticket — ECB" }] }),
   component: TicketPage,
 });
 
@@ -135,7 +135,7 @@ function BetTicket({ bet, viewerId }: { bet: any; viewerId: string }) {
     const url = `${window.location.origin}/?code=${bet.booking_code}`;
     if (navigator.share)
       try {
-        await navigator.share({ title: `LSL Booking ${bet.booking_code}`, url });
+        await navigator.share({ title: `ECB Booking ${bet.booking_code}`, url });
         return;
       } catch {
         /*ignore*/
@@ -272,7 +272,7 @@ export function BetVoucher({
   return (
     <div className="relative px-0 py-4 animate-fade-in">
       <div className="relative rounded-[40px] voucher-frame voucher-bg overflow-hidden transition-transform duration-500 hover:[transform:perspective(1600px)_rotateX(0.6deg)_rotateY(-0.6deg)_translateY(-2px)]">
-        {/* LSL logo watermark behind everything */}
+        {/* ECB logo watermark behind everything */}
         <div className="pointer-events-none absolute inset-0 grid place-items-center opacity-[0.08]" aria-hidden>
           <img src={lslLogo} alt="" className="w-2/3 max-w-[500px] object-contain mix-blend-screen" />
         </div>
@@ -298,7 +298,7 @@ export function BetVoucher({
             <div className="flex items-center justify-center gap-2">
               <GangLogo size={22} withGlow={false} />
               <span className="text-[10px] sm:text-[11px] tracking-[0.32em] text-muted-foreground font-bold">
-                LOMITA SHOOTERS LEAGUE
+                E-FOOTBALL COMPETITION BET
               </span>
             </div>
             <h2 className="font-display text-3xl sm:text-5xl font-black tracking-[0.08em] leading-none">
@@ -583,7 +583,7 @@ export function BetVoucher({
             </div>
             <div className="text-[10px] tracking-[0.25em] text-muted-foreground inline-flex items-center justify-center gap-1.5">
               <ShieldCheck className="h-3 w-3 text-emerald-400" />
-              VERIFIED BY LOMITA SHOOTERS LEAGUE
+              VERIFIED BY E-FOOTBALL COMPETITION BET
             </div>
           </div>
         </div>

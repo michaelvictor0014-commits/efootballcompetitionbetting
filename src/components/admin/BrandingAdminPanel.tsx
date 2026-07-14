@@ -80,11 +80,11 @@ export function BrandingAdminPanel() {
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1">
             <label className="text-[10px] uppercase text-muted-foreground">Platform name</label>
-            <Input value={row.platform_name ?? ""} onChange={(e) => set("platform_name", e.target.value)} placeholder="LSL" />
+            <Input value={row.platform_name ?? ""} onChange={(e) => set("platform_name", e.target.value)} placeholder="ECB" />
           </div>
           <div className="space-y-1">
             <label className="text-[10px] uppercase text-muted-foreground">Tagline</label>
-            <Input value={row.platform_tagline ?? ""} onChange={(e) => set("platform_tagline", e.target.value)} placeholder="Lomita Shooters League" />
+            <Input value={row.platform_tagline ?? ""} onChange={(e) => set("platform_tagline", e.target.value)} placeholder="E-Football Competition Bet" />
           </div>
         </div>
         <div className="space-y-1">

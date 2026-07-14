@@ -119,7 +119,7 @@ export const Layout = ({ children }: { children: ReactNode }) => {
               <GangLogo size={38} className="transition-transform group-hover:scale-105 group-hover:rotate-3 duration-300" />
             )}
             <div className="leading-tight">
-              {branding.name && branding.name !== "LSL" ? (
+              {branding.name && branding.name !== "ECB" ? (
                 <>
                   <div className="text-sm font-extrabold tracking-[0.18em] gradient-gold-text uppercase max-w-[160px] truncate">{branding.name}</div>
                   {branding.tagline && <div className="text-[9px] text-muted-foreground tracking-[0.25em] uppercase max-w-[160px] truncate">{branding.tagline}</div>}
@@ -260,7 +260,7 @@ function SiteFooter({ isHome = false }: { isHome?: boolean }) {
     <footer className={`border-t border-border mt-20 backdrop-blur-xl bg-card/40 lg:pl-0 ${isHome ? "pl-0" : "pl-16"}`}>
       <div className="container mx-auto px-4 py-10 grid md:grid-cols-3 gap-6 text-sm">
         <div>
-          <div className="flex items-center gap-2 mb-2"><GangLogo size={28} withGlow={false} /><span className="font-bold tracking-widest gradient-gold-text uppercase">{s?.site_name || "LOMITA SHOOTERS LEAGUE"}</span></div>
+          <div className="flex items-center gap-2 mb-2"><GangLogo size={28} withGlow={false} /><span className="font-bold tracking-widest gradient-gold-text uppercase">{s?.site_name || "E-FOOTBALL COMPETITION BET"}</span></div>
           <p className="text-muted-foreground text-xs">Virtual token-only platform · No real money gambling.</p>
         </div>
         <div>

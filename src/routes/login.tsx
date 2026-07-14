@@ -34,10 +34,10 @@ function AuthBrand() {
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
-      { title: "Sign in — Lomita Shooters League" },
-      { name: "description", content: "Sign in to your Lomita Shooters League account to place bets, track your tickets, and follow your gang." },
-      { property: "og:title", content: "Sign in — Lomita Shooters League" },
-      { property: "og:description", content: "Sign in to place bets, track tickets, and follow your gang at LSL." },
+      { title: "Sign in — E-Football Competition Bet" },
+      { name: "description", content: "Sign in to your E-Football Competition Bet account to place bets, track your tickets, and follow your gang." },
+      { property: "og:title", content: "Sign in — E-Football Competition Bet" },
+      { property: "og:description", content: "Sign in to place bets, track tickets, and follow your gang at ECB." },
       { property: "og:url", content: "https://lslonlinebetting.lovable.app/login" },
     ],
     links: [{ rel: "canonical", href: "https://lslonlinebetting.lovable.app/login" }],

@@ -105,7 +105,7 @@ export function ChampionshipBetPanel({
     });
     setBusy(false);
     if (error) return toast.error(error.message);
-    toast.success(`Bet staked · potential ${(stake * ODDS[params.kind]).toFixed(0)} LSL`);
+    toast.success(`Bet staked · potential ${(stake * ODDS[params.kind]).toFixed(0)} ECB`);
     setExisting({ id: "new", kind: params.kind, stake, odds: ODDS[params.kind] });
     // Fetch voucher shortly after so "View voucher" appears.
     setTimeout(async () => {
@@ -137,8 +137,8 @@ export function ChampionshipBetPanel({
           <CheckCircle2 className="h-4 w-4" /> Your championship pick is in
         </div>
         <div className="text-xs text-muted-foreground">
-          Stake <span className="text-foreground font-bold">{existing.stake} LSL</span> · potential payout{" "}
-          <span className="text-amber-300 font-bold">{(existing.stake * existing.odds).toFixed(0)} LSL</span>.
+          Stake <span className="text-foreground font-bold">{existing.stake} ECB</span> · potential payout{" "}
+          <span className="text-amber-300 font-bold">{(existing.stake * existing.odds).toFixed(0)} ECB</span>.
           Change or remove your pick anytime while booking is open.
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -165,7 +165,7 @@ export function ChampionshipBetPanel({
           <Lock className="h-4 w-4" /> Pick locked · booking closed
         </div>
         <div className="text-xs text-muted-foreground">
-          Potential payout <span className="text-amber-300 font-bold">{(existing.stake * existing.odds).toFixed(0)} LSL</span> if it lands.
+          Potential payout <span className="text-amber-300 font-bold">{(existing.stake * existing.odds).toFixed(0)} ECB</span> if it lands.
         </div>
         {voucherBetId && (
           <Link to="/ticket/$id" params={{ id: voucherBetId }}>

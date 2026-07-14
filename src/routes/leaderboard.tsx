@@ -10,9 +10,9 @@ import leaderboardHeaderAsset from "@/assets/leaderboard-header.png.asset.json";
 export const Route = createFileRoute("/leaderboard")({
   head: () => ({
     meta: [
-      { title: "Leaderboard — Lomita Shooters League" },
-      { name: "description", content: "See the top shooters and top gangs ranked by total score, season points, wins, and tokens won across the Lomita Shooters League." },
-      { property: "og:title", content: "LSL Leaderboard — Top Shooters & Gangs" },
+      { title: "Leaderboard — E-Football Competition Bet" },
+      { name: "description", content: "See the top shooters and top gangs ranked by total score, season points, wins, and tokens won across the E-Football Competition Bet." },
+      { property: "og:title", content: "ECB Leaderboard — Top Shooters & Gangs" },
       { property: "og:description", content: "Top shooters and gangs ranked by total score, season points, wins, and tokens won." },
       { property: "og:url", content: "https://lslonlinebetting.lovable.app/leaderboard" },
     ],
@@ -22,8 +22,8 @@ export const Route = createFileRoute("/leaderboard")({
       children: JSON.stringify({
         "@context": "https://schema.org",
         "@type": "CollectionPage",
-        name: "LSL Leaderboard",
-        description: "Top shooters and gangs in the Lomita Shooters League.",
+        name: "ECB Leaderboard",
+        description: "Top shooters and gangs in the E-Football Competition Bet.",
         url: "https://lslonlinebetting.lovable.app/leaderboard",
       }),
     }],
@@ -86,7 +86,7 @@ function Page() {
       <div className="container py-8 max-w-5xl">
         {headerUrl ? (
           <div className="relative mb-6 rounded-2xl overflow-hidden border-2 border-amber-400/60 shadow-[0_0_40px_-10px_rgba(212,175,55,0.55)]">
-            <img src={headerUrl} alt="Lomita Shooters League Leaderboard" className="w-full h-auto block" />
+            <img src={headerUrl} alt="E-Football Competition Bet Leaderboard" className="w-full h-auto block" />
           </div>
         ) : (
           <div className="relative mb-6 rounded-2xl overflow-hidden bg-black/20 backdrop-blur-[2px] border-2 border-amber-400/60 shadow-[0_0_40px_-10px_rgba(212,175,55,0.55)]">

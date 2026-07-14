@@ -5,7 +5,7 @@ type Props = { children: ReactNode; className?: string; tone?: "default" | "wall
 
 /**
  * Themed wrapper that gives any user-facing page the same
- * gold-brown + emerald glassmorphism + animated aurora + LSL logo
+ * gold-brown + emerald glassmorphism + animated aurora + ECB logo
  * watermark used on the admin console.
  */
 export function PageShell({ children, className = "", tone = "default" }: Props) {

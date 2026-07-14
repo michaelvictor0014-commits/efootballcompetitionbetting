@@ -11,7 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/watchlist")({
-  head: () => ({ meta: [{ title: "Watchlist — LSL" }] }),
+  head: () => ({ meta: [{ title: "Watchlist — ECB" }] }),
   beforeLoad: async () => {
     const { data } = await supabase.auth.getUser();
     if (!data.user) throw redirect({ to: "/login" });
