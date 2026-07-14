@@ -220,23 +220,23 @@ export const Layout = ({ children }: { children: ReactNode }) => {
             </span>
             <span className="leading-none text-[9px]">{railOpen ? "Less" : "More"}</span>
           </button>
-          <MobLink to="/" icon={Home} label="Home" />
+          <MobLink to="/" icon={Home} label="Home" color="text-sky-400" />
           {railOpen && <>
-          <MobLink to="/matches" icon={MatchIcon} label="Matches" />
-          <MobLink to="/virtual" icon={Dice5} label="Virtual" />
-          <MobLink to="/lottery" icon={Clover} label="Lottery" />
-          <MobLink to="/arcade" icon={Gamepad2} label="Arcade" />
-          <MobLink to="/leaderboard" icon={Trophy} label="Top" />
-          <MobLink to="/tournament" icon={Swords} label="Bracket" />
+          <MobLink to="/matches" icon={MatchIcon} label="Matches" color="text-emerald-400" />
+          <MobLink to="/virtual" icon={Dice5} label="Virtual" color="text-fuchsia-400" />
+          <MobLink to="/lottery" icon={Clover} label="Lottery" color="text-lime-400" />
+          <MobLink to="/arcade" icon={Gamepad2} label="Arcade" color="text-pink-400" />
+          <MobLink to="/leaderboard" icon={Trophy} label="Top" color="text-amber-400" />
+          <MobLink to="/tournament" icon={Swords} label="Bracket" color="text-orange-400" />
           {user && <>
-            <MobLink to="/dashboard" icon={Ticket} label="ME" />
-            <MobLink to="/tasks" icon={ListChecks} label="Tasks" />
-            <MobLink to="/profile" icon={UserIcon} label="Profile" />
-            <MobLink to="/settings" icon={SettingsIcon} label="Settings" />
-            <MobLink to="/support" icon={LifeBuoy} label="Help" />
+            <MobLink to="/dashboard" icon={Ticket} label="ME" color="text-yellow-400" />
+            <MobLink to="/tasks" icon={ListChecks} label="Tasks" color="text-cyan-400" />
+            <MobLink to="/profile" icon={UserIcon} label="Profile" color="text-violet-400" />
+            <MobLink to="/settings" icon={SettingsIcon} label="Settings" color="text-teal-400" />
+            <MobLink to="/support" icon={LifeBuoy} label="Help" color="text-rose-400" />
           </>}
-          {isAdmin && <MobLink to="/admin" icon={Shield} label="Admin" />}
-          {!isAdmin && isMod && <MobLink to="/mod" icon={Shield} label="Mod" />}
+          {isAdmin && <MobLink to="/admin" icon={Shield} label="Admin" color="text-red-400" />}
+          {!isAdmin && isMod && <MobLink to="/mod" icon={Shield} label="Mod" color="text-red-400" />}
           </>}
         </div>
       </nav>
@@ -294,17 +294,17 @@ function SiteFooter({ isHome = false }: { isHome?: boolean }) {
   );
 }
 
-function MobLink({ to, icon: Icon, label, badge }: { to: string; icon: any; label: string; badge?: number }) {
+function MobLink({ to, icon: Icon, label, badge, color }: { to: string; icon: any; label: string; badge?: number; color?: string }) {
   return (
     <Link
       to={to}
       activeProps={{ className: "active" }}
-      className="group relative flex flex-col items-center justify-center gap-1 px-0 py-1 rounded-xl text-[10px] font-semibold tracking-wide text-muted-foreground transition-all duration-200 hover:text-foreground active:scale-95 [&.active]:text-primary"
+      className={`group relative flex flex-col items-center justify-center gap-1 px-0 py-1 rounded-xl text-[10px] font-semibold tracking-wide ${color ?? "text-muted-foreground"} transition-all duration-200 hover:brightness-125 active:scale-95`}
       title={label}
     >
       <span className="pointer-events-none absolute left-0 inset-y-2 w-[2px] rounded-full bg-gradient-to-b from-transparent via-primary to-transparent opacity-0 group-[.active]:opacity-100 transition-opacity" />
-      <span className="relative grid place-items-center h-[52px] w-[52px] rounded-xl transition-all group-[.active]:bg-gradient-to-br group-[.active]:from-primary/25 group-[.active]:to-primary/5 group-[.active]:shadow-[0_0_18px_-4px_rgba(212,175,55,0.55)]">
-        <Icon className="h-7 w-7 transition-transform group-[.active]:scale-110" />
+      <span className="relative grid place-items-center h-[52px] w-[52px] rounded-xl transition-all bg-white/5 group-[.active]:bg-white/15 group-[.active]:shadow-[0_0_18px_-4px_currentColor]">
+        <Icon className="h-7 w-7 transition-transform group-[.active]:scale-110" fill="currentColor" strokeWidth={1.25} />
         {badge && badge > 0 ? (
           <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-black grid place-items-center ring-2 ring-card animate-pulse">
             {badge > 9 ? "9+" : badge}
