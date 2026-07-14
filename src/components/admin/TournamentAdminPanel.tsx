@@ -41,6 +41,7 @@ export function TournamentAdminPanel() {
   const confirm = useConfirm();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [selId, setSelId] = useState<string | null>(null);
+  const [selectedTournaments, setSelectedTournaments] = useState<Set<string>>(new Set());
   const [participants, setParticipants] = useState<TParticipant[]>([]);
   const [matches, setMatches] = useState<TMatch[]>([]);
   const [futureMatches, setFutureMatches] = useState<any[]>([]);
@@ -75,6 +76,7 @@ export function TournamentAdminPanel() {
     const { data } = await (supabase as any).from("tournaments").select("*").order("created_at", { ascending: false });
     setTournaments(data ?? []);
     if (!selId && data?.length) setSelId(data[0].id);
+    setSelectedTournaments(new Set());
     const { data: fm } = await (supabase as any).from("matches").select("id,name").eq("match_kind", "future").eq("is_archived", false).order("created_at", { ascending: false });
     setFutureMatches(fm ?? []);
     const { data: lm } = await (supabase as any).from("matches").select("id,name,home_score,away_score,status").eq("is_archived", false).eq("is_virtual", false).order("start_time", { ascending: false }).limit(300);
