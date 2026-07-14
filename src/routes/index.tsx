@@ -337,7 +337,7 @@ function FeaturedGoldenMatches({ matches, bgImage, bgFit, bgPos }: { matches: Ma
   const { selections, add, remove, setOpen } = useBetSlip();
   if (matches.length === 0) return null;
   return (
-    <div className="seasonal-golden relative overflow-hidden rounded-3xl px-4 py-5 md:px-6 md:py-6 space-y-3">
+    <div className="seasonal-golden relative overflow-hidden rounded-3xl px-4 py-4 md:px-6 md:py-5 space-y-3">
       {bgImage && (
         <>
           <img
@@ -347,18 +347,22 @@ function FeaturedGoldenMatches({ matches, bgImage, bgFit, bgPos }: { matches: Ma
             className="absolute inset-0 h-full w-full"
             style={{ objectFit: (bgFit as any) || "cover", objectPosition: bgPos || "center" }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/25" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
         </>
       )}
-      <div className="relative flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] font-black text-amber-100">
-        <Flame className="h-3.5 w-3.5" /> Featured Matches
+      <div className="relative flex items-center gap-2">
+        <Trophy className="h-6 w-6 text-amber-300 drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]" />
+        <div>
+          <div className="text-lg md:text-xl font-black tracking-wide text-amber-100 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">Featured Matches</div>
+          <div className="text-[10px] uppercase tracking-widest text-amber-100/80 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">The biggest matchups of the round.</div>
+        </div>
       </div>
       {matches.map((m) => {
         const market = m.markets?.find((mk) => mk.is_open) ?? m.markets?.[0];
         const odds = market?.odds ?? [];
         const live = m.status === "live";
         return (
-          <div key={m.id} className="rounded-2xl border border-amber-300/30 bg-black/35 backdrop-blur-sm overflow-hidden shadow-[0_8px_30px_-12px_rgba(0,0,0,0.7)]">
+          <div key={m.id} className="rounded-2xl border border-amber-300/40 bg-black/25 overflow-hidden shadow-[0_8px_30px_-12px_rgba(0,0,0,0.7)]">
             <div className="flex items-center justify-between gap-2 px-3 pt-2.5 text-[10px] uppercase tracking-widest">
               <span className="inline-flex items-center gap-1.5 font-black text-amber-200">
                 {live ? (
