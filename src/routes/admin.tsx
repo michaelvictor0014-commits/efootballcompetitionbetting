@@ -2149,7 +2149,7 @@ function EventsPanel() {
       description: draft.description,
       banner_url,
       ends_at: draft.ends_at ? new Date(draft.ends_at).toISOString() : null,
-    });
+    } as any);
     if (error) toast.error(error.message);
     else { setDraft({ title: "", description: "", ends_at: "", banner: null }); load(); logAudit("event_created", "event"); toast.success("Event posted"); }
   }
