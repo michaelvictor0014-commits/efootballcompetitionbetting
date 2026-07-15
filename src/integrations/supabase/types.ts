@@ -1782,6 +1782,30 @@ export type Database = {
           },
         ]
       }
+      motivational_content: {
+        Row: {
+          created_at: string
+          id: string
+          idx: number
+          kind: string
+          text: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          idx: number
+          kind: string
+          text: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          idx?: number
+          kind?: string
+          text?: string
+        }
+        Relationships: []
+      }
       news: {
         Row: {
           body: string | null
@@ -2424,6 +2448,63 @@ export type Database = {
           p256dh?: string
           user_agent?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      recurring_push_settings: {
+        Row: {
+          body: string
+          cadence: string
+          cycles_content: string | null
+          enabled: boolean
+          end_hour_utc: number
+          hour_utc: number | null
+          key: string
+          label: string
+          last_sent_at: string | null
+          last_sent_slot: string | null
+          link: string
+          next_index: number
+          sort_order: number
+          start_hour_utc: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string
+          cadence: string
+          cycles_content?: string | null
+          enabled?: boolean
+          end_hour_utc?: number
+          hour_utc?: number | null
+          key: string
+          label: string
+          last_sent_at?: string | null
+          last_sent_slot?: string | null
+          link?: string
+          next_index?: number
+          sort_order?: number
+          start_hour_utc?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          cadence?: string
+          cycles_content?: string | null
+          enabled?: boolean
+          end_hour_utc?: number
+          hour_utc?: number | null
+          key?: string
+          label?: string
+          last_sent_at?: string | null
+          last_sent_slot?: string | null
+          link?: string
+          next_index?: number
+          sort_order?: number
+          start_hour_utc?: number
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }

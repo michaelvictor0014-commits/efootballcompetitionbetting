@@ -58,6 +58,7 @@ import { SurveysAdminPanel } from "@/components/admin/SurveysAdminPanel";
 import { PollsAdminPanel, ShopAdminPanel, FaqAdminPanel } from "@/components/admin/CommunityAdminPanel";
 import { NewsAdminPanel } from "@/components/admin/NewsAdminPanel";
 import { PushBroadcastPanel } from "@/components/admin/PushBroadcastPanel";
+import { RecurringPushPanel } from "@/components/admin/RecurringPushPanel";
 import { HomeBannersAdminPanel } from "@/components/admin/HomeBannersAdminPanel";
 import { ArcadeAdminPanel } from "@/components/admin/ArcadeAdminPanel";
 import { CasinoHistoryPanel } from "@/components/admin/CasinoHistoryPanel";
@@ -236,6 +237,7 @@ export function AdminPage() {
             <TabsContent value="tokenrules" className="mt-4"><TokenRulesPanel /></TabsContent>
             <TabsContent value="broadcast" className="mt-4"><BroadcastPanel /></TabsContent>
             <TabsContent value="pushblast" className="mt-4"><PushBroadcastPanel /></TabsContent>
+            <TabsContent value="pushrecurring" className="mt-4"><RecurringPushPanel /></TabsContent>
             <TabsContent value="banners" className="mt-4"><HomeBannersAdminPanel /></TabsContent>
             <TabsContent value="arcade" className="mt-4"><ArcadeAdminPanel /></TabsContent>
             <TabsContent value="casinohistory" className="mt-4"><CasinoHistoryPanel /></TabsContent>
@@ -3384,6 +3386,7 @@ const QUICK_ACTIONS: { i: any; l: string; t: string }[] = [
   { i: Eye, l: "Attendance", t: "attendance" },
   { i: Send, l: "Broadcast", t: "broadcast" },
   { i: BellRing, l: "Push Blast", t: "pushblast" },
+  { i: BellRing, l: "Auto Push", t: "pushrecurring" },
   { i: GalleryHorizontalEnd, l: "Home Banners", t: "banners" },
   { i: Gamepad2, l: "Arcade", t: "arcade" },
   { i: History, l: "Casino History", t: "casinohistory" },
