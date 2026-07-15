@@ -2136,7 +2136,7 @@ function EventsPanel() {
   useEffect(() => { load(); }, []);
 
   async function create() {
-    if (!draft.title || !draft.ends_at) { toast.error("Title and end time required"); return; }
+    if (!draft.title) { toast.error("Title required"); return; }
     let banner_url: string | null = null;
     if (draft.banner) {
       const path = `event-${crypto.randomUUID()}.${draft.banner.name.split(".").pop()}`;
@@ -2144,7 +2144,12 @@ function EventsPanel() {
       if (error) { toast.error(error.message); return; }
       banner_url = supabase.storage.from("ads").getPublicUrl(path).data.publicUrl;
     }
-    const { error } = await supabase.from("events").insert({ title: draft.title, description: draft.description, banner_url, ends_at: new Date(draft.ends_at).toISOString() });
+    const { error } = await supabase.from("events").insert({
+      title: draft.title,
+      description: draft.description,
+      banner_url,
+      ends_at: draft.ends_at ? new Date(draft.ends_at).toISOString() : null,
+    });
     if (error) toast.error(error.message);
     else { setDraft({ title: "", description: "", ends_at: "", banner: null }); load(); logAudit("event_created", "event"); toast.success("Event posted"); }
   }
@@ -2161,7 +2166,8 @@ function EventsPanel() {
   return (
     <div className="space-y-3">
       <Card className="glass-strong p-4 space-y-2">
-        <div className="font-bold">Create event (bold countdown banner)</div>
+        <div className="font-bold">Create event banner</div>
+        <div className="text-xs text-muted-foreground">Leave the end time empty to show an image-only banner (no countdown, no "Upcoming Event" tag).</div>
         <Input placeholder="Title" value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
         <Textarea placeholder="Description (optional)" value={draft.description} onChange={(e) => setDraft({ ...draft, description: e.target.value })} />
         <div>
@@ -2169,7 +2175,7 @@ function EventsPanel() {
           <Input type="file" accept="image/*" onChange={(e) => setDraft({ ...draft, banner: e.target.files?.[0] ?? null })} />
         </div>
         <div>
-          <label className="text-xs text-muted-foreground">Countdown ends at</label>
+          <label className="text-xs text-muted-foreground">Countdown ends at (optional)</label>
           <Input type="datetime-local" value={draft.ends_at} onChange={(e) => setDraft({ ...draft, ends_at: e.target.value })} />
         </div>
         <Button className="btn-luxury" onClick={create}>Post Event</Button>
@@ -2181,7 +2187,7 @@ function EventsPanel() {
             {e.banner_url && <img src={e.banner_url} alt="" className="h-12 w-20 rounded object-cover" />}
             <div className="flex-1 min-w-0">
               <div className="font-bold truncate">{e.title}</div>
-              <div className="text-xs text-muted-foreground">Ends {new Date(e.ends_at).toLocaleString()}</div>
+              <div className="text-xs text-muted-foreground">{e.ends_at ? `Ends ${new Date(e.ends_at).toLocaleString()}` : "No countdown"}</div>
             </div>
             <Button size="sm" variant="outline" onClick={() => toggle(e.id, !e.is_active)}>{e.is_active ? "Hide" : "Show"}</Button>
             <Button size="sm" variant="destructive" onClick={() => del(e.id)}><Trash2 className="h-3 w-3" /></Button>
