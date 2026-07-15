@@ -206,9 +206,9 @@ export const Layout = ({ children }: { children: ReactNode }) => {
       <PollPopout />
       <PushPermissionPrompt />
       <nav
-        className={`${isHome ? "hidden" : "lg:hidden"} fixed left-0 inset-y-0 pt-16 z-40 w-16 overflow-y-auto bg-transparent border-0 shadow-none`}
+        className={`${isHome ? "hidden" : "lg:hidden"} fixed left-0 inset-y-0 pt-16 z-40 w-16 overflow-y-auto border-r border-primary/25 shadow-[6px_0_28px_-14px_rgba(212,175,55,0.55)] bg-[linear-gradient(180deg,rgba(11,10,20,0.92)_0%,rgba(20,14,32,0.88)_50%,rgba(11,10,20,0.94)_100%)] backdrop-blur-xl before:pointer-events-none before:absolute before:inset-y-0 before:right-0 before:w-px before:bg-gradient-to-b before:from-transparent before:via-primary/60 before:to-transparent after:pointer-events-none after:absolute after:inset-0 after:bg-[radial-gradient(120%_60%_at_0%_0%,rgba(212,175,55,0.14),transparent_55%),radial-gradient(120%_60%_at_0%_100%,rgba(120,80,220,0.14),transparent_55%)]`}
       >
-        <div className="flex flex-col items-stretch gap-4 py-4 px-1">
+        <div className="relative z-10 flex flex-col items-stretch gap-3 py-4 px-1.5">
           <button
             type="button"
             onClick={() => setRailOpen((v) => !v)}
@@ -217,8 +217,9 @@ export const Layout = ({ children }: { children: ReactNode }) => {
             className="group relative flex flex-col items-center justify-center gap-1 px-0 py-1 rounded-xl text-[10px] font-semibold tracking-wide text-primary transition-all hover:text-foreground active:scale-95"
             title="Menu"
           >
-            <span className="relative grid place-items-center h-[52px] w-[52px] rounded-xl bg-gradient-to-br from-primary/25 to-primary/5 shadow-[0_0_18px_-4px_rgba(212,175,55,0.55)]">
-              <SettingsIcon className={`h-7 w-7 transition-transform ${railOpen ? "rotate-180" : ""}`} />
+            <span className="relative grid place-items-center h-[52px] w-[52px] rounded-xl border border-primary/40 bg-gradient-to-br from-primary/35 via-primary/15 to-transparent shadow-[0_0_22px_-4px_rgba(212,175,55,0.7),inset_0_1px_0_rgba(255,255,255,0.15)]">
+              <span className="pointer-events-none absolute inset-0 rounded-xl bg-[radial-gradient(60%_60%_at_50%_0%,rgba(255,255,255,0.25),transparent_70%)]" />
+              <SettingsIcon className={`relative h-7 w-7 drop-shadow-[0_0_6px_rgba(212,175,55,0.7)] transition-transform ${railOpen ? "rotate-180" : ""}`} />
             </span>
             <span className="leading-none text-[9px]">{railOpen ? "Less" : "More"}</span>
           </button>
@@ -301,19 +302,37 @@ function MobLink({ to, icon: Icon, label, badge, color }: { to: string; icon: an
     <Link
       to={to}
       activeProps={{ className: "active" }}
-      className={`group relative flex flex-col items-center justify-center gap-1 px-0 py-1 rounded-xl text-[10px] font-semibold tracking-wide ${color ?? "text-muted-foreground"} transition-all duration-200 hover:brightness-125 active:scale-95`}
+      className={`group relative flex flex-col items-center justify-center gap-1 px-0 py-1 rounded-xl text-[10px] font-semibold tracking-wide ${color ?? "text-muted-foreground"} transition-all duration-200 hover:brightness-125 hover:-translate-y-[1px] active:scale-95`}
       title={label}
     >
-      <span className="pointer-events-none absolute left-0 inset-y-2 w-[2px] rounded-full bg-gradient-to-b from-transparent via-primary to-transparent opacity-0 group-[.active]:opacity-100 transition-opacity" />
-      <span className="relative grid place-items-center h-[52px] w-[52px] rounded-xl transition-all bg-white/5 group-[.active]:bg-white/15 group-[.active]:shadow-[0_0_18px_-4px_currentColor]">
-        <Icon className="h-7 w-7 transition-transform group-[.active]:scale-110" fill="currentColor" strokeWidth={1.25} />
+      <span className="pointer-events-none absolute -left-1.5 inset-y-2 w-[3px] rounded-full bg-gradient-to-b from-transparent via-current to-transparent opacity-0 group-[.active]:opacity-100 transition-opacity shadow-[0_0_10px_currentColor]" />
+      <span
+        className="relative grid place-items-center h-[52px] w-[52px] rounded-2xl transition-all
+          border border-white/10 group-hover:border-white/25
+          bg-[linear-gradient(160deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)_45%,rgba(0,0,0,0.35))]
+          shadow-[inset_0_1px_0_rgba(255,255,255,0.12),inset_0_-8px_18px_-10px_rgba(0,0,0,0.7),0_6px_18px_-10px_rgba(0,0,0,0.9)]
+          group-hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_0_18px_-4px_currentColor,0_8px_22px_-10px_currentColor]
+          group-[.active]:border-current
+          group-[.active]:shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_0_22px_-2px_currentColor,0_10px_26px_-10px_currentColor]"
+      >
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-2xl opacity-70 group-hover:opacity-100 group-[.active]:opacity-100 transition-opacity"
+          style={{ background: "radial-gradient(75% 60% at 50% 0%, color-mix(in oklab, currentColor 35%, transparent), transparent 70%)" }}
+        />
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 group-[.active]:opacity-100 transition-opacity"
+          style={{ background: "radial-gradient(80% 80% at 50% 120%, color-mix(in oklab, currentColor 45%, transparent), transparent 70%)" }}
+        />
+        <Icon className="relative h-7 w-7 transition-transform group-hover:scale-105 group-[.active]:scale-110 drop-shadow-[0_0_6px_currentColor]" fill="currentColor" strokeWidth={1.25} />
         {badge && badge > 0 ? (
           <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-black grid place-items-center ring-2 ring-card animate-pulse">
             {badge > 9 ? "9+" : badge}
           </span>
         ) : null}
       </span>
-      <span className="leading-none text-[9px] truncate max-w-[56px]">{label}</span>
+      <span className="leading-none text-[9px] truncate max-w-[56px] uppercase tracking-[0.12em] font-bold drop-shadow-[0_1px_0_rgba(0,0,0,0.6)]">{label}</span>
     </Link>
   );
 }
