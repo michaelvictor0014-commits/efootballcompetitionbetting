@@ -12,7 +12,17 @@ import { toast } from "sonner";
 import { Wallet, Sparkles, Clock, CheckCircle, XCircle } from "lucide-react";
 
 export const Route = createFileRoute("/withdraw")({
-  head: () => ({ meta: [{ title: "Withdraw Tokens — ECB" }] }),
+  head: () => ({
+    meta: [
+      { title: "Withdraw Tokens — ECB" },
+      { name: "description", content: "Request a virtual token withdrawal from your ECB wallet and track the status of past withdrawal requests." },
+      { property: "og:title", content: "Withdraw Tokens — ECB" },
+      { property: "og:description", content: "Request a token withdrawal from your ECB wallet and track past requests." },
+      { property: "og:url", content: "/withdraw" },
+      { name: "robots", content: "noindex" },
+    ],
+    links: [{ rel: "canonical", href: "/withdraw" }],
+  }),
   component: Page,
 });
 

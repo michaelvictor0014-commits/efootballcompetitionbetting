@@ -50,6 +50,7 @@ import { Route as VirtualFootballChampionshipRouteImport } from './routes/virtua
 import { Route as VirtualChampionshipRouteImport } from './routes/virtual.championship'
 import { Route as TicketIdRouteImport } from './routes/ticket.$id'
 import { Route as MatchesMatchIdRouteImport } from './routes/matches.$matchId'
+import { Route as GuidesHowItWorksRouteImport } from './routes/guides.how-it-works'
 import { Route as ApiPublicVirtualTickRouteImport } from './routes/api/public/virtual-tick'
 import { Route as ApiPublicHooksSendPushRouteImport } from './routes/api/public/hooks/send-push'
 import { Route as ApiPublicHooksRecurringPushRouteImport } from './routes/api/public/hooks/recurring-push'
@@ -262,6 +263,11 @@ const MatchesMatchIdRoute = MatchesMatchIdRouteImport.update({
   path: '/$matchId',
   getParentRoute: () => MatchesRoute,
 } as any)
+const GuidesHowItWorksRoute = GuidesHowItWorksRouteImport.update({
+  id: '/guides/how-it-works',
+  path: '/guides/how-it-works',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicVirtualTickRoute = ApiPublicVirtualTickRouteImport.update({
   id: '/api/public/virtual-tick',
   path: '/api/public/virtual-tick',
@@ -325,6 +331,7 @@ export interface FileRoutesByFullPath {
   '/trivia': typeof TriviaRoute
   '/watchlist': typeof WatchlistRoute
   '/withdraw': typeof WithdrawRoute
+  '/guides/how-it-works': typeof GuidesHowItWorksRoute
   '/matches/$matchId': typeof MatchesMatchIdRoute
   '/ticket/$id': typeof TicketIdRoute
   '/virtual/championship': typeof VirtualChampionshipRoute
@@ -373,6 +380,7 @@ export interface FileRoutesByTo {
   '/trivia': typeof TriviaRoute
   '/watchlist': typeof WatchlistRoute
   '/withdraw': typeof WithdrawRoute
+  '/guides/how-it-works': typeof GuidesHowItWorksRoute
   '/matches/$matchId': typeof MatchesMatchIdRoute
   '/ticket/$id': typeof TicketIdRoute
   '/virtual/championship': typeof VirtualChampionshipRoute
@@ -422,6 +430,7 @@ export interface FileRoutesById {
   '/trivia': typeof TriviaRoute
   '/watchlist': typeof WatchlistRoute
   '/withdraw': typeof WithdrawRoute
+  '/guides/how-it-works': typeof GuidesHowItWorksRoute
   '/matches/$matchId': typeof MatchesMatchIdRoute
   '/ticket/$id': typeof TicketIdRoute
   '/virtual/championship': typeof VirtualChampionshipRoute
@@ -472,6 +481,7 @@ export interface FileRouteTypes {
     | '/trivia'
     | '/watchlist'
     | '/withdraw'
+    | '/guides/how-it-works'
     | '/matches/$matchId'
     | '/ticket/$id'
     | '/virtual/championship'
@@ -520,6 +530,7 @@ export interface FileRouteTypes {
     | '/trivia'
     | '/watchlist'
     | '/withdraw'
+    | '/guides/how-it-works'
     | '/matches/$matchId'
     | '/ticket/$id'
     | '/virtual/championship'
@@ -568,6 +579,7 @@ export interface FileRouteTypes {
     | '/trivia'
     | '/watchlist'
     | '/withdraw'
+    | '/guides/how-it-works'
     | '/matches/$matchId'
     | '/ticket/$id'
     | '/virtual/championship'
@@ -617,6 +629,7 @@ export interface RootRouteChildren {
   TriviaRoute: typeof TriviaRoute
   WatchlistRoute: typeof WatchlistRoute
   WithdrawRoute: typeof WithdrawRoute
+  GuidesHowItWorksRoute: typeof GuidesHowItWorksRoute
   TicketIdRoute: typeof TicketIdRoute
   VirtualChampionshipRoute: typeof VirtualChampionshipRoute
   VirtualFootballChampionshipRoute: typeof VirtualFootballChampionshipRoute
@@ -920,6 +933,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MatchesMatchIdRouteImport
       parentRoute: typeof MatchesRoute
     }
+    '/guides/how-it-works': {
+      id: '/guides/how-it-works'
+      path: '/guides/how-it-works'
+      fullPath: '/guides/how-it-works'
+      preLoaderRoute: typeof GuidesHowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/virtual-tick': {
       id: '/api/public/virtual-tick'
       path: '/api/public/virtual-tick'
@@ -1003,6 +1023,7 @@ const rootRouteChildren: RootRouteChildren = {
   TriviaRoute: TriviaRoute,
   WatchlistRoute: WatchlistRoute,
   WithdrawRoute: WithdrawRoute,
+  GuidesHowItWorksRoute: GuidesHowItWorksRoute,
   TicketIdRoute: TicketIdRoute,
   VirtualChampionshipRoute: VirtualChampionshipRoute,
   VirtualFootballChampionshipRoute: VirtualFootballChampionshipRoute,

@@ -14,7 +14,11 @@ export const Route = createFileRoute("/tasks")({
     meta: [
       { title: "Tasks — ECB" },
       { name: "description", content: "Complete ECB tasks and claim token rewards for your daily challenges." },
+      { property: "og:title", content: "Tasks — ECB" },
+      { property: "og:description", content: "Complete ECB tasks and claim token rewards for your daily challenges." },
+      { property: "og:url", content: "/tasks" },
     ],
+    links: [{ rel: "canonical", href: "/tasks" }],
   }),
   component: TasksPage,
 });

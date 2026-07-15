@@ -21,6 +21,22 @@ export const Route = createFileRoute("/virtual/")({
         content:
           "Choose your virtual arena: Instant Virtual for quick shootouts, or Championship Virtual for scheduled 16-team knockout tournaments.",
       },
+      { property: "og:title", content: "Virtual Matches — Instant & Championship | ECB" },
+      { property: "og:description", content: "Instant Virtual shootouts and Championship 16-team knockout tournaments on ECB." },
+      { property: "og:url", content: "/virtual" },
+    ],
+    links: [{ rel: "canonical", href: "/virtual" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: "Virtual Matches",
+          url: "/virtual",
+          description: "Instant and Championship virtual matches on the E-Football Competition Bet.",
+        }),
+      },
     ],
   }),
   component: VirtualHubPage,

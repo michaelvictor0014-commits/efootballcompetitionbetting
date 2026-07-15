@@ -12,6 +12,22 @@ export const Route = createFileRoute("/gangs")({
     meta: [
       { title: "Gangs — ECB" },
       { name: "description", content: "Explore the gangs and factions of the E-Football Competition Bet, ranked by tokens and members." },
+      { property: "og:title", content: "Gangs — ECB" },
+      { property: "og:description", content: "Explore the gangs and factions of the E-Football Competition Bet." },
+      { property: "og:url", content: "/gangs" },
+    ],
+    links: [{ rel: "canonical", href: "/gangs" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: "Gangs of ECB",
+          url: "/gangs",
+          description: "Directory of gangs and factions of the E-Football Competition Bet.",
+        }),
+      },
     ],
   }),
   component: GangsPage,

@@ -37,7 +37,15 @@ import _ecbLogo from "@/assets/ecb-logo.png.asset.json";
 const lslLogo = _ecbLogo.url;
 
 export const Route = createFileRoute("/ticket/$id")({
-  head: () => ({ meta: [{ title: "Ticket — ECB" }] }),
+  head: () => ({
+    meta: [
+      { title: "Ticket — ECB" },
+      { name: "description", content: "View, share and manage your ECB bet ticket — selections, stake, potential winnings and settlement status." },
+      { property: "og:title", content: "Bet Ticket — ECB" },
+      { property: "og:description", content: "View, share and manage your ECB bet ticket." },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   component: TicketPage,
 });
 
